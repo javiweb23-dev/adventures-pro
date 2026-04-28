@@ -1,0 +1,27 @@
+{
+  "Nav": {
+    "home": "Accueil",
+    "excursions": "Excursions",
+    "destinations": "Destinations",
+    "transfers": "Navettes",
+    "about": "Qui Nous Sommes",
+    "contact": "Contact"
+  },
+  "Footer": {
+    "helpfulLinks": "Liens utiles",
+    "terms": "Conditions générales",
+    "cancellation": "Politique d'annulation des excursions",
+    "faq": "FAQ des excursions",
+    "contactUs": "Nous joindre",
+    "followUs": "Suivez-nous",
+    "copyright": "Copyright © 2026 Adventures Finder. Tous droits réservés.",
+    "parking": "Stationnement",
+    "airport": "Aéroport"
+  },
+  "HeroSearch": {
+    "searchPlaceholder": "Rechercher une destination ou une activité",
+    "quickCategories": "Catégories rapides",
+    "searchButton": "Rechercher",
+    "bookTwoOrMoreActivities": "Réservez 2 activités ou plus..."
+  }
+}

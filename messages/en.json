@@ -1,0 +1,25 @@
+{
+  "Nav": {
+    "home": "Home",
+    "excursions": "Excursions",
+    "destinations": "Destinations",
+    "transfers": "Transfers",
+    "about": "Who We Are",
+    "contact": "Contact"
+  },
+  "Footer": {
+    "helpfulLinks": "Helpful Links",
+    "terms": "Terms and Conditions",
+    "cancellation": "Cancellation Policy Tours",
+    "faq": "FAQ's Tours",
+    "contactUs": "Contact Us",
+    "followUs": "Follow Us",
+    "copyright": "Copyright © 2026 Adventures Finder. All rights reserved."
+  },
+  "HeroSearch": {
+    "searchPlaceholder": "Search destination or activity",
+    "quickCategories": "Quick Categories",
+    "searchButton": "Search",
+    "bookTwoOrMoreActivities": "Book 2 or more activities..."
+  }
+}

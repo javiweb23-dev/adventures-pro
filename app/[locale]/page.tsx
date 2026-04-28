@@ -1,14 +1,35 @@
-﻿import HeroSearch from "@/components/HeroSearch";
+import HeroSearch from "@/components/HeroSearch";
 import HomeHeroSlider from "@/components/HomeHeroSlider";
 import PromoBanner from "@/components/PromoBanner";
-import CategoryShowcase from "@/components/CategoryShowcase";
 import FeaturedAdventures from "@/components/FeaturedAdventures";
 import ReviewsSection from "@/components/ReviewsSection";
 import BoutiqueBanner from "@/components/BoutiqueBanner";
 import AllianceLogos from "@/components/AllianceLogos";
 import BlogSection from "@/components/BlogSection";
+import LiveDiscoveryHub from "@/components/LiveDiscoveryHub";
+import { client } from "@/sanity/lib/client";
+import { groq } from "next-sanity";
 
-export default function Home() {
+type HomePageProps = {
+  params: Promise<{ locale: "en" | "es" | "fr-ca" }>;
+};
+
+export default async function Home({ params }: HomePageProps) {
+  const { locale } = await params;
+  const discoveryTours = await client.fetch(
+    groq`*[_type == "tour"] | order(isFeatured desc, _createdAt desc) [0...12] {
+      _id,
+      "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
+      "slug": slug.current,
+      "mainImage": listingImage,
+      "category": category->slug.current,
+      duration,
+      "currency": coalesce(currency, "USD"),
+      pricing[]{price}
+    }`,
+    { locale },
+  );
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <main>
@@ -24,8 +45,8 @@ export default function Home() {
                   Find your next perfect adventure
                 </h1>
                 <p className="mt-4 text-sm text-slate-100 md:text-base">
-                  Browse curated tours by destination, budget, and experience type
-                  in one place.
+                  Browse curated tours by destination, budget, and experience
+                  type in one place.
                 </p>
                 <div className="mx-auto mt-8 w-full max-w-4xl md:mt-10">
                   <HeroSearch />
@@ -38,7 +59,7 @@ export default function Home() {
         <PromoBanner />
 
         <section className="mx-auto max-w-7xl px-6 pb-20 pt-14 md:px-10 md:pb-24 md:pt-16 lg:px-12">
-          <CategoryShowcase />
+          <LiveDiscoveryHub tours={discoveryTours} />
         </section>
 
         <section className="mx-auto max-w-7xl px-6 pb-24 pt-16 md:px-10 md:pb-32 md:pt-20 lg:px-12">
