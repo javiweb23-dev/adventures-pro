@@ -16,7 +16,11 @@ export const categoryType = defineType({
       title: "Slug",
       type: "slug",
       options: {
-        source: (doc: { title?: { en?: string } }) => doc.title?.en || "",
+        source: (doc: Record<string, unknown>) => {
+          const title = doc.title as Record<string, unknown> | undefined;
+          const primary = title?.en;
+          return typeof primary === "string" ? primary : "";
+        },
         maxLength: 96,
       },
       validation: (rule) => rule.required(),
