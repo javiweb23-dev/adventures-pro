@@ -16,7 +16,7 @@ export const tourType = defineType({
       title: "Slug",
       type: "slug",
       options: {
-        source: (doc: { title?: { en?: string } }) => doc.title?.en || "",
+        source: (doc: any) => doc.title?.en || doc.title?.es || "",
         maxLength: 96,
       },
       validation: (rule) => rule.required(),
