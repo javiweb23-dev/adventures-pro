@@ -16,10 +16,11 @@ export const categoryType = defineType({
       title: "Slug",
       type: "slug",
       options: {
-        source: (doc: Record<string, unknown>) => {
-          const title = doc.title as Record<string, unknown> | undefined;
-          const primary = title?.en;
-          return typeof primary === "string" ? primary : "";
+        // Usamos 'any' para el documento para evitar errores de tipado en el build de Vercel
+        source: (doc: any) => {
+          // Intenta obtener el título en inglés, si no existe usa el español, o un string vacío
+          const title = doc.title?.en || doc.title?.es || "";
+          return title;
         },
         maxLength: 96,
       },
