@@ -3,6 +3,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import { routing } from "@/i18n/routing";
 
 type LocaleLayoutProps = {
@@ -32,6 +33,7 @@ export default async function LocaleLayout({
       <Navbar />
       {children}
       <Footer />
+      <WhatsAppButton />
     </NextIntlClientProvider>
   );
 }
