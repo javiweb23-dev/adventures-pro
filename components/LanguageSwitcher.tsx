@@ -9,7 +9,7 @@ import { routing, type AppLocale } from "@/i18n/routing";
 const localeOptions: { code: AppLocale; label: string; flag: string }[] = [
   { code: "en", label: "EN", flag: "🇺🇸" },
   { code: "es", label: "ES", flag: "🇪🇸" },
-  { code: "fr-ca", label: "FR", flag: "🇨🇦" },
+  { code: "fr-ca", label: "FR", flag: "🇫🇷" },
 ];
 
 type LanguageSwitcherProps = {
@@ -55,7 +55,11 @@ export default function LanguageSwitcher({ compact = false }: LanguageSwitcherPr
         onClick={() => setOpen((v) => !v)}
         className={`inline-flex items-center rounded-full border border-slate-300 bg-white font-semibold tracking-[0.08em] text-[#0a192f] outline-none transition hover:border-slate-400 focus-visible:border-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-500/20 ${triggerClass}`}
       >
-        <span className="shrink-0 select-none text-[1.1rem] leading-none" aria-hidden>
+        <span
+          className="shrink-0 select-none text-[1.1rem] leading-none"
+          style={{ fontFamily: '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif' }}
+          aria-hidden
+        >
           {current.flag}
         </span>
         <span>{current.label}</span>
@@ -81,7 +85,11 @@ export default function LanguageSwitcher({ compact = false }: LanguageSwitcherPr
                   item.code === locale ? "bg-slate-50 text-[#0a192f]" : "text-slate-700"
                 }`}
               >
-                <span className="shrink-0 text-[1.1rem] leading-none" aria-hidden>
+                <span
+                  className="shrink-0 text-[1.1rem] leading-none"
+                  style={{ fontFamily: '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif' }}
+                  aria-hidden
+                >
                   {item.flag}
                 </span>
                 <span>{item.label}</span>

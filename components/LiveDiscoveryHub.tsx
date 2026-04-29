@@ -48,8 +48,20 @@ const parseNumericPrice = (value?: string | number | null) => {
   if (typeof value !== "string") return Number.NaN;
   const trimmed = value.trim();
   if (!trimmed) return Number.NaN;
-  const normalized = trimmed.replace(",", ".");
-  const parsed = Number(normalized.replace(/[^0-9.]/g, ""));
+  const cleaned = trimmed.replace(/[^\d.,-]/g, "");
+  if (!cleaned) return Number.NaN;
+  const lastDot = cleaned.lastIndexOf(".");
+  const lastComma = cleaned.lastIndexOf(",");
+  const decimalIndex = Math.max(lastDot, lastComma);
+  let normalized = cleaned;
+  if (decimalIndex !== -1) {
+    const intPart = cleaned.slice(0, decimalIndex).replace(/[.,]/g, "");
+    const decimalPart = cleaned.slice(decimalIndex + 1).replace(/[.,]/g, "");
+    normalized = `${intPart}.${decimalPart}`;
+  } else {
+    normalized = cleaned.replace(/[.,]/g, "");
+  }
+  const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : Number.NaN;
 };
 
@@ -81,40 +93,40 @@ const buildImageUrl = (image: unknown) => {
 };
 
 export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] }) {
-  const [category, setCategory] = useState<string>("all");
-  const [priceRange, setPriceRange] = useState<PriceRange>("all");
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [activePriceRange, setActivePriceRange] = useState<PriceRange>("all");
 
   const filteredTours = useMemo(() => {
     return (tours ?? []).filter((tour) => {
       const safeCategory = tour.category ?? "";
-      const matchesCategory = category === "all" || safeCategory === category;
+      const matchesCategory = activeCategory === "all" || safeCategory === activeCategory;
 
       const minPrice = getMinPricingValue(tour.pricing);
       const matchesPriceRange =
-        priceRange === "all" ||
-        (priceRange === "under-100" &&
+        activePriceRange === "all" ||
+        (activePriceRange === "under-100" &&
           Number.isFinite(minPrice) &&
           minPrice >= 0 &&
           minPrice < 100) ||
-        (priceRange === "100-200" &&
+        (activePriceRange === "100-200" &&
           Number.isFinite(minPrice) &&
           minPrice >= 100 &&
           minPrice <= 200) ||
-        (priceRange === "premium" && Number.isFinite(minPrice) && minPrice > 200);
+        (activePriceRange === "premium" && Number.isFinite(minPrice) && minPrice > 200);
 
       return matchesCategory && matchesPriceRange;
     });
-  }, [priceRange, category, tours]);
+  }, [activePriceRange, activeCategory, tours]);
 
   const visibleTours = filteredTours.slice(0, 4);
 
   const resultsHref = useMemo(() => {
     const params = new URLSearchParams();
-    if (category !== "all") params.set("category", category);
-    if (priceRange !== "all") params.set("budget", priceRange);
+    if (activeCategory !== "all") params.set("category", activeCategory);
+    if (activePriceRange !== "all") params.set("budget", activePriceRange);
     const query = params.toString();
     return query ? `/excursiones?${query}` : "/excursiones";
-  }, [priceRange, category]);
+  }, [activePriceRange, activeCategory]);
 
   return (
     <div>
@@ -124,12 +136,12 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
 
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
         {categoryFilters.map((item) => {
-          const isActive = category === item.id;
+          const isActive = activeCategory === item.id;
           return (
             <button
               key={item.id}
               type="button"
-              onClick={() => setCategory(item.id)}
+              onClick={() => setActiveCategory(item.id)}
               className={`rounded-full border px-5 py-2 text-sm font-semibold transition ${
                 isActive
                   ? "border-[#0a192f] bg-[#0a192f] text-white"
@@ -144,12 +156,12 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
 
       <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
         {priceRangeFilters.map((item) => {
-          const isActive = priceRange === item.id;
+          const isActive = activePriceRange === item.id;
           return (
             <button
               key={item.id}
               type="button"
-              onClick={() => setPriceRange(item.id)}
+              onClick={() => setActivePriceRange(item.id)}
               className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] transition ${
                 isActive
                   ? "border-orange-500 bg-orange-500 text-white"
@@ -162,64 +174,73 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
         })}
       </div>
 
-      <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-4">
-        {visibleTours.map((tour) => {
-          const firstRow = tour.pricing?.[0];
-          const firstPrice =
-            firstRow?.amount != null && Number.isFinite(firstRow.amount)
-              ? String(firstRow.amount)
-              : firstRow?.price;
-          const price = formatTourPrice(
-            tour.currency ?? "USD",
-            undefined,
-            typeof firstPrice === "number" ? String(firstPrice) : firstPrice,
-          );
-          const slug = tour.slug ?? "";
-          const title = tour.title ?? "Tour";
-          const categoryLabel = categoryLabels[tour.category ?? ""] ?? tour.category ?? "Uncategorized";
-          const imageUrl = buildImageUrl(tour.mainImage);
+      {visibleTours.length === 0 ? (
+        <div className="mt-10 rounded-3xl border border-slate-200 bg-slate-50 px-6 py-12 text-center">
+          <p className="text-lg font-semibold text-[#0a192f]">No tours found</p>
+          <p className="mt-2 text-sm text-slate-600">
+            Try a different category or budget to discover more experiences.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-4">
+          {visibleTours.map((tour) => {
+            const firstRow = tour.pricing?.[0];
+            const firstPrice =
+              firstRow?.amount != null && Number.isFinite(firstRow.amount)
+                ? String(firstRow.amount)
+                : firstRow?.price;
+            const price = formatTourPrice(
+              tour.currency ?? "USD",
+              undefined,
+              typeof firstPrice === "number" ? String(firstPrice) : firstPrice,
+            );
+            const slug = tour.slug ?? "";
+            const title = tour.title ?? "Tour";
+            const categoryLabel = categoryLabels[tour.category ?? ""] ?? tour.category ?? "Uncategorized";
+            const imageUrl = buildImageUrl(tour.mainImage);
 
-          return (
-            <article
-              key={tour._id}
-              className="group overflow-hidden rounded-3xl bg-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
-            >
-              <div className="relative h-52 w-full overflow-hidden">
-                {imageUrl ? (
-                  <Image
-                    src={imageUrl}
-                    alt={title}
-                    fill
-                    className="object-cover transition duration-500 group-hover:scale-105 group-hover:brightness-105"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 25vw"
-                  />
-                ) : (
-                  <div className="h-full w-full bg-slate-200" />
-                )}
-              </div>
-              <div className="h-1 bg-gradient-to-r from-cyan-400 to-blue-500" />
-              <div className="p-5">
-                <span className="inline-flex rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-orange-500">
-                  From {price}
-                </span>
-                <h3 className="mt-3 text-lg font-semibold text-[#0a192f]">{title}</h3>
-                <p className="mt-1 text-sm text-slate-600">
-                  {categoryLabel}
-                  {tour.duration ? ` • ${tour.duration}` : ""}
-                </p>
-                <Link
-                  href={slug ? `/excursiones/${slug}` : "/excursiones"}
-                  className="mt-4 inline-flex rounded-full bg-[#0a192f] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#132a46]"
-                >
-                  View Details
-                </Link>
-              </div>
-            </article>
-          );
-        })}
-      </div>
+            return (
+              <article
+                key={tour._id}
+                className="group overflow-hidden rounded-3xl bg-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+              >
+                <div className="relative h-52 w-full overflow-hidden">
+                  {imageUrl ? (
+                    <Image
+                      src={imageUrl}
+                      alt={title}
+                      fill
+                      className="object-cover transition duration-500 group-hover:scale-105 group-hover:brightness-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 25vw"
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-slate-200" />
+                  )}
+                </div>
+                <div className="h-1 bg-gradient-to-r from-cyan-400 to-blue-500" />
+                <div className="p-5">
+                  <span className="inline-flex rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-orange-500">
+                    From {price}
+                  </span>
+                  <h3 className="mt-3 text-lg font-semibold text-[#0a192f]">{title}</h3>
+                  <p className="mt-1 text-sm text-slate-600">
+                    {categoryLabel}
+                    {tour.duration ? ` • ${tour.duration}` : ""}
+                  </p>
+                  <Link
+                    href={slug ? `/excursiones/${slug}` : "/excursiones"}
+                    className="mt-4 inline-flex rounded-full bg-[#0a192f] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#132a46]"
+                  >
+                    View Details
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
 
-      {(category !== "all" || priceRange !== "all") && (
+      {(activeCategory !== "all" || activePriceRange !== "all") && (
         <div className="mt-8 text-center">
           <Link
             href={resultsHref}
