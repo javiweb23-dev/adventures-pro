@@ -24,19 +24,29 @@ const SLIDES = [
 
 const ROTATE_MS = 6000;
 
-export default function HomeHeroSlider() {
+type HeroSlide = {
+  src: string;
+  alt?: string;
+};
+
+type HomeHeroSliderProps = {
+  slides?: HeroSlide[];
+};
+
+export default function HomeHeroSlider({ slides }: HomeHeroSliderProps) {
   const [active, setActive] = useState(0);
+  const safeSlides = slides?.length ? slides : SLIDES;
 
   useEffect(() => {
     const id = window.setInterval(() => {
-      setActive((n) => (n + 1) % SLIDES.length);
+      setActive((n) => (n + 1) % safeSlides.length);
     }, ROTATE_MS);
     return () => window.clearInterval(id);
-  }, []);
+  }, [safeSlides.length]);
 
   return (
     <div className="pointer-events-none absolute inset-0 z-0">
-      {SLIDES.map((slide, index) => (
+      {safeSlides.map((slide, index) => (
         <div
           key={slide.src}
           className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
@@ -45,7 +55,7 @@ export default function HomeHeroSlider() {
         >
           <Image
             src={slide.src}
-            alt={slide.alt}
+            alt={slide.alt || "Hero slide"}
             fill
             className="object-cover"
             sizes="100vw"
