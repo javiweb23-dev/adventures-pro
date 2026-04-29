@@ -66,21 +66,12 @@ const buildImageUrl = (image: unknown) => {
 };
 
 export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] }) {
-  const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState<string>("all");
   const [budget, setBudget] = useState<BudgetFilter>("all");
 
   const filteredTours = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-
     return (tours ?? []).filter((tour) => {
-      const safeTitle = tour.title ?? "";
       const safeCategory = tour.category ?? "";
-      const matchesQuery =
-        !query ||
-        safeTitle.toLowerCase().includes(query) ||
-        (categoryLabels[safeCategory] || "").toLowerCase().includes(query);
-
       const matchesCategory = category === "all" || safeCategory === category;
 
       const minPrice = getMinPricingValue(tour.pricing);
@@ -93,20 +84,19 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
           minPrice <= 200) ||
         (budget === "premium" && Number.isFinite(minPrice) && minPrice > 200);
 
-      return matchesQuery && matchesCategory && matchesBudget;
+      return matchesCategory && matchesBudget;
     });
-  }, [budget, category, searchQuery, tours]);
+  }, [budget, category, tours]);
 
   const visibleTours = filteredTours.slice(0, 4);
 
   const resultsHref = useMemo(() => {
     const params = new URLSearchParams();
-    if (searchQuery.trim()) params.set("q", searchQuery.trim());
     if (category !== "all") params.set("category", category);
     if (budget !== "all") params.set("budget", budget);
     const query = params.toString();
     return query ? `/excursiones?${query}` : "/excursiones";
-  }, [budget, category, searchQuery]);
+  }, [budget, category]);
 
   return (
     <div>
@@ -114,17 +104,7 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
         Live Discovery Hub
       </h2>
 
-      <div className="mx-auto max-w-3xl">
-        <input
-          type="search"
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="Search your next adventure"
-          className="h-12 w-full rounded-full border border-slate-200 bg-white px-5 text-sm text-slate-800 outline-none transition focus:border-[#0a192f] focus:ring-2 focus:ring-[#0a192f]/15"
-        />
-      </div>
-
-      <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
         {categoryFilters.map((item) => {
           const isActive = category === item.id;
           return (
@@ -217,7 +197,7 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
         })}
       </div>
 
-      {(searchQuery.trim().length > 0 || category !== "all" || budget !== "all") && (
+      {(category !== "all" || budget !== "all") && (
         <div className="mt-8 text-center">
           <Link
             href={resultsHref}
