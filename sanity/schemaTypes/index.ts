@@ -6,6 +6,7 @@ import { postType } from "./post";
 import { reviewType } from "./review";
 import { teamMemberType } from "./teamMember";
 import { tourType } from "./tour";
+import { landingPageType } from "./landingPage";
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
@@ -16,5 +17,6 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     postType,
     reviewType,
     teamMemberType,
+    landingPageType,
   ],
 };
