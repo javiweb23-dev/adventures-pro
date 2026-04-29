@@ -14,6 +14,8 @@ export type DiscoveryTour = {
   category?: string;
   duration?: string;
   currency?: string;
+  price?: string | number | null;
+  amount?: number | null;
   pricing?: Array<{ price?: string | number; amount?: number | null }>;
 };
 
@@ -69,8 +71,10 @@ const numericFromPricingRow = (item: {
   price?: string | number | null;
   amount?: number | null;
 }) => {
+  const parsedPrice = parseNumericPrice(item.price);
+  if (Number.isFinite(parsedPrice)) return parsedPrice;
   if (item.amount != null && Number.isFinite(item.amount)) return item.amount;
-  return parseNumericPrice(item.price);
+  return Number.NaN;
 };
 
 const getMinPricingValue = (pricing?: Array<{
@@ -82,6 +86,15 @@ const getMinPricingValue = (pricing?: Array<{
     .map((item) => numericFromPricingRow(item))
     .filter((value) => Number.isFinite(value));
   return values.length ? Math.min(...values) : Number.NaN;
+};
+
+const getTourMinPrice = (tour: DiscoveryTour) => {
+  const pricingMin = getMinPricingValue(tour.pricing);
+  if (Number.isFinite(pricingMin)) return pricingMin;
+  const topLevelAmount =
+    tour.amount != null && Number.isFinite(tour.amount) ? tour.amount : Number.NaN;
+  if (Number.isFinite(topLevelAmount)) return topLevelAmount;
+  return parseNumericPrice(tour.price);
 };
 
 const buildImageUrl = (image: unknown) => {
@@ -101,7 +114,7 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
       const safeCategory = tour.category ?? "";
       const matchesCategory = activeCategory === "all" || safeCategory === activeCategory;
 
-      const minPrice = getMinPricingValue(tour.pricing);
+      const minPrice = getTourMinPrice(tour);
       const matchesPriceRange =
         activePriceRange === "all" ||
         (activePriceRange === "under-100" &&
@@ -184,16 +197,16 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
       ) : (
         <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-4">
           {visibleTours.map((tour) => {
-            const firstRow = tour.pricing?.[0];
-            const firstPrice =
-              firstRow?.amount != null && Number.isFinite(firstRow.amount)
-                ? String(firstRow.amount)
-                : firstRow?.price;
-            const price = formatTourPrice(
-              tour.currency ?? "USD",
-              undefined,
-              typeof firstPrice === "number" ? String(firstPrice) : firstPrice,
-            );
+            const minPrice = getTourMinPrice(tour);
+            const price = Number.isFinite(minPrice)
+              ? formatTourPrice(tour.currency ?? "USD", minPrice)
+              : formatTourPrice(
+                  tour.currency ?? "USD",
+                  undefined,
+                  typeof tour.pricing?.[0]?.price === "number"
+                    ? String(tour.pricing[0].price)
+                    : tour.pricing?.[0]?.price ?? (typeof tour.price === "number" ? String(tour.price) : tour.price),
+                );
             const slug = tour.slug ?? "";
             const title = tour.title ?? "Tour";
             const categoryLabel = categoryLabels[tour.category ?? ""] ?? tour.category ?? "Uncategorized";
