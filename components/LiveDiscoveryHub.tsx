@@ -15,8 +15,7 @@ export type DiscoveryTour = {
   duration?: string;
   currency?: string;
   price?: string | number | null;
-  amount?: number | null;
-  pricing?: Array<{ price?: string | number; amount?: number | null }>;
+  pricing?: Array<{ price?: number | string | null }>;
 };
 
 type PriceRange = "all" | "under-100" | "100-200" | "premium";
@@ -67,23 +66,10 @@ const parseNumericPrice = (value?: string | number | null) => {
   return Number.isFinite(parsed) ? parsed : Number.NaN;
 };
 
-const numericFromPricingRow = (item: {
-  price?: string | number | null;
-  amount?: number | null;
-}) => {
-  const parsedPrice = parseNumericPrice(item.price);
-  if (Number.isFinite(parsedPrice)) return parsedPrice;
-  if (item.amount != null && Number.isFinite(item.amount)) return item.amount;
-  return Number.NaN;
-};
-
-const getMinPricingValue = (pricing?: Array<{
-  price?: string | number | null;
-  amount?: number | null;
-}>) => {
+const getMinPricingValue = (pricing?: Array<{ price?: number | string | null }>) => {
   if (!pricing?.length) return Number.NaN;
   const values = pricing
-    .map((item) => numericFromPricingRow(item))
+    .map((item) => parseNumericPrice(item.price))
     .filter((value) => Number.isFinite(value));
   return values.length ? Math.min(...values) : Number.NaN;
 };
@@ -91,9 +77,6 @@ const getMinPricingValue = (pricing?: Array<{
 const getTourMinPrice = (tour: DiscoveryTour) => {
   const pricingMin = getMinPricingValue(tour.pricing);
   if (Number.isFinite(pricingMin)) return pricingMin;
-  const topLevelAmount =
-    tour.amount != null && Number.isFinite(tour.amount) ? tour.amount : Number.NaN;
-  if (Number.isFinite(topLevelAmount)) return topLevelAmount;
   return parseNumericPrice(tour.price);
 };
 
@@ -198,15 +181,11 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
         <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-4">
           {visibleTours.map((tour) => {
             const minPrice = getTourMinPrice(tour);
-            const price = Number.isFinite(minPrice)
-              ? formatTourPrice(tour.currency ?? "USD", minPrice)
-              : formatTourPrice(
-                  tour.currency ?? "USD",
-                  undefined,
-                  typeof tour.pricing?.[0]?.price === "number"
-                    ? String(tour.pricing[0].price)
-                    : tour.pricing?.[0]?.price ?? (typeof tour.price === "number" ? String(tour.price) : tour.price),
-                );
+            const firstPricingValue = parseNumericPrice(tour.pricing?.[0]?.price);
+            const leadPrice = Number.isFinite(firstPricingValue) ? firstPricingValue : minPrice;
+            const price = Number.isFinite(leadPrice)
+              ? formatTourPrice(tour.currency ?? "USD", leadPrice)
+              : "Consultar precio";
             const slug = tour.slug ?? "";
             const title = tour.title ?? "Tour";
             const categoryLabel = categoryLabels[tour.category ?? ""] ?? tour.category ?? "Uncategorized";

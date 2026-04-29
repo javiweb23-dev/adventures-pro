@@ -20,8 +20,8 @@ type TourCardProps = {
 export default function TourCard({ tour }: TourCardProps) {
   const firstPrice = tour.pricing?.[0]?.price;
   const computedPrice = firstPrice
-    ? `From ${formatTourPrice(tour.currency || "USD", undefined, firstPrice)}`
-    : tour.fromPriceLabel || "From -";
+    ? `From ${formatTourPrice(tour.currency || "USD", firstPrice)}`
+    : tour.fromPriceLabel || "Consultar precio";
   const safeSlug = tour.slug || "";
   const detailsHref = safeSlug ? `/excursiones/${safeSlug}` : "/excursiones";
   const imageUrl = (() => {

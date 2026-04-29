@@ -17,7 +17,7 @@ export type ExcursionTour = {
     title?: string;
   };
   currency: string;
-  pricing?: Array<{ price?: string }>;
+  pricing?: Array<{ price?: number | string | null }>;
 };
 
 type CatalogCategory = {
@@ -25,20 +25,17 @@ type CatalogCategory = {
   title: string;
 };
 
-const parseNumericPrice = (value?: string) => {
-  if (!value) return Number.NaN;
-  const normalized = value.replace(",", ".");
-  const parsed = Number(normalized.replace(/[^0-9.]/g, ""));
-  return Number.isFinite(parsed) ? parsed : Number.NaN;
-};
-
-const getMinPricingLabel = (pricing: Array<{ price?: string }> = []) => {
+const getMinPricing = (pricing: Array<{ price?: number | string | null }> = []) => {
   const values = pricing
-    .map((item) => ({ raw: item.price, num: parseNumericPrice(item.price) }))
-    .filter((item) => Number.isFinite(item.num));
+    .map((item) =>
+      typeof item.price === "number"
+        ? item.price
+        : Number(String(item.price ?? "").replace(/[^0-9.]/g, "")),
+    )
+    .filter((item): item is number => Number.isFinite(item));
   if (!values.length) return undefined;
-  values.sort((a, b) => a.num - b.num);
-  return values[0].raw;
+  values.sort((a, b) => a - b);
+  return values[0];
 };
 
 export default function ExcursionesCatalog({
@@ -89,12 +86,9 @@ export default function ExcursionesCatalog({
 
         <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {filteredTours.map((tour) => {
-            const minPriceLabel = getMinPricingLabel(tour.pricing);
-            const displayPrice = formatTourPrice(
-              tour.currency,
-              undefined,
-              minPriceLabel,
-            );
+            const minPrice = getMinPricing(tour.pricing);
+            const displayPrice =
+              minPrice != null ? formatTourPrice(tour.currency, minPrice) : "Consultar precio";
 
             return (
               <article

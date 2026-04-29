@@ -32,7 +32,7 @@ type TourData = {
   slug: string;
   category: string;
   currency?: string;
-  pricing: Array<{ _key: string; label: string; price: string; amount?: number }>;
+  pricing: Array<{ _key: string; label: string; price?: number | string | null }>;
   duration: string;
   availability: string;
   ages: string;
@@ -52,7 +52,7 @@ const TOUR_QUERY = `*[_type == "tour" && slug.current == $slug][0]{
   "slug": slug.current,
   "category": category->slug.current,
   "currency": coalesce(currency, "USD"),
-  pricing[]{_key, label, price, amount},
+  pricing[]{_key, label, price},
   duration,
   availability,
   ages,
@@ -80,6 +80,13 @@ const formatCategoryTitle = (value: string) =>
 
 const displayPricingLabel = (label: string) =>
   label.replace(/\bCHILDS\b/gi, "CHILDREN");
+
+const parsePriceValue = (value?: number | string | null) => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string") return Number.NaN;
+  const parsed = Number(value.replace(/[^0-9.]/g, ""));
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
+};
 
 const pickAdultLeadPricing = (
   rows: TourData["pricing"],
@@ -111,12 +118,11 @@ export default async function TourDetailPage({ params }: TourPageProps) {
   const galleryLightbox = (tour.gallery ?? []).slice(0, 5);
   const pricing = tour.pricing ?? [];
   const adultLeadPricing = pickAdultLeadPricing(pricing);
+  const adultLeadPriceValue = parsePriceValue(adultLeadPricing?.price);
   const leadFromFormatted = adultLeadPricing
-    ? formatTourPrice(
-        currency,
-        adultLeadPricing.amount,
-        adultLeadPricing.price,
-      )
+    ? Number.isFinite(adultLeadPriceValue)
+      ? formatTourPrice(currency, adultLeadPriceValue)
+      : "Consultar precio"
     : null;
   const peekUrl = peekBookingUrl(tour.peekProId);
   const categoryTitle = formatCategoryTitle(tour.category);
@@ -339,7 +345,10 @@ export default async function TourDetailPage({ params }: TourPageProps) {
                 />
               </div>
               <div className="mt-2 space-y-0 rounded-2xl border border-slate-200/80 bg-slate-50/70 px-6 py-2">
-                {pricing.map((item) => (
+                {pricing.map((item) => {
+                  const priceValue = parsePriceValue(item.price);
+                  const hasPrice = Number.isFinite(priceValue);
+                  return (
                   <div
                     key={item._key}
                     className="flex items-start justify-between gap-6 border-b border-slate-200/80 py-5 last:border-b-0"
@@ -348,15 +357,13 @@ export default async function TourDetailPage({ params }: TourPageProps) {
                       {displayPricingLabel(item.label)}
                     </p>
                     <p className="text-right text-lg font-semibold leading-relaxed tracking-tight text-blue-950">
-                      {formatTourPrice(
-                        currency,
-                        item.amount,
-                        item.price,
-                        { freeAsWord: true },
-                      )}
+                      {hasPrice
+                        ? formatTourPrice(currency, priceValue, { freeAsWord: true })
+                        : "Consultar precio"}
                     </p>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="mt-10 space-y-5 rounded-2xl border border-slate-200/80 bg-slate-50/50 px-6 py-7">
