@@ -1,16 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { X } from "lucide-react";
 import { useMemo, useState, useRef, useEffect } from "react";
-
-const excursionLinks = [
-  { label: "Water Tours", href: "/excursions/water-tours" },
-  { label: "Land Tours", href: "/excursions/land-tours" },
-  { label: "Private Tours", href: "/excursions/private-tours" },
-  { label: "Combo Experience", href: "/excursions/combo-experience" },
-  { label: "Multidays Tours", href: "/excursions/multidays-tours" },
-];
 
 type TripType = "one_way" | "round_trip";
 
@@ -186,13 +177,11 @@ function buildPeekTransferHref(
 type HeroSearchProps = {
   searchPlaceholder?: string;
   searchButton?: string;
-  quickCategories?: string;
 };
 
 export default function HeroSearch({
   searchPlaceholder = "Search your next adventure",
   searchButton = "Search",
-  quickCategories = "Quick Categories",
 }: HeroSearchProps) {
   const [tab, setTab] = useState<"activities" | "transfers">("activities");
   const [activityQuery, setActivityQuery] = useState("");
@@ -264,7 +253,7 @@ export default function HeroSearch({
 
       <div className="p-4 md:p-6">
         {tab === "activities" ? (
-          <div className="space-y-5">
+          <div className="pb-6 md:pb-8">
             <form
               action="/excursions/water-tours"
               method="get"
@@ -285,22 +274,6 @@ export default function HeroSearch({
                 {searchButton}
               </button>
             </form>
-            <div>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-blue-950">
-                {quickCategories}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {excursionLinks.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-blue-950 transition hover:border-blue-800/40 hover:bg-blue-50"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
           </div>
         ) : (
           <div className="space-y-6">

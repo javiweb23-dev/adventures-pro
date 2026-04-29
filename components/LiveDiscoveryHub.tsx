@@ -14,10 +14,10 @@ export type DiscoveryTour = {
   category?: string;
   duration?: string;
   currency?: string;
-  pricing?: Array<{ price?: string }>;
+  pricing?: Array<{ price?: string | number; amount?: number | null }>;
 };
 
-type BudgetFilter = "all" | "under-100" | "100-200" | "premium";
+type PriceRange = "all" | "under-100" | "100-200" | "premium";
 
 const categoryFilters = [
   { id: "all", label: "All" },
@@ -27,7 +27,7 @@ const categoryFilters = [
   { id: "multidays-tours", label: "Multidays" },
 ] as const;
 
-const budgetFilters: { id: BudgetFilter; label: string }[] = [
+const priceRangeFilters: { id: PriceRange; label: string }[] = [
   { id: "all", label: "All Budgets" },
   { id: "under-100", label: "Under $100" },
   { id: "100-200", label: "$100-$200" },
@@ -42,17 +42,32 @@ const categoryLabels: Record<string, string> = {
   "multidays-tours": "Multidays",
 };
 
-const parseNumericPrice = (value?: string) => {
-  if (!value) return Number.NaN;
-  const normalized = value.replace(",", ".");
+const parseNumericPrice = (value?: string | number | null) => {
+  if (value == null) return Number.NaN;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string") return Number.NaN;
+  const trimmed = value.trim();
+  if (!trimmed) return Number.NaN;
+  const normalized = trimmed.replace(",", ".");
   const parsed = Number(normalized.replace(/[^0-9.]/g, ""));
   return Number.isFinite(parsed) ? parsed : Number.NaN;
 };
 
-const getMinPricingValue = (pricing?: Array<{ price?: string }>) => {
+const numericFromPricingRow = (item: {
+  price?: string | number | null;
+  amount?: number | null;
+}) => {
+  if (item.amount != null && Number.isFinite(item.amount)) return item.amount;
+  return parseNumericPrice(item.price);
+};
+
+const getMinPricingValue = (pricing?: Array<{
+  price?: string | number | null;
+  amount?: number | null;
+}>) => {
   if (!pricing?.length) return Number.NaN;
   const values = pricing
-    .map((item) => parseNumericPrice(item.price))
+    .map((item) => numericFromPricingRow(item))
     .filter((value) => Number.isFinite(value));
   return values.length ? Math.min(...values) : Number.NaN;
 };
@@ -67,7 +82,7 @@ const buildImageUrl = (image: unknown) => {
 
 export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] }) {
   const [category, setCategory] = useState<string>("all");
-  const [budget, setBudget] = useState<BudgetFilter>("all");
+  const [priceRange, setPriceRange] = useState<PriceRange>("all");
 
   const filteredTours = useMemo(() => {
     return (tours ?? []).filter((tour) => {
@@ -75,28 +90,31 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
       const matchesCategory = category === "all" || safeCategory === category;
 
       const minPrice = getMinPricingValue(tour.pricing);
-      const matchesBudget =
-        budget === "all" ||
-        (budget === "under-100" && Number.isFinite(minPrice) && minPrice < 100) ||
-        (budget === "100-200" &&
+      const matchesPriceRange =
+        priceRange === "all" ||
+        (priceRange === "under-100" &&
+          Number.isFinite(minPrice) &&
+          minPrice >= 0 &&
+          minPrice < 100) ||
+        (priceRange === "100-200" &&
           Number.isFinite(minPrice) &&
           minPrice >= 100 &&
           minPrice <= 200) ||
-        (budget === "premium" && Number.isFinite(minPrice) && minPrice > 200);
+        (priceRange === "premium" && Number.isFinite(minPrice) && minPrice > 200);
 
-      return matchesCategory && matchesBudget;
+      return matchesCategory && matchesPriceRange;
     });
-  }, [budget, category, tours]);
+  }, [priceRange, category, tours]);
 
   const visibleTours = filteredTours.slice(0, 4);
 
   const resultsHref = useMemo(() => {
     const params = new URLSearchParams();
     if (category !== "all") params.set("category", category);
-    if (budget !== "all") params.set("budget", budget);
+    if (priceRange !== "all") params.set("budget", priceRange);
     const query = params.toString();
     return query ? `/excursiones?${query}` : "/excursiones";
-  }, [budget, category]);
+  }, [priceRange, category]);
 
   return (
     <div>
@@ -125,13 +143,13 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-        {budgetFilters.map((item) => {
-          const isActive = budget === item.id;
+        {priceRangeFilters.map((item) => {
+          const isActive = priceRange === item.id;
           return (
             <button
               key={item.id}
               type="button"
-              onClick={() => setBudget(item.id)}
+              onClick={() => setPriceRange(item.id)}
               className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] transition ${
                 isActive
                   ? "border-orange-500 bg-orange-500 text-white"
@@ -146,11 +164,15 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
 
       <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-4">
         {visibleTours.map((tour) => {
-          const firstPrice = tour.pricing?.[0]?.price;
+          const firstRow = tour.pricing?.[0];
+          const firstPrice =
+            firstRow?.amount != null && Number.isFinite(firstRow.amount)
+              ? String(firstRow.amount)
+              : firstRow?.price;
           const price = formatTourPrice(
             tour.currency ?? "USD",
             undefined,
-            firstPrice,
+            typeof firstPrice === "number" ? String(firstPrice) : firstPrice,
           );
           const slug = tour.slug ?? "";
           const title = tour.title ?? "Tour";
@@ -197,7 +219,7 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
         })}
       </div>
 
-      {(category !== "all" || budget !== "all") && (
+      {(category !== "all" || priceRange !== "all") && (
         <div className="mt-8 text-center">
           <Link
             href={resultsHref}

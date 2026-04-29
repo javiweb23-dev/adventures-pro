@@ -47,7 +47,7 @@ export default async function Home({ params }: HomePageProps) {
       "category": category->slug.current,
       duration,
       "currency": coalesce(currency, "USD"),
-      pricing[]{price}
+      pricing[]{price, amount}
     }`,
       { locale },
     )
