@@ -22,13 +22,24 @@ export default function TourCard({ tour }: TourCardProps) {
   const computedPrice = firstPrice
     ? `From ${formatTourPrice(tour.currency || "USD", undefined, firstPrice)}`
     : tour.fromPriceLabel || "From -";
+  const safeSlug = tour.slug || "";
+  const detailsHref = safeSlug ? `/excursiones/${safeSlug}` : "/excursiones";
+  const imageUrl = (() => {
+    try {
+      return tour.listingImage?.asset
+        ? urlFor(tour.listingImage).width(1200).height(800).fit("crop").url()
+        : null;
+    } catch {
+      return null;
+    }
+  })();
 
   return (
     <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="relative">
-        {tour.listingImage?.asset ? (
+        {imageUrl ? (
           <img
-            src={urlFor(tour.listingImage).width(1200).height(800).fit("crop").url()}
+            src={imageUrl}
             alt={tour.title}
             className="h-56 w-full object-cover"
           />
@@ -62,7 +73,7 @@ export default function TourCard({ tour }: TourCardProps) {
             Book Now
           </a>
           <Link
-            href={`/excursiones/${tour.slug}`}
+            href={detailsHref}
             className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
           >
             More Info

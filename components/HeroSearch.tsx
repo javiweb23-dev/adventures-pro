@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { X } from "lucide-react";
 import { useMemo, useState, useRef, useEffect } from "react";
-import { useTranslations } from "next-intl";
 
 const excursionLinks = [
   { label: "Water Tours", href: "/excursions/water-tours" },
@@ -184,8 +183,17 @@ function buildPeekTransferHref(
   return url.toString();
 }
 
-export default function HeroSearch() {
-  const t = useTranslations("HeroSearch");
+type HeroSearchProps = {
+  searchPlaceholder?: string;
+  searchButton?: string;
+  quickCategories?: string;
+};
+
+export default function HeroSearch({
+  searchPlaceholder = "Search your next adventure",
+  searchButton = "Search",
+  quickCategories = "Quick Categories",
+}: HeroSearchProps) {
   const [tab, setTab] = useState<"activities" | "transfers">("activities");
   const [activityQuery, setActivityQuery] = useState("");
   const [tripType, setTripType] = useState<TripType>("one_way");
@@ -267,19 +275,19 @@ export default function HeroSearch() {
                 name="q"
                 value={activityQuery}
                 onChange={(e) => setActivityQuery(e.target.value)}
-                placeholder={t("searchPlaceholder")}
+                placeholder={searchPlaceholder}
                 className="h-12 w-full rounded-xl border border-slate-200 px-4 text-sm text-slate-800 outline-none transition focus:border-blue-800 focus:ring-2 focus:ring-blue-800/15"
               />
               <button
                 type="submit"
                 className="h-12 w-full shrink-0 rounded-xl bg-orange-500 px-6 text-sm font-semibold text-white shadow-md shadow-orange-500/25 transition hover:bg-orange-600 md:w-auto"
               >
-                {t("searchButton")}
+                {searchButton}
               </button>
             </form>
             <div>
               <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-blue-950">
-                {t("quickCategories")}
+                {quickCategories}
               </p>
               <div className="flex flex-wrap gap-2">
                 {excursionLinks.map((item) => (
@@ -433,7 +441,7 @@ export default function HeroSearch() {
                     : "cursor-not-allowed bg-slate-200 text-slate-500"
                 }`}
               >
-                {t("searchButton")}
+                {searchButton}
               </a>
             </div>
           </div>

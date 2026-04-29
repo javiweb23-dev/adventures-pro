@@ -16,8 +16,9 @@ type HomePageProps = {
 
 export default async function Home({ params }: HomePageProps) {
   const { locale } = await params;
-  const discoveryTours = await client.fetch(
-    groq`*[_type == "tour"] | order(isFeatured desc, _createdAt desc) [0...12] {
+  const discoveryTours = await client
+    .fetch(
+      groq`*[_type == "tour"] | order(isFeatured desc, _createdAt desc) [0...12] {
       _id,
       "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
       "slug": slug.current,
@@ -27,8 +28,9 @@ export default async function Home({ params }: HomePageProps) {
       "currency": coalesce(currency, "USD"),
       pricing[]{price}
     }`,
-    { locale },
-  );
+      { locale },
+    )
+    .catch(() => []);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">

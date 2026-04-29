@@ -4,12 +4,12 @@ import { peekBookingUrl } from "@/lib/tourPrice";
 
 type FeaturedTour = {
   _id: string;
-  title: string;
-  slug: string;
+  title?: string;
+  slug?: string;
   duration?: string;
   listingImage?: { asset: unknown };
   highlightBadge?: string;
-  peekProId: string;
+  peekProId?: string;
   currency?: string;
   pricing?: Array<{ price?: string }>;
 };
@@ -27,7 +27,7 @@ const FEATURED_TOURS_QUERY = `*[_type == "tour" && isFeatured == true] | order(_
 }`;
 
 export default async function FeaturedAdventures() {
-  const tours = await client.fetch<FeaturedTour[]>(FEATURED_TOURS_QUERY);
+  const tours = await client.fetch<FeaturedTour[]>(FEATURED_TOURS_QUERY).catch(() => []);
 
   return (
     <section className="w-full">
@@ -46,18 +46,21 @@ export default async function FeaturedAdventures() {
       ) : (
         <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
           {tours.map((tour) => {
+            const slug = tour.slug ?? "";
+            const title = tour.title ?? "Tour";
+            const peekUrl = tour.peekProId ? peekBookingUrl(tour.peekProId) : "#";
             return (
               <TourCard
                 key={tour._id}
                 tour={{
-                  title: tour.title,
-                  slug: tour.slug,
+                  title,
+                  slug,
                   duration: tour.duration,
                   listingImage: tour.listingImage,
                   highlightBadge: tour.highlightBadge,
                   pricing: tour.pricing,
                   currency: tour.currency,
-                  peekUrl: peekBookingUrl(tour.peekProId),
+                  peekUrl,
                 }}
               />
             );

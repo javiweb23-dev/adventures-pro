@@ -8,12 +8,12 @@ import { formatTourPrice } from "@/lib/tourPrice";
 
 export type DiscoveryTour = {
   _id: string;
-  title: string;
-  slug: string;
+  title?: string;
+  slug?: string;
   mainImage?: unknown;
-  category: string;
+  category?: string;
   duration?: string;
-  currency: string;
+  currency?: string;
   pricing?: Array<{ price?: string }>;
 };
 
@@ -57,7 +57,15 @@ const getMinPricingValue = (pricing?: Array<{ price?: string }>) => {
   return values.length ? Math.min(...values) : Number.NaN;
 };
 
-export default function LiveDiscoveryHub({ tours }: { tours: DiscoveryTour[] }) {
+const buildImageUrl = (image: unknown) => {
+  try {
+    return image ? urlFor(image).width(900).height(700).fit("crop").url() : null;
+  } catch {
+    return null;
+  }
+};
+
+export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState<string>("all");
   const [budget, setBudget] = useState<BudgetFilter>("all");
@@ -65,13 +73,15 @@ export default function LiveDiscoveryHub({ tours }: { tours: DiscoveryTour[] }) 
   const filteredTours = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
-    return tours.filter((tour) => {
+    return (tours ?? []).filter((tour) => {
+      const safeTitle = tour.title ?? "";
+      const safeCategory = tour.category ?? "";
       const matchesQuery =
         !query ||
-        tour.title.toLowerCase().includes(query) ||
-        (categoryLabels[tour.category] || "").toLowerCase().includes(query);
+        safeTitle.toLowerCase().includes(query) ||
+        (categoryLabels[safeCategory] || "").toLowerCase().includes(query);
 
-      const matchesCategory = category === "all" || tour.category === category;
+      const matchesCategory = category === "all" || safeCategory === category;
 
       const minPrice = getMinPricingValue(tour.pricing);
       const matchesBudget =
@@ -158,10 +168,14 @@ export default function LiveDiscoveryHub({ tours }: { tours: DiscoveryTour[] }) 
         {visibleTours.map((tour) => {
           const firstPrice = tour.pricing?.[0]?.price;
           const price = formatTourPrice(
-            tour.currency,
+            tour.currency ?? "USD",
             undefined,
             firstPrice,
           );
+          const slug = tour.slug ?? "";
+          const title = tour.title ?? "Tour";
+          const categoryLabel = categoryLabels[tour.category ?? ""] ?? tour.category ?? "Uncategorized";
+          const imageUrl = buildImageUrl(tour.mainImage);
 
           return (
             <article
@@ -169,10 +183,10 @@ export default function LiveDiscoveryHub({ tours }: { tours: DiscoveryTour[] }) 
               className="group overflow-hidden rounded-3xl bg-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
             >
               <div className="relative h-52 w-full overflow-hidden">
-                {tour.mainImage ? (
+                {imageUrl ? (
                   <Image
-                    src={urlFor(tour.mainImage).width(900).height(700).fit("crop").url()}
-                    alt={tour.title}
+                    src={imageUrl}
+                    alt={title}
                     fill
                     className="object-cover transition duration-500 group-hover:scale-105 group-hover:brightness-105"
                     sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 25vw"
@@ -186,13 +200,13 @@ export default function LiveDiscoveryHub({ tours }: { tours: DiscoveryTour[] }) 
                 <span className="inline-flex rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-orange-500">
                   From {price}
                 </span>
-                <h3 className="mt-3 text-lg font-semibold text-[#0a192f]">{tour.title}</h3>
+                <h3 className="mt-3 text-lg font-semibold text-[#0a192f]">{title}</h3>
                 <p className="mt-1 text-sm text-slate-600">
-                  {categoryLabels[tour.category] ?? tour.category}
+                  {categoryLabel}
                   {tour.duration ? ` • ${tour.duration}` : ""}
                 </p>
                 <Link
-                  href={`/excursiones/${tour.slug}`}
+                  href={slug ? `/excursiones/${slug}` : "/excursiones"}
                   className="mt-4 inline-flex rounded-full bg-[#0a192f] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#132a46]"
                 >
                   View Details

@@ -5,12 +5,12 @@ import { urlFor } from "@/sanity/lib/image";
 
 type Review = {
   _id: string;
-  author: string;
+  author?: string;
   photo?: { asset: unknown };
-  rating: number;
-  date: string;
-  text: string;
-  googleReviewUrl: string;
+  rating?: number;
+  date?: string;
+  text?: string;
+  googleReviewUrl?: string;
 };
 
 const REVIEWS_QUERY = `*[_type == "review"] | order(_createdAt desc) [0...12] {
@@ -59,7 +59,7 @@ function Stars({ count }: { count: number }) {
 }
 
 export default async function ReviewsSection() {
-  const reviews = await client.fetch<Review[]>(REVIEWS_QUERY);
+  const reviews = await client.fetch<Review[]>(REVIEWS_QUERY).catch(() => []);
 
   return (
     <section className="w-full bg-white py-16 md:py-24">
@@ -86,35 +86,50 @@ export default async function ReviewsSection() {
 
         <div className="overflow-hidden">
           <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:gap-5">
-            {reviews.map((review) => (
-              <article
-                key={review._id}
-                className="relative min-h-[280px] min-w-[280px] max-w-[340px] flex-1 snap-start border border-slate-200 bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.06)]"
-              >
+            {reviews.map((review) => {
+              const author = review.author ?? "Guest";
+              const googleReviewUrl =
+                review.googleReviewUrl?.trim() || "https://www.google.com/maps";
+              const imageUrl = (() => {
+                try {
+                  return review.photo?.asset
+                    ? urlFor(review.photo).width(80).height(80).fit("crop").url()
+                    : null;
+                } catch {
+                  return null;
+                }
+              })();
+              return (
+                <article
+                  key={review._id}
+                  className="relative min-h-[280px] min-w-[280px] max-w-[340px] flex-1 snap-start border border-slate-200 bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.06)]"
+                >
                 <div className="absolute right-4 top-4">
                   <GoogleMark className="h-4 w-4" />
                 </div>
                 <div className="flex items-center gap-3">
-                  {review.photo?.asset ? (
+                  {imageUrl ? (
                     <img
-                      src={urlFor(review.photo).width(80).height(80).fit("crop").url()}
-                      alt={review.author}
+                      src={imageUrl}
+                      alt={author}
                       className="h-11 w-11 border border-slate-200 object-cover"
                     />
                   ) : (
                     <div className="h-11 w-11 border border-slate-200 bg-slate-100" />
                   )}
                   <div>
-                    <p className="text-sm font-semibold text-blue-950">{review.author}</p>
-                    <p className="text-xs text-slate-500">{review.date}</p>
+                    <p className="text-sm font-semibold text-blue-950">{author}</p>
+                    <p className="text-xs text-slate-500">{review.date ?? ""}</p>
                   </div>
                 </div>
                 <div className="mt-4 text-lg">
-                  <Stars count={review.rating} />
+                  <Stars count={review.rating ?? 5} />
                 </div>
-                <p className="mt-4 line-clamp-4 text-sm leading-relaxed text-slate-700">{review.text}</p>
+                <p className="mt-4 line-clamp-4 text-sm leading-relaxed text-slate-700">
+                  {review.text ?? ""}
+                </p>
                 <Link
-                  href={review.googleReviewUrl}
+                  href={googleReviewUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-950 underline-offset-4 hover:underline"
@@ -122,8 +137,9 @@ export default async function ReviewsSection() {
                   Read more on Google
                   <ExternalLink className="h-4 w-4" strokeWidth={2} />
                 </Link>
-              </article>
-            ))}
+                </article>
+              );
+            })}
             {reviews.length === 0 ? (
               <div className="min-w-full border border-slate-200 bg-slate-50 p-8 text-center text-slate-600">
                 Reviews will appear here when added in the CMS.
