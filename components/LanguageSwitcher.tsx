@@ -6,15 +6,42 @@ import { useLocale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing, type AppLocale } from "@/i18n/routing";
 
-const localeOptions: { code: AppLocale; label: string; flag: string }[] = [
-  { code: "en", label: "English", flag: "🇺🇸" },
-  { code: "es", label: "Spanish", flag: "🇪🇸" },
-  { code: "fr-ca", label: "French", flag: "🇫🇷" },
+const localeOptions: { code: AppLocale; label: string }[] = [
+  { code: "en", label: "English" },
+  { code: "es", label: "Spanish" },
+  { code: "fr-ca", label: "French" },
 ];
 
 type LanguageSwitcherProps = {
   compact?: boolean;
 };
+
+function FlagIcon({ locale }: { locale: AppLocale }) {
+  if (locale === "en") {
+    return (
+      <svg viewBox="0 0 24 16" className="h-4 w-6 rounded-[3px]" aria-hidden>
+        <rect width="24" height="16" fill="#b22234" />
+        <path d="M0 2h24v2H0zm0 4h24v2H0zm0 4h24v2H0zm0 4h24v2H0z" fill="#fff" />
+        <rect width="10.5" height="7" fill="#3c3b6e" />
+      </svg>
+    );
+  }
+  if (locale === "es") {
+    return (
+      <svg viewBox="0 0 24 16" className="h-4 w-6 rounded-[3px]" aria-hidden>
+        <rect width="24" height="16" fill="#aa151b" />
+        <rect y="4" width="24" height="8" fill="#f1bf00" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 16" className="h-4 w-6 rounded-[3px]" aria-hidden>
+      <rect width="8" height="16" fill="#0055a4" />
+      <rect x="8" width="8" height="16" fill="#fff" />
+      <rect x="16" width="8" height="16" fill="#ef4135" />
+    </svg>
+  );
+}
 
 export default function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
   const locale = useLocale() as AppLocale;
@@ -55,13 +82,7 @@ export default function LanguageSwitcher({ compact = false }: LanguageSwitcherPr
         onClick={() => setOpen((v) => !v)}
         className={`inline-flex items-center rounded-full border border-slate-200 bg-white font-medium text-slate-900 shadow-sm outline-none transition hover:border-slate-300 focus-visible:border-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-500/20 ${triggerClass}`}
       >
-        <span
-          className="shrink-0 select-none text-base leading-none"
-          style={{ fontFamily: '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif' }}
-          aria-hidden
-        >
-          {current.flag}
-        </span>
+        <FlagIcon locale={current.code} />
         <span className="truncate">{current.label}</span>
         <ChevronDown
           className={`h-4 w-4 shrink-0 text-slate-500 transition-transform ${open ? "rotate-180" : ""}`}
@@ -85,13 +106,7 @@ export default function LanguageSwitcher({ compact = false }: LanguageSwitcherPr
                   item.code === locale ? "bg-slate-100 text-slate-900" : "text-slate-800"
                 }`}
               >
-                <span
-                  className="shrink-0 text-base leading-none"
-                  style={{ fontFamily: '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif' }}
-                  aria-hidden
-                >
-                  {item.flag}
-                </span>
+                <FlagIcon locale={item.code} />
                 <span>{item.label}</span>
               </button>
             </li>
