@@ -7,6 +7,7 @@ import BoutiqueBanner from "@/components/BoutiqueBanner";
 import AllianceLogos from "@/components/AllianceLogos";
 import BlogSection from "@/components/BlogSection";
 import LiveDiscoveryHub from "@/components/LiveDiscoveryHub";
+import LeadForm from "@/components/LeadForm";
 import { client } from "@/sanity/lib/client";
 import { groq } from "next-sanity";
 
@@ -46,6 +47,7 @@ export default async function Home({ params }: HomePageProps) {
       "mainImage": listingImage,
       "category": category->slug.current,
       duration,
+      peekProId,
       "currency": coalesce(currency, "USD"),
       pricing[]{price}
     }`,
@@ -100,6 +102,10 @@ export default async function Home({ params }: HomePageProps) {
 
         <section className="mx-auto max-w-7xl px-6 pb-24 pt-16 md:px-10 md:pb-32 md:pt-20 lg:px-12">
           <FeaturedAdventures />
+        </section>
+
+        <section className="mx-auto w-full max-w-4xl px-6 py-12 md:px-10 lg:px-12">
+          <LeadForm />
         </section>
 
         <ReviewsSection />

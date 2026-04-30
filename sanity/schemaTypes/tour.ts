@@ -63,7 +63,7 @@ export const tourType = defineType({
               name: "price",
               title: "Price",
               type: "number",
-              validation: (rule) => rule.required(),
+              validation: (Rule) => Rule.required(),
             }),
           ],
           preview: {
