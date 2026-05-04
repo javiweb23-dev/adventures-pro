@@ -30,12 +30,13 @@ export default async function Home({ params }: HomePageProps) {
   const landingPage = await client
     .fetch<LandingPageData | null>(
       groq`*[_type == "landingPage"][0]{
-        title,
-        subtitle,
+        "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
+        "subtitle": coalesce(select($locale == "fr-ca" => subtitle.frCA, subtitle[$locale]), subtitle.en, subtitle),
         "sliderImages": sliderImages[]{
           "url": asset->url
         }
       }`,
+      { locale },
     )
     .catch(() => null);
 
@@ -101,7 +102,7 @@ export default async function Home({ params }: HomePageProps) {
 
         <ReviewsSection />
 
-        <BlogSection />
+        <BlogSection locale={locale} />
 
         <BoutiqueBanner />
 

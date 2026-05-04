@@ -41,8 +41,7 @@ export const postType = defineType({
     defineField({
       name: "body",
       title: "Body",
-      type: "array",
-      of: [{ type: "block" }],
+      type: "localizedText",
     }),
   ],
 });

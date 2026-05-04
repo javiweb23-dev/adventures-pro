@@ -1,11 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import {
-  groq,
-  PortableText,
-  type PortableTextBlock,
-  type PortableTextComponents,
-} from "next-sanity";
+import { groq } from "next-sanity";
 import { Link } from "@/i18n/navigation";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
@@ -21,70 +16,15 @@ type PostDoc = {
   title?: string | null;
   mainImage?: { asset: unknown };
   publishedAt?: string;
-  body?: PortableTextBlock[];
+  body?: string | null;
 };
 
 const POST_QUERY = groq`*[_type == "post" && slug.current == $slug][0]{
   "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
-  "body": coalesce(body, []),
+  "body": coalesce(select($locale == "fr-ca" => body.frCA, body[$locale]), body.en, body),
   mainImage,
   publishedAt
 }`;
-
-const portableComponents: PortableTextComponents = {
-  block: {
-    normal: ({ children }) => (
-      <p className="mb-5 text-[15px] leading-relaxed text-slate-700 last:mb-0 md:text-base">
-        {children}
-      </p>
-    ),
-    h2: ({ children }) => (
-      <h2 className="mb-3 mt-12 text-xl font-semibold tracking-tight text-blue-950 first:mt-0 md:text-2xl">
-        {children}
-      </h2>
-    ),
-    h3: ({ children }) => (
-      <h3 className="mb-2 mt-10 text-lg font-semibold tracking-tight text-blue-950 first:mt-0 md:text-xl">
-        {children}
-      </h3>
-    ),
-    blockquote: ({ children }) => (
-      <blockquote className="my-6 border-l-2 border-slate-300 pl-5 text-slate-600 italic">
-        {children}
-      </blockquote>
-    ),
-  },
-  list: {
-    bullet: ({ children }) => (
-      <ul className="mb-5 list-disc space-y-1 pl-6 text-[15px] text-slate-700 md:text-base">{children}</ul>
-    ),
-    number: ({ children }) => (
-      <ol className="mb-5 list-decimal space-y-1 pl-6 text-[15px] text-slate-700 md:text-base">{children}</ol>
-    ),
-  },
-  listItem: {
-    bullet: ({ children }) => <li className="leading-relaxed">{children}</li>,
-    number: ({ children }) => <li className="leading-relaxed">{children}</li>,
-  },
-  marks: {
-    strong: ({ children }) => <strong className="font-semibold text-slate-900">{children}</strong>,
-    em: ({ children }) => <em className="italic">{children}</em>,
-    link: ({ value, children }) => {
-      const href = typeof value?.href === "string" ? value.href : "#";
-      const openInNewTab = Boolean(value?.blank);
-      return (
-        <a
-          href={href}
-          className="font-medium text-blue-950 underline decoration-slate-300 underline-offset-4 transition hover:decoration-blue-950"
-          rel={openInNewTab ? "noopener noreferrer" : undefined}
-          target={openInNewTab ? "_blank" : undefined}
-        >
-          {children}
-        </a>
-      );
-    },
-  },
-};
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { locale, slug } = await params;
@@ -113,7 +53,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       })
     : null;
 
-  const bodyValue = post.body ?? [];
+  const bodyParagraphs = (post.body ?? "")
+    .split(/\n\n+/)
+    .map((p) => p.trim())
+    .filter(Boolean);
 
   return (
     <article className="min-h-screen bg-white text-slate-900">
@@ -143,9 +86,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           {dateLabel ? <p className="mt-3 text-sm text-slate-500">{dateLabel}</p> : null}
         </header>
 
-        {bodyValue.length > 0 ? (
-          <div className="mt-12 max-w-none border-t border-slate-100 pt-12">
-            <PortableText value={bodyValue} components={portableComponents} />
+        {bodyParagraphs.length > 0 ? (
+          <div className="mt-12 max-w-none space-y-5 border-t border-slate-100 pt-12 text-[15px] leading-relaxed text-slate-700 md:text-base">
+            {bodyParagraphs.map((paragraph, index) => (
+              <p key={index} className="whitespace-pre-wrap">
+                {paragraph}
+              </p>
+            ))}
           </div>
         ) : null}
       </div>

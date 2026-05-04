@@ -8,21 +8,23 @@ export const landingPageType = defineType({
     defineField({
       name: "title",
       title: "Título Principal",
-      type: "string",
+      type: "localizedString",
     }),
     defineField({
       name: "subtitle",
       title: "Subtítulo",
-      type: "string",
+      type: "localizedString",
     }),
     defineField({
       name: "sliderImages",
       title: "Imágenes del Slider",
       type: "array",
-      of: [{ 
-        type: "image",
-        options: { hotspot: true } // Esto permite encuadrar la foto manualmente
-      }],
+      of: [
+        {
+          type: "image",
+          options: { hotspot: true },
+        },
+      ],
     }),
   ],
 });

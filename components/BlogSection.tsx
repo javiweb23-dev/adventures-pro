@@ -1,9 +1,11 @@
 import { Link } from "@/i18n/navigation";
+import { groq } from "next-sanity";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import BlogSectionIntro from "@/components/BlogSectionIntro";
 import BlogSectionEmpty from "@/components/BlogSectionEmpty";
 import BlogSectionViewAll from "@/components/BlogSectionViewAll";
+import type { AppLocale } from "@/i18n/routing";
 
 type BlogPostPreview = {
   _id: string;
@@ -13,16 +15,20 @@ type BlogPostPreview = {
   excerpt?: string;
 };
 
-const BLOG_PREVIEW_QUERY = `*[_type == "post"] | order(publishedAt desc) [0...3] {
+const BLOG_PREVIEW_QUERY = groq`*[_type == "post"] | order(publishedAt desc) [0...3] {
   _id,
-  "title": coalesce(title.en, title),
+  "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
   "slug": slug.current,
   mainImage,
-  "excerpt": coalesce(excerpt.en, excerpt)
+  "excerpt": coalesce(select($locale == "fr-ca" => excerpt.frCA, excerpt[$locale]), excerpt.en, excerpt)
 }`;
 
-export default async function BlogSection() {
-  const posts = await client.fetch<BlogPostPreview[]>(BLOG_PREVIEW_QUERY).catch(() => []);
+type BlogSectionProps = {
+  locale: AppLocale;
+};
+
+export default async function BlogSection({ locale }: BlogSectionProps) {
+  const posts = await client.fetch<BlogPostPreview[]>(BLOG_PREVIEW_QUERY, { locale }).catch(() => []);
 
   return (
     <section className="w-full bg-slate-50 py-16 md:py-24">

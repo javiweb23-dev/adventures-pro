@@ -43,7 +43,7 @@ export default function Home() {
 
           <ReviewsSection />
 
-          <BlogSection />
+          <BlogSection locale={routing.defaultLocale} />
 
           <BoutiqueBanner />
 
