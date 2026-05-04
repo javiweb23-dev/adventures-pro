@@ -16,7 +16,6 @@ export type DiscoveryTour = {
   duration?: string;
   currency?: string;
   peekProId?: string;
-  price?: string | number | null;
   pricing?: Array<{ price?: number | string | null }>;
 };
 
@@ -60,20 +59,6 @@ const parseNumericPrice = (value?: string | number | null) => {
   return Number.isFinite(parsed) ? parsed : Number.NaN;
 };
 
-const getMinPricingValue = (pricing?: Array<{ price?: number | string | null }>) => {
-  if (!pricing?.length) return Number.NaN;
-  const values = pricing
-    .map((item) => parseNumericPrice(item.price))
-    .filter((value) => Number.isFinite(value));
-  return values.length ? Math.min(...values) : Number.NaN;
-};
-
-const getTourMinPrice = (tour: DiscoveryTour) => {
-  const pricingMin = getMinPricingValue(tour.pricing);
-  if (Number.isFinite(pricingMin)) return pricingMin;
-  return parseNumericPrice(tour.price);
-};
-
 const buildImageUrl = (image: unknown) => {
   try {
     return image ? urlFor(image).width(900).height(700).fit("crop").url() : null;
@@ -91,18 +76,18 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
       const safeCategory = tour.category ?? "";
       const matchesCategory = activeCategory === "all" || safeCategory === activeCategory;
 
-      const minPrice = getTourMinPrice(tour);
+      const firstPrice = parseNumericPrice(tour.pricing?.[0]?.price);
       const matchesPriceRange =
         activePriceRange === "all" ||
         (activePriceRange === "under-100" &&
-          Number.isFinite(minPrice) &&
-          minPrice >= 0 &&
-          minPrice < 100) ||
+          Number.isFinite(firstPrice) &&
+          firstPrice >= 0 &&
+          firstPrice < 100) ||
         (activePriceRange === "100-200" &&
-          Number.isFinite(minPrice) &&
-          minPrice >= 100 &&
-          minPrice <= 200) ||
-        (activePriceRange === "premium" && Number.isFinite(minPrice) && minPrice > 200);
+          Number.isFinite(firstPrice) &&
+          firstPrice >= 100 &&
+          firstPrice <= 200) ||
+        (activePriceRange === "premium" && Number.isFinite(firstPrice) && firstPrice > 200);
 
       return matchesCategory && matchesPriceRange;
     });
@@ -174,11 +159,9 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
       ) : (
         <div className="mt-10 grid gap-8 md:grid-cols-2 xl:grid-cols-3">
           {visibleTours.map((tour) => {
-            const minPrice = getTourMinPrice(tour);
             const firstPricingValue = parseNumericPrice(tour.pricing?.[0]?.price);
-            const leadPrice = Number.isFinite(firstPricingValue) ? firstPricingValue : minPrice;
-            const computedPrice = Number.isFinite(leadPrice)
-              ? formatTourPrice(tour.currency ?? "USD", leadPrice)
+            const computedPrice = Number.isFinite(firstPricingValue)
+              ? formatTourPrice(tour.currency ?? "USD", firstPricingValue)
               : "Consultar precio";
             const slug = tour.slug ?? "";
             const title = tour.title ?? "Tour";
