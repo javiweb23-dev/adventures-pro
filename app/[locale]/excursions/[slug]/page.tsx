@@ -15,7 +15,7 @@ export async function generateStaticParams() {
   );
 
   return routing.locales.flatMap((locale) =>
-    tours.map((tour) => ({ locale, slug: tour.slug })),
+    tours?.map((tour) => ({ locale, slug: tour.slug })) || [],
   );
 }
 
