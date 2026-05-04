@@ -32,19 +32,19 @@ type TourData = {
   slug: string;
   category: string;
   currency?: string;
-  pricing: Array<{ _key: string; label: string; price?: number | string | null }>;
+  pricing?: Array<{ _key: string; label: string; price?: number | string | null }> | null;
   duration: string;
   availability: string;
   ages: string;
   starts: string;
   peekProId: string;
-  gallery: Array<{ _key: string; asset: unknown }>;
-  infoTour: PortableTextBlock[];
-  program: PortableTextBlock[];
-  whatToBring: string[];
-  whatsIncluded: string[];
-  goodToKnow: PortableTextBlock[];
-  faq: Array<{ _key: string; question: string; answer: string }>;
+  gallery?: Array<{ _key: string; asset: unknown }> | null;
+  infoTour?: PortableTextBlock[] | null;
+  program?: PortableTextBlock[] | null;
+  whatToBring?: string[] | null;
+  whatsIncluded?: string[] | null;
+  goodToKnow?: PortableTextBlock[] | null;
+  faq?: Array<{ _key: string; question: string; answer: string }> | null;
 };
 
 const TOUR_QUERY = `*[_type == "tour" && slug.current == $slug][0]{
@@ -67,14 +67,13 @@ const TOUR_QUERY = `*[_type == "tour" && slug.current == $slug][0]{
   faq[]{_key, question, answer}
 }`;
 
-const extractPortableText = (blocks: PortableTextBlock[] = []) =>
-  blocks
-    .map((block) => (block.children ?? []).map((child) => child.text ?? "").join(""))
+const extractPortableText = (blocks?: PortableTextBlock[] | null) =>
+  (blocks ?? [])
+    .map((block) => (block?.children ?? []).map((child) => child.text ?? "").join(""))
     .filter((line) => line.trim().length > 0);
 
 const formatCategoryTitle = (value: string) =>
-  value
-    .split("-")
+  (value?.split("-") || [])
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 
@@ -89,8 +88,8 @@ const parsePriceValue = (value?: number | string | null) => {
 };
 
 const pickAdultLeadPricing = (
-  rows: TourData["pricing"],
-): TourData["pricing"][number] | null => {
+  rows?: TourData["pricing"] | null,
+): NonNullable<TourData["pricing"]>[number] | null => {
   if (!rows?.length) return null;
   const upper = (s: string) => s.trim().toUpperCase();
   const exact = rows.find((r) => {
@@ -168,7 +167,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
           <input id="gallery-toggle" type="checkbox" className="peer sr-only" />
           <div className="md:hidden">
             <div className="flex snap-x snap-mandatory overflow-x-auto">
-              {gallery.map((image, index) => (
+              {(gallery ?? []).map((image, index) => (
                 <img
                   key={image._key}
                   src={urlFor(image).width(1200).height(900).fit("crop").url()}
@@ -178,7 +177,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
               ))}
             </div>
             <div className="mt-3 flex items-center justify-center gap-2">
-              {gallery.map((image) => (
+              {(gallery ?? []).map((image) => (
                 <span
                   key={`dot-${image._key}`}
                   className="h-1.5 w-1.5 rounded-full bg-slate-300"
@@ -188,7 +187,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
           </div>
           <div className="hidden h-[350px] w-full md:block">
             <div className="grid h-full w-full gap-4 px-6 md:grid-cols-3 md:px-10 lg:px-12">
-              {gallery.map((image, index) => (
+              {(gallery ?? []).map((image, index) => (
                 <img
                   key={image._key}
                   src={urlFor(image).width(1600).height(1000).fit("crop").url()}
@@ -217,7 +216,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
                 </label>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
-                {galleryLightbox.map((image, index) => (
+                {(galleryLightbox ?? []).map((image, index) => (
                   <img
                     key={image._key}
                     src={urlFor(image).width(2000).height(1400).fit("crop").url()}
@@ -237,7 +236,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
                 Tour overview
               </h2>
               <div className="mt-4 space-y-3">
-                {infoTourLines.map((line) => (
+                {(infoTourLines ?? []).map((line) => (
                   <p
                     key={line}
                     className="mb-6 text-[15px] leading-relaxed text-slate-700 last:mb-0"
@@ -253,7 +252,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
                 What happens on this tour
               </h2>
               <div className="mt-6 space-y-5">
-                {programLines.map((step, index) => (
+                {(programLines ?? []).map((step, index) => (
                   <div key={`${index}-${step}`} className="flex gap-4">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
                       {index + 1}
@@ -271,7 +270,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
                 What to bring
               </h2>
               <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
-                {tour.whatToBring.map((item) => (
+                {(tour.whatToBring ?? []).map((item) => (
                   <div
                     key={item}
                     className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
@@ -290,7 +289,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
                 What&apos;s included
               </h2>
               <ul className="mt-6 space-y-3">
-                {tour.whatsIncluded.map((item) => (
+                {(tour.whatsIncluded ?? []).map((item) => (
                   <li key={item} className="flex items-start gap-3">
                     <Check className="mt-0.5 h-5 w-5 text-emerald-500" />
                     <span className="text-[15px] text-slate-700">{item}</span>
@@ -304,7 +303,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
                 Good to know
               </h2>
               <div className="mt-5 space-y-3 text-[15px] leading-7 text-slate-700">
-                {goodToKnowLines.map((line) => (
+                {(goodToKnowLines ?? []).map((line) => (
                   <p key={line}>{line}</p>
                 ))}
               </div>
@@ -315,7 +314,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
                 FAQs
               </h2>
               <div className="mt-6 divide-y divide-slate-200 rounded-xl border border-slate-200">
-                {tour.faq.map((faq) => (
+                {(tour.faq ?? []).map((faq) => (
                   <details
                     key={faq._key}
                     className="group px-5 py-4 open:bg-slate-50"
@@ -345,7 +344,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
                 />
               </div>
               <div className="mt-2 space-y-0 rounded-2xl border border-slate-200/80 bg-slate-50/70 px-6 py-2">
-                {pricing.map((item) => {
+                {(pricing ?? []).map((item) => {
                   const priceValue = parsePriceValue(item.price);
                   const hasPrice = Number.isFinite(priceValue);
                   return (
