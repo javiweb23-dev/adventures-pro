@@ -1,6 +1,9 @@
 import { Link } from "@/i18n/navigation";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
+import BlogSectionIntro from "@/components/BlogSectionIntro";
+import BlogSectionEmpty from "@/components/BlogSectionEmpty";
+import BlogSectionViewAll from "@/components/BlogSectionViewAll";
 
 type BlogPostPreview = {
   _id: string;
@@ -24,19 +27,10 @@ export default async function BlogSection() {
   return (
     <section className="w-full bg-slate-50 py-16 md:py-24">
       <div className="mx-auto max-w-7xl px-6 md:px-10 lg:px-12">
-        <div className="mb-10 text-center md:mb-14">
-          <h2 className="text-3xl font-semibold tracking-tight text-blue-950 md:text-4xl">
-            Traveler&apos;s Guide
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
-            Stories, tips, and inspiration for your next Dominican Republic adventure.
-          </p>
-        </div>
+        <BlogSectionIntro />
 
         {posts.length === 0 ? (
-          <p className="text-center text-slate-600">
-            New articles are coming soon.
-          </p>
+          <BlogSectionEmpty />
         ) : (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-6 lg:gap-8">
             {posts.map((post) => {
@@ -83,14 +77,7 @@ export default async function BlogSection() {
           </div>
         )}
 
-        <div className="mt-10 text-center md:mt-12">
-          <Link
-            href="/blog"
-            className="text-sm font-semibold text-blue-950 underline-offset-4 transition hover:underline"
-          >
-            View all articles
-          </Link>
-        </div>
+        <BlogSectionViewAll />
       </div>
     </section>
   );

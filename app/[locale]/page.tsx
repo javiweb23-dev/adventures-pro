@@ -1,4 +1,5 @@
 import HeroSearch from "@/components/HeroSearch";
+import HomeHeroText from "@/components/HomeHeroText";
 import HomeHeroSlider from "@/components/HomeHeroSlider";
 import PromoBanner from "@/components/PromoBanner";
 import FeaturedAdventures from "@/components/FeaturedAdventures";
@@ -55,10 +56,8 @@ export default async function Home({ params }: HomePageProps) {
     )
     .catch(() => []);
 
-  const heroTitle = landingPage?.title?.trim() || "Find your next perfect adventure";
-  const heroSubtitle =
-    landingPage?.subtitle?.trim() ||
-    "Browse curated tours by destination, budget, and experience type in one place.";
+  const cmsTitle = landingPage?.title?.trim() || null;
+  const cmsSubtitle = landingPage?.subtitle?.trim() || null;
   const heroSlides =
     landingPage?.sliderImages
       ?.map((image) => image?.url?.trim())
@@ -77,15 +76,7 @@ export default async function Home({ params }: HomePageProps) {
             />
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-8 px-4 text-white md:gap-10 md:px-10 lg:px-12">
               <div className="w-full max-w-4xl text-center">
-                <p className="mb-3 inline-flex rounded-full bg-white/15 px-3 py-1 text-sm font-medium">
-                  Adventures Finder
-                </p>
-                <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
-                  {heroTitle}
-                </h1>
-                <p className="mt-4 text-sm text-slate-100 md:text-base">
-                  {heroSubtitle}
-                </p>
+                <HomeHeroText cmsTitle={cmsTitle} cmsSubtitle={cmsSubtitle} />
                 <div className="mx-auto mt-8 w-full max-w-4xl md:mt-10">
                   <HeroSearch />
                 </div>

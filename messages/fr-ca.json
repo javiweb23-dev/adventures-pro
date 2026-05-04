@@ -18,10 +18,62 @@
     "parking": "Stationnement",
     "airport": "Aéroport"
   },
+  "Home": {
+    "brandEyebrow": "Adventures Finder",
+    "defaultTitle": "Trouvez votre prochaine aventure idéale",
+    "defaultSubtitle": "Parcourez des excursions sélectionnées par destination, budget et type d'expérience, au même endroit."
+  },
   "HeroSearch": {
-    "searchPlaceholder": "Rechercher une destination ou une activité",
-    "quickCategories": "Catégories rapides",
+    "tabActivities": "Activités",
+    "tabAirportTransfers": "Transferts aéroport",
+    "searchPlaceholder": "Recherchez votre prochaine aventure",
     "searchButton": "Rechercher",
-    "bookTwoOrMoreActivities": "Réservez 2 activités ou plus..."
+    "quickCategories": "Catégories rapides",
+    "bookTwoOrMoreActivities": "Réservez 2 activités ou plus...",
+    "tripType": "Type de trajet",
+    "oneWay": "Aller simple",
+    "roundTrip": "Aller-retour",
+    "origin": "Origine",
+    "originPUJ": "Aéroport de Punta Cana (PUJ)",
+    "originLRM": "Aéroport de La Romana (LRM)",
+    "hotelDestination": "Hôtel de destination",
+    "hotelSearchPlaceholder": "Tapez pour chercher votre hôtel",
+    "clearHotel": "Effacer l'hôtel",
+    "noHotelsMatch": "Aucun hôtel ne correspond à votre recherche."
+  },
+  "Featured": {
+    "kicker": "Nos aventures recommandées",
+    "headline": "Des moments de voyage exceptionnels pensés pour vous",
+    "empty": "Les excursions en vedette s'afficheront ici lorsqu'elles seront marquées dans le CMS."
+  },
+  "LeadForm": {
+    "title": "Planifiez le voyage parfait",
+    "subtitle": "Partagez vos préférences et notre équipe vous contactera avec une proposition sur mesure.",
+    "name": "Nom",
+    "email": "Courriel",
+    "phone": "Téléphone",
+    "travelDates": "Dates de voyage",
+    "travelDatesPlaceholder": "p. ex. 10–15 juin 2026",
+    "numberOfGuests": "Nombre de personnes",
+    "tripType": "Type de voyage",
+    "tripTypePrivateVacation": "Vacances privées",
+    "tripTypeCorporateRetreat": "Retraite d'entreprise",
+    "tripTypeGolfTrip": "Voyage golf",
+    "tripTypeGroupTravel": "Voyage de groupe",
+    "submit": "Commencer la planification",
+    "submitting": "Envoi en cours...",
+    "success": "Merci. Nous vous contacterons sous peu.",
+    "errorGeneric": "Nous n'avons pas pu envoyer votre demande."
+  },
+  "Blog": {
+    "title": "Guide du voyageur",
+    "subtitle": "Récits, conseils et inspiration pour votre prochaine aventure en République dominicaine.",
+    "viewAll": "Voir tous les articles",
+    "empty": "De nouveaux articles arrivent bientôt."
+  },
+  "PromoBanner": {
+    "headline": "RÉSERVEZ 2 ACTIVITÉS OU PLUS ET OBTENEZ 10 % DE RABAIS !",
+    "copyCode": "Copier le code",
+    "copied": "Copié !"
   }
 }

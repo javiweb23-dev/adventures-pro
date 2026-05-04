@@ -16,10 +16,62 @@
     "followUs": "Follow Us",
     "copyright": "Copyright © 2026 Adventures Finder. All rights reserved."
   },
+  "Home": {
+    "brandEyebrow": "Adventures Finder",
+    "defaultTitle": "Find your next perfect adventure",
+    "defaultSubtitle": "Browse curated tours by destination, budget, and experience type in one place."
+  },
   "HeroSearch": {
-    "searchPlaceholder": "Search destination or activity",
-    "quickCategories": "Quick Categories",
+    "tabActivities": "Activities",
+    "tabAirportTransfers": "Airport Transfers",
+    "searchPlaceholder": "Search your next adventure",
     "searchButton": "Search",
-    "bookTwoOrMoreActivities": "Book 2 or more activities..."
+    "quickCategories": "Quick Categories",
+    "bookTwoOrMoreActivities": "Book 2 or more activities...",
+    "tripType": "Trip type",
+    "oneWay": "One Way",
+    "roundTrip": "Round Trip",
+    "origin": "Origin",
+    "originPUJ": "Punta Cana Airport (PUJ)",
+    "originLRM": "La Romana Airport (LRM)",
+    "hotelDestination": "Hotel Destination",
+    "hotelSearchPlaceholder": "Type to search your hotel",
+    "clearHotel": "Clear hotel",
+    "noHotelsMatch": "No hotels match your search."
+  },
+  "Featured": {
+    "kicker": "Our recommended adventures",
+    "headline": "Exceptional travel moments designed with You in mind",
+    "empty": "Featured tours will appear here when marked in the CMS."
+  },
+  "LeadForm": {
+    "title": "Plan Your Perfect Trip",
+    "subtitle": "Share your preferences and our team will contact you with a tailored proposal.",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "travelDates": "Travel Dates",
+    "travelDatesPlaceholder": "e.g. June 10 - June 15, 2026",
+    "numberOfGuests": "Number of Guests",
+    "tripType": "Trip Type",
+    "tripTypePrivateVacation": "Private Vacation",
+    "tripTypeCorporateRetreat": "Corporate Retreat",
+    "tripTypeGolfTrip": "Golf Trip",
+    "tripTypeGroupTravel": "Group Travel",
+    "submit": "Start Planning",
+    "submitting": "Sending...",
+    "success": "Thank you. We will contact you shortly.",
+    "errorGeneric": "We could not submit your request."
+  },
+  "Blog": {
+    "title": "Traveler's Guide",
+    "subtitle": "Stories, tips, and inspiration for your next Dominican Republic adventure.",
+    "viewAll": "View all articles",
+    "empty": "New articles are coming soon."
+  },
+  "PromoBanner": {
+    "headline": "BOOK 2 OR MORE ACTIVITIES AND GET 10% OFF!",
+    "copyCode": "Copy Code",
+    "copied": "Copied!"
   }
 }

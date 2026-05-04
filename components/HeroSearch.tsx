@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { useMemo, useState, useRef, useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 type TripType = "one_way" | "round_trip";
 
@@ -156,33 +157,29 @@ const hotels: TransferHotel[] = [
   },
 ];
 
-const ORIGIN_OPTIONS: { code: OriginCode; label: string }[] = [
-  { code: "PUJ", label: "Punta Cana Airport (PUJ)" },
-  { code: "LRM", label: "La Romana Airport (LRM)" },
-];
-
 function buildPeekTransferHref(
   hotel: TransferHotel,
   tripType: TripType,
   originCode: OriginCode,
+  originLabel: string,
 ) {
   const base = tripType === "one_way" ? hotel.ow : hotel.rt;
   const url = new URL(base);
-  const originLabel =
-    ORIGIN_OPTIONS.find((o) => o.code === originCode)?.label ?? "";
   url.searchParams.set("pickup_airport", originLabel);
   return url.toString();
 }
 
-type HeroSearchProps = {
-  searchPlaceholder?: string;
-  searchButton?: string;
-};
+export default function HeroSearch() {
+  const t = useTranslations("HeroSearch");
+  const originOptions = useMemo(
+    () =>
+      [
+        { code: "PUJ" as const, label: t("originPUJ") },
+        { code: "LRM" as const, label: t("originLRM") },
+      ] satisfies { code: OriginCode; label: string }[],
+    [t],
+  );
 
-export default function HeroSearch({
-  searchPlaceholder = "Search your next adventure",
-  searchButton = "Search",
-}: HeroSearchProps) {
   const [tab, setTab] = useState<"activities" | "transfers">("activities");
   const [activityQuery, setActivityQuery] = useState("");
   const [tripType, setTripType] = useState<TripType>("one_way");
@@ -213,7 +210,12 @@ export default function HeroSearch({
   }, []);
 
   const transferHref = selectedHotel
-    ? buildPeekTransferHref(selectedHotel, tripType, origin)
+    ? buildPeekTransferHref(
+        selectedHotel,
+        tripType,
+        origin,
+        originOptions.find((o) => o.code === origin)?.label ?? "",
+      )
     : "";
 
   const transferReady = Boolean(selectedHotel);
@@ -230,7 +232,7 @@ export default function HeroSearch({
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
-          Activities
+          {t("tabActivities")}
           {tab === "activities" ? (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-blue-800" />
           ) : null}
@@ -244,7 +246,7 @@ export default function HeroSearch({
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
-          Airport Transfers
+          {t("tabAirportTransfers")}
           {tab === "transfers" ? (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-blue-800" />
           ) : null}
@@ -264,14 +266,14 @@ export default function HeroSearch({
                 name="q"
                 value={activityQuery}
                 onChange={(e) => setActivityQuery(e.target.value)}
-                placeholder={searchPlaceholder}
+                placeholder={t("searchPlaceholder")}
                 className="h-12 w-full rounded-xl border border-slate-200 px-4 text-sm text-slate-800 outline-none transition focus:border-blue-800 focus:ring-2 focus:ring-blue-800/15"
               />
               <button
                 type="submit"
                 className="h-12 w-full shrink-0 rounded-xl bg-orange-500 px-6 text-sm font-semibold text-white shadow-md shadow-orange-500/25 transition hover:bg-orange-600 md:w-auto"
               >
-                {searchButton}
+                {t("searchButton")}
               </button>
             </form>
           </div>
@@ -279,7 +281,7 @@ export default function HeroSearch({
           <div className="space-y-6">
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-blue-950">
-                Trip type
+                {t("tripType")}
               </p>
               <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 p-1">
                 <button
@@ -291,7 +293,7 @@ export default function HeroSearch({
                       : "text-slate-600 hover:text-blue-950"
                   }`}
                 >
-                  One Way
+                  {t("oneWay")}
                 </button>
                 <button
                   type="button"
@@ -302,7 +304,7 @@ export default function HeroSearch({
                       : "text-slate-600 hover:text-blue-950"
                   }`}
                 >
-                  Round Trip
+                  {t("roundTrip")}
                 </button>
               </div>
             </div>
@@ -312,7 +314,7 @@ export default function HeroSearch({
                 htmlFor="hero-origin"
                 className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-950"
               >
-                Origin
+                {t("origin")}
               </label>
               <select
                 id="hero-origin"
@@ -320,7 +322,7 @@ export default function HeroSearch({
                 onChange={(e) => setOrigin(e.target.value as OriginCode)}
                 className="h-12 w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 outline-none transition focus:border-blue-800 focus:ring-2 focus:ring-blue-800/15"
               >
-                {ORIGIN_OPTIONS.map((o) => (
+                {originOptions.map((o) => (
                   <option key={o.code} value={o.code}>
                     {o.label}
                   </option>
@@ -333,7 +335,7 @@ export default function HeroSearch({
                 htmlFor="hero-hotel"
                 className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-950"
               >
-                Hotel Destination
+                {t("hotelDestination")}
               </label>
               <div className="relative">
                 <input
@@ -350,14 +352,14 @@ export default function HeroSearch({
                     setListOpen(true);
                     if (selectedHotel) setSelectedHotel(null);
                   }}
-                  placeholder="Type to search your hotel"
+                  placeholder={t("hotelSearchPlaceholder")}
                   className="h-12 w-full rounded-xl border border-slate-200 py-2 pl-4 pr-11 text-sm text-slate-800 outline-none transition focus:border-blue-800 focus:ring-2 focus:ring-blue-800/15"
                 />
                 {hotelQuery.trim().length > 0 || selectedHotel ? (
                   <button
                     type="button"
                     tabIndex={-1}
-                    aria-label="Clear hotel"
+                    aria-label={t("clearHotel")}
                     onMouseDown={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -393,7 +395,7 @@ export default function HeroSearch({
                   </ul>
                 ) : hotelQuery.trim().length > 0 ? (
                   <div className="absolute z-20 mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-lg">
-                    No hotels match your search.
+                    {t("noHotelsMatch")}
                   </div>
                 ) : null
               ) : null}
@@ -414,7 +416,7 @@ export default function HeroSearch({
                     : "cursor-not-allowed bg-slate-200 text-slate-500"
                 }`}
               >
-                {searchButton}
+                {t("searchButton")}
               </a>
             </div>
           </div>

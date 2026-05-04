@@ -1,25 +1,38 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 
-type TripType = "Private Vacation" | "Corporate Retreat" | "Golf Trip" | "Group Travel";
+type TripKey = "privateVacation" | "corporateRetreat" | "golfTrip" | "groupTravel";
 
-const tripTypes: TripType[] = [
-  "Private Vacation",
-  "Corporate Retreat",
-  "Golf Trip",
-  "Group Travel",
-];
+const TRIP_ORDER: TripKey[] = ["privateVacation", "corporateRetreat", "golfTrip", "groupTravel"];
+
+const TRIP_TO_EN: Record<TripKey, string> = {
+  privateVacation: "Private Vacation",
+  corporateRetreat: "Corporate Retreat",
+  golfTrip: "Golf Trip",
+  groupTravel: "Group Travel",
+};
 
 export default function LeadForm() {
+  const t = useTranslations("LeadForm");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [travelDates, setTravelDates] = useState("");
   const [guests, setGuests] = useState("");
-  const [tripType, setTripType] = useState<TripType | "">("");
+  const [tripKey, setTripKey] = useState<TripKey | "">("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+
+  const tripLabel = (id: TripKey) =>
+    id === "privateVacation"
+      ? t("tripTypePrivateVacation")
+      : id === "corporateRetreat"
+        ? t("tripTypeCorporateRetreat")
+        : id === "golfTrip"
+          ? t("tripTypeGolfTrip")
+          : t("tripTypeGroupTravel");
 
   const canSubmit = useMemo(() => {
     return (
@@ -28,10 +41,10 @@ export default function LeadForm() {
       phone.trim().length > 3 &&
       travelDates.trim().length > 1 &&
       guests.trim().length > 0 &&
-      tripType.length > 0 &&
+      tripKey.length > 0 &&
       status !== "loading"
     );
-  }, [name, email, phone, travelDates, guests, tripType, status]);
+  }, [name, email, phone, travelDates, guests, tripKey, status]);
 
   const resetForm = () => {
     setName("");
@@ -39,7 +52,7 @@ export default function LeadForm() {
     setPhone("");
     setTravelDates("");
     setGuests("");
-    setTripType("");
+    setTripKey("");
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -60,14 +73,14 @@ export default function LeadForm() {
           phone: phone.trim(),
           travelDates: travelDates.trim(),
           guests: Number(guests),
-          tripType,
+          tripType: tripKey ? TRIP_TO_EN[tripKey] : "",
         }),
       });
 
       const result = (await response.json()) as { error?: string };
       if (!response.ok) {
         setStatus("error");
-        setErrorMessage(result.error || "We could not submit your request.");
+        setErrorMessage(result.error || t("errorGeneric"));
         return;
       }
 
@@ -75,21 +88,19 @@ export default function LeadForm() {
       resetForm();
     } catch {
       setStatus("error");
-      setErrorMessage("We could not submit your request.");
+      setErrorMessage(t("errorGeneric"));
     }
   };
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-      <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Plan Your Perfect Trip</h2>
-      <p className="mt-2 text-sm text-slate-600">
-        Share your preferences and our team will contact you with a tailored proposal.
-      </p>
+      <h2 className="text-2xl font-semibold tracking-tight text-slate-900">{t("title")}</h2>
+      <p className="mt-2 text-sm text-slate-600">{t("subtitle")}</p>
 
       <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
         <div>
           <label htmlFor="lead-name" className="mb-1.5 block text-sm font-medium text-slate-900">
-            Name
+            {t("name")}
           </label>
           <input
             id="lead-name"
@@ -104,7 +115,7 @@ export default function LeadForm() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <label htmlFor="lead-email" className="mb-1.5 block text-sm font-medium text-slate-900">
-              Email
+              {t("email")}
             </label>
             <input
               id="lead-email"
@@ -117,7 +128,7 @@ export default function LeadForm() {
           </div>
           <div>
             <label htmlFor="lead-phone" className="mb-1.5 block text-sm font-medium text-slate-900">
-              Phone
+              {t("phone")}
             </label>
             <input
               id="lead-phone"
@@ -132,12 +143,12 @@ export default function LeadForm() {
 
         <div>
           <label htmlFor="lead-dates" className="mb-1.5 block text-sm font-medium text-slate-900">
-            Travel Dates
+            {t("travelDates")}
           </label>
           <input
             id="lead-dates"
             type="text"
-            placeholder="e.g. June 10 - June 15, 2026"
+            placeholder={t("travelDatesPlaceholder")}
             value={travelDates}
             onChange={(e) => setTravelDates(e.target.value)}
             className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
@@ -147,7 +158,7 @@ export default function LeadForm() {
 
         <div>
           <label htmlFor="lead-guests" className="mb-1.5 block text-sm font-medium text-slate-900">
-            Number of Guests
+            {t("numberOfGuests")}
           </label>
           <input
             id="lead-guests"
@@ -161,22 +172,22 @@ export default function LeadForm() {
         </div>
 
         <div>
-          <p className="mb-2 text-sm font-medium text-slate-900">Trip Type</p>
+          <p className="mb-2 text-sm font-medium text-slate-900">{t("tripType")}</p>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {tripTypes.map((option) => {
-              const active = tripType === option;
+            {TRIP_ORDER.map((id) => {
+              const active = tripKey === id;
               return (
                 <button
-                  key={option}
+                  key={id}
                   type="button"
-                  onClick={() => setTripType(option)}
+                  onClick={() => setTripKey(id)}
                   className={`rounded-xl border px-4 py-3 text-left text-sm font-medium transition ${
                     active
                       ? "border-cyan-500 bg-cyan-50 text-slate-900"
                       : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
                   }`}
                 >
-                  {option}
+                  {tripLabel(id)}
                 </button>
               );
             })}
@@ -184,7 +195,7 @@ export default function LeadForm() {
         </div>
 
         {status === "success" ? (
-          <p className="text-sm font-medium text-emerald-600">Thank you. We will contact you shortly.</p>
+          <p className="text-sm font-medium text-emerald-600">{t("success")}</p>
         ) : null}
         {status === "error" ? <p className="text-sm font-medium text-red-600">{errorMessage}</p> : null}
 
@@ -193,7 +204,7 @@ export default function LeadForm() {
           disabled={!canSubmit}
           className="h-12 w-full rounded-xl bg-blue-600 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {status === "loading" ? "Sending..." : "Start Planning"}
+          {status === "loading" ? t("submitting") : t("submit")}
         </button>
       </form>
     </section>
