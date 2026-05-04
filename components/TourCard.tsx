@@ -23,7 +23,7 @@ export default function TourCard({ tour }: TourCardProps) {
     ? `From ${formatTourPrice(tour.currency || "USD", firstPrice)}`
     : tour.fromPriceLabel || "Consultar precio";
   const safeSlug = tour.slug || "";
-  const detailsHref = safeSlug ? `/excursiones/${safeSlug}` : "/excursiones";
+  const detailsHref = safeSlug ? `/excursions/${safeSlug}` : "/excursions";
   const imageUrl = (() => {
     try {
       return tour.listingImage?.asset

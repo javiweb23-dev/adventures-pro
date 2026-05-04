@@ -121,7 +121,7 @@ export default function ExcursionesCatalog({
                     {tour.duration ? ` • ${tour.duration}` : ""}
                   </p>
                   <Link
-                    href={`/excursiones/${tour.slug}`}
+                    href={`/excursions/${tour.slug}`}
                     className="mt-5 inline-flex rounded-full bg-[#0a192f] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#132a46]"
                   >
                     View Details

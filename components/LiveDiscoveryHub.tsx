@@ -97,7 +97,7 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
     if (activeCategory !== "all") params.set("category", activeCategory);
     if (activePriceRange !== "all") params.set("budget", activePriceRange);
     const query = params.toString();
-    return query ? `/excursiones?${query}` : "/excursiones";
+    return query ? `/excursions?${query}` : "/excursions";
   }, [activePriceRange, activeCategory]);
 
   return (
@@ -201,7 +201,7 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
                       Book Now
                     </a>
                     <Link
-                      href={slug ? `/excursiones/${slug}` : "/excursiones"}
+                      href={slug ? `/excursions/${slug}` : "/excursions"}
                       className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
                     >
                       More Info

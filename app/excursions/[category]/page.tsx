@@ -41,8 +41,7 @@ const TOURS_BY_CATEGORY_QUERY = `*[_type == "tour" && category->slug.current == 
 } | order(_createdAt desc)`;
 
 const formatCategoryTitle = (value: string) =>
-  value
-    .split("-")
+  (value?.split("-") || [])
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 
@@ -75,7 +74,7 @@ export default async function CategoryPage({ params }: ListingPageProps) {
           Find your perfect excursion.
         </p>
         <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {tours.map((tour) => {
+          {(tours || []).map((tour) => {
             return (
               <TourCard
                 key={tour._id}
