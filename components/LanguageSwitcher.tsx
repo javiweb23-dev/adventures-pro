@@ -40,8 +40,8 @@ export default function LanguageSwitcher({ compact = false }: LanguageSwitcherPr
   };
 
   const triggerClass = compact
-    ? "h-9 gap-2 px-3 pr-2 text-sm"
-    : "h-10 gap-2.5 px-3.5 pr-2.5 text-sm";
+    ? "h-9 min-w-[150px] grid-cols-[auto_1fr_auto] gap-2 px-3 text-sm"
+    : "h-10 min-w-[168px] grid-cols-[auto_1fr_auto] gap-2.5 px-3.5 text-sm";
 
   const rowClass = compact ? "px-3 py-2 text-sm" : "px-3.5 py-2.5 text-sm";
 
@@ -53,7 +53,7 @@ export default function LanguageSwitcher({ compact = false }: LanguageSwitcherPr
         aria-expanded={open}
         aria-haspopup="listbox"
         onClick={() => setOpen((v) => !v)}
-        className={`inline-flex items-center rounded-full border border-slate-200 bg-white font-medium text-slate-900 shadow-sm outline-none transition hover:border-slate-300 focus-visible:border-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-500/20 ${triggerClass}`}
+        className={`grid items-center rounded-full border border-slate-200 bg-white font-medium text-slate-900 shadow-sm outline-none transition hover:border-slate-300 focus-visible:border-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-500/20 ${triggerClass}`}
       >
         <span
           className="shrink-0 text-base leading-none"
@@ -62,7 +62,7 @@ export default function LanguageSwitcher({ compact = false }: LanguageSwitcherPr
         >
           {current.flag}
         </span>
-        <span className="truncate">{current.label}</span>
+        <span className="truncate text-center">{current.label}</span>
         <ChevronDown
           className={`h-4 w-4 shrink-0 text-slate-500 transition-transform ${open ? "rotate-180" : ""}`}
           strokeWidth={2}

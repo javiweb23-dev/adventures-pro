@@ -44,20 +44,17 @@ const parseNumericPrice = (value?: string | number | null) => {
   if (!trimmed) return Number.NaN;
   const cleaned = trimmed.replace(/[^\d.,-]/g, "");
   if (!cleaned) return Number.NaN;
-  const lastDot = cleaned.lastIndexOf(".");
-  const lastComma = cleaned.lastIndexOf(",");
-  const decimalIndex = Math.max(lastDot, lastComma);
   let normalized = cleaned;
-  if (decimalIndex !== -1) {
-    const intPart = cleaned.slice(0, decimalIndex).replace(/[.,]/g, "");
-    const decimalPart = cleaned.slice(decimalIndex + 1).replace(/[.,]/g, "");
-    normalized = `${intPart}.${decimalPart}`;
-  } else {
-    normalized = cleaned.replace(/[.,]/g, "");
+  if (cleaned.includes(",") && cleaned.includes(".")) {
+    normalized = cleaned.replace(/,/g, "");
+  } else if (cleaned.includes(",") && !cleaned.includes(".")) {
+    normalized = /,\d{1,2}$/.test(cleaned) ? cleaned.replace(",", ".") : cleaned.replace(/,/g, "");
   }
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : Number.NaN;
 };
+
+const getFirstPricingValue = (tour: DiscoveryTour) => parseNumericPrice(tour.pricing?.[0]?.price);
 
 const buildImageUrl = (image: unknown) => {
   try {
@@ -76,12 +73,11 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
       const safeCategory = tour.category ?? "";
       const matchesCategory = activeCategory === "all" || safeCategory === activeCategory;
 
-      const firstPrice = parseNumericPrice(tour.pricing?.[0]?.price);
+      const firstPrice = getFirstPricingValue(tour);
       const matchesPriceRange =
         activePriceRange === "all" ||
         (activePriceRange === "under-100" &&
           Number.isFinite(firstPrice) &&
-          firstPrice >= 0 &&
           firstPrice < 100) ||
         (activePriceRange === "100-200" &&
           Number.isFinite(firstPrice) &&
@@ -159,7 +155,7 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
       ) : (
         <div className="mt-10 grid gap-8 md:grid-cols-2 xl:grid-cols-3">
           {visibleTours.map((tour) => {
-            const firstPricingValue = parseNumericPrice(tour.pricing?.[0]?.price);
+            const firstPricingValue = getFirstPricingValue(tour);
             const computedPrice = Number.isFinite(firstPricingValue)
               ? formatTourPrice(tour.currency ?? "USD", firstPricingValue)
               : "Consultar precio";
