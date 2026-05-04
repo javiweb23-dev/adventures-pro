@@ -10,17 +10,35 @@ type TourCardProps = {
     duration?: string;
     listingImage?: { asset: unknown };
     highlightBadge?: string;
-    pricing?: Array<{ price?: string }>;
+    pricing?: Array<{ price?: number | string | null }>;
     currency?: string;
     fromPriceLabel?: string;
     peekUrl: string;
   };
 };
 
+const parseNumericPrice = (value?: string | number | null) => {
+  if (value == null) return Number.NaN;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string") return Number.NaN;
+  const trimmed = value.trim();
+  if (!trimmed) return Number.NaN;
+  const cleaned = trimmed.replace(/[^\d.,-]/g, "");
+  if (!cleaned) return Number.NaN;
+  let normalized = cleaned;
+  if (cleaned.includes(",") && cleaned.includes(".")) {
+    normalized = cleaned.replace(/,/g, "");
+  } else if (cleaned.includes(",") && !cleaned.includes(".")) {
+    normalized = /,\d{1,2}$/.test(cleaned) ? cleaned.replace(",", ".") : cleaned.replace(/,/g, "");
+  }
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
+};
+
 export default function TourCard({ tour }: TourCardProps) {
-  const firstPrice = tour.pricing?.[0]?.price;
-  const computedPrice = firstPrice
-    ? `From ${formatTourPrice(tour.currency || "USD", firstPrice)}`
+  const firstPriceValue = parseNumericPrice(tour.pricing?.[0]?.price);
+  const computedPrice = Number.isFinite(firstPriceValue)
+    ? `From ${formatTourPrice(tour.currency || "USD", firstPriceValue)}`
     : tour.fromPriceLabel || "Consultar precio";
   const safeSlug = tour.slug || "";
   const detailsHref = safeSlug ? `/excursions/${safeSlug}` : "/excursions";

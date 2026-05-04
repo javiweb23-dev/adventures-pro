@@ -7,6 +7,7 @@ import ReviewsSection from "@/components/ReviewsSection";
 import BoutiqueBanner from "@/components/BoutiqueBanner";
 import AllianceLogos from "@/components/AllianceLogos";
 import BlogSection from "@/components/BlogSection";
+import { routing } from "@/i18n/routing";
 
 export default function Home() {
   return (
@@ -42,7 +43,7 @@ export default function Home() {
         </section>
 
         <section className="mx-auto max-w-7xl px-6 pb-24 pt-16 md:px-10 md:pb-32 md:pt-20 lg:px-12">
-          <FeaturedAdventures />
+          <FeaturedAdventures locale={routing.defaultLocale} />
         </section>
 
         <ReviewsSection />

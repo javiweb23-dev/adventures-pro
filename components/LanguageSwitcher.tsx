@@ -16,14 +16,33 @@ type LanguageSwitcherProps = {
   compact?: boolean;
 };
 
+const normalizeLocaleKey = (value: string) => value.trim().toLowerCase().replace(/_/g, "-");
+
+const resolveAppLocale = (raw: string): AppLocale => {
+  const key = normalizeLocaleKey(raw);
+  if (routing.locales.includes(key as AppLocale)) return key as AppLocale;
+  if (key === "us") return "en";
+  if (key === "fr" || key.startsWith("fr-")) return "fr-ca";
+  if (key.startsWith("en")) return "en";
+  if (key.startsWith("es")) return "es";
+  return routing.defaultLocale;
+};
+
+const localeMeta = (code: AppLocale) => {
+  if (code === "en") return { label: "English", flag: "🇺🇸" };
+  if (code === "es") return { label: "Spanish", flag: "🇪🇸" };
+  return { label: "French", flag: "🇫🇷" };
+};
+
 export default function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
-  const locale = useLocale() as AppLocale;
+  const rawLocale = useLocale();
+  const activeLocale = resolveAppLocale(String(rawLocale));
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const current = localeOptions.find((o) => o.code === locale) ?? localeOptions[0];
+  const current = localeMeta(activeLocale);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -74,28 +93,31 @@ export default function LanguageSwitcher({ compact = false }: LanguageSwitcherPr
           role="listbox"
           className="absolute right-0 z-50 mt-2 min-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm"
         >
-          {localeOptions.map((item) => (
-            <li key={item.code} role="presentation">
-              <button
-                type="button"
-                role="option"
-                aria-selected={item.code === locale}
-                onClick={() => selectLocale(item.code)}
-                className={`flex w-full items-center gap-2.5 rounded-xl font-medium hover:bg-slate-50 ${rowClass} ${
-                  item.code === locale ? "bg-slate-100 text-slate-900" : "text-slate-800"
-                }`}
-              >
-                <span
-                  className="shrink-0 text-base leading-none"
-                  style={{ fontFamily: '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif' }}
-                  aria-hidden
+          {localeOptions.map((item) => {
+            const meta = localeMeta(item.code);
+            return (
+              <li key={item.code} role="presentation">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={item.code === activeLocale}
+                  onClick={() => selectLocale(item.code)}
+                  className={`flex w-full items-center gap-2.5 rounded-xl font-medium hover:bg-slate-50 ${rowClass} ${
+                    item.code === activeLocale ? "bg-slate-100 text-slate-900" : "text-slate-800"
+                  }`}
                 >
-                  {item.flag}
-                </span>
-                <span>{item.label}</span>
-              </button>
-            </li>
-          ))}
+                  <span
+                    className="shrink-0 text-base leading-none"
+                    style={{ fontFamily: '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif' }}
+                    aria-hidden
+                  >
+                    {meta.flag}
+                  </span>
+                  <span>{meta.label}</span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       ) : null}
     </div>

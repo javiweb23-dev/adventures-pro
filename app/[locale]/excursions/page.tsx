@@ -11,7 +11,8 @@ const excursionsQuery = groq`*[_type == "tour" && (!defined($category) || catego
   "slug": slug.current,
   "mainImage": listingImage,
   pricing[]{price},
-  duration,
+  "duration": coalesce(select($locale == "fr-ca" => duration.frCA, duration[$locale]), duration.en, duration.es, duration.frCA),
+  peekProId,
   "category": {
     "slug": category->slug.current,
     "title": coalesce(

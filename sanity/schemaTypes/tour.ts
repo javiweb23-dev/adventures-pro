@@ -1,5 +1,7 @@
 import { defineField, defineType } from "sanity";
 
+type TourSlugSourceDoc = { title?: { en?: string; es?: string; frCA?: string } };
+
 export const tourType = defineType({
   name: "tour",
   title: "Tour",
@@ -16,7 +18,10 @@ export const tourType = defineType({
       title: "Slug",
       type: "slug",
       options: {
-        source: (doc: any) => doc.title?.en || doc.title?.es || "",
+        source: (doc) => {
+          const d = doc as TourSlugSourceDoc;
+          return d.title?.en || d.title?.es || "";
+        },
         maxLength: 96,
       },
       validation: (rule) => rule.required(),
@@ -91,22 +96,22 @@ export const tourType = defineType({
     defineField({
       name: "duration",
       title: "Duration",
-      type: "string",
+      type: "localizedString",
     }),
     defineField({
       name: "availability",
       title: "Availability",
-      type: "string",
+      type: "localizedString",
     }),
     defineField({
       name: "ages",
       title: "Ages",
-      type: "string",
+      type: "localizedString",
     }),
     defineField({
       name: "starts",
       title: "Starts",
-      type: "string",
+      type: "localizedString",
     }),
     defineField({
       name: "peekProId",
@@ -124,60 +129,32 @@ export const tourType = defineType({
     defineField({
       name: "infoTour",
       title: "Info Tour",
-      type: "array",
-      of: [{ type: "block" }],
+      type: "localizedText",
     }),
     defineField({
-      name: "program",
-      title: "What Happens in the Program",
-      type: "array",
-      of: [{ type: "block" }],
+      name: "whatHappens",
+      title: "What Happens",
+      type: "localizedText",
     }),
     defineField({
-      name: "whatToBring",
-      title: "What to Bring",
-      type: "array",
-      of: [{ type: "string" }],
+      name: "includes",
+      title: "Includes",
+      type: "localizedText",
     }),
     defineField({
-      name: "whatsIncluded",
-      title: "What's Included",
-      type: "array",
-      of: [{ type: "string" }],
+      name: "excludes",
+      title: "Excludes",
+      type: "localizedText",
     }),
     defineField({
       name: "goodToKnow",
       title: "Good to Know",
-      type: "array",
-      of: [{ type: "block" }],
+      type: "localizedText",
     }),
     defineField({
       name: "faq",
       title: "FAQ",
-      type: "array",
-      of: [
-        {
-          type: "object",
-          fields: [
-            defineField({
-              name: "question",
-              title: "Question",
-              type: "string",
-              validation: (rule) => rule.required(),
-            }),
-            defineField({
-              name: "answer",
-              title: "Answer",
-              type: "text",
-              rows: 3,
-              validation: (rule) => rule.required(),
-            }),
-          ],
-          preview: {
-            select: { title: "question" },
-          },
-        },
-      ],
+      type: "localizedText",
     }),
   ],
   preview: {

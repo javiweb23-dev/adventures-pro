@@ -15,7 +15,10 @@ export const postType = defineType({
       name: "slug",
       title: "Slug",
       type: "slug",
-      options: { source: (doc) => (doc as any)?.title?.en || "", maxLength: 96 },
+      options: {
+        source: (doc) => (doc as { title?: { en?: string; es?: string; frCA?: string } }).title?.en || "",
+        maxLength: 96,
+      },
       validation: (rule) => rule.required(),
     }),
     defineField({

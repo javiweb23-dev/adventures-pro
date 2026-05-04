@@ -46,7 +46,7 @@ export default async function Home({ params }: HomePageProps) {
       "slug": slug.current,
       "mainImage": listingImage,
       "category": category->slug.current,
-      duration,
+      "duration": coalesce(select($locale == "fr-ca" => duration.frCA, duration[$locale]), duration.en, duration.es, duration.frCA),
       peekProId,
       "currency": coalesce(currency, "USD"),
       pricing[]{price}
@@ -101,7 +101,7 @@ export default async function Home({ params }: HomePageProps) {
         </section>
 
         <section className="mx-auto max-w-7xl px-6 pb-24 pt-16 md:px-10 md:pb-32 md:pt-20 lg:px-12">
-          <FeaturedAdventures />
+          <FeaturedAdventures locale={locale} />
         </section>
 
         <section className="mx-auto w-full max-w-4xl px-6 py-12 md:px-10 lg:px-12">

@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import { Clock3 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { urlFor } from "@/sanity/lib/image";
-import { formatTourPrice } from "@/lib/tourPrice";
+import { formatTourPrice, peekBookingUrl } from "@/lib/tourPrice";
 
 export type ExcursionTour = {
   _id: string;
@@ -12,6 +13,7 @@ export type ExcursionTour = {
   slug: string;
   mainImage?: unknown;
   duration?: string;
+  peekProId?: string;
   category?: {
     slug?: string;
     title?: string;
@@ -25,18 +27,25 @@ type CatalogCategory = {
   title: string;
 };
 
-const getMinPricing = (pricing: Array<{ price?: number | string | null }> = []) => {
-  const values = pricing
-    .map((item) =>
-      typeof item.price === "number"
-        ? item.price
-        : Number(String(item.price ?? "").replace(/[^0-9.]/g, "")),
-    )
-    .filter((item): item is number => Number.isFinite(item));
-  if (!values.length) return undefined;
-  values.sort((a, b) => a - b);
-  return values[0];
+const parseNumericPrice = (value?: string | number | null) => {
+  if (value == null) return Number.NaN;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string") return Number.NaN;
+  const trimmed = value.trim();
+  if (!trimmed) return Number.NaN;
+  const cleaned = trimmed.replace(/[^\d.,-]/g, "");
+  if (!cleaned) return Number.NaN;
+  let normalized = cleaned;
+  if (cleaned.includes(",") && cleaned.includes(".")) {
+    normalized = cleaned.replace(/,/g, "");
+  } else if (cleaned.includes(",") && !cleaned.includes(".")) {
+    normalized = /,\d{1,2}$/.test(cleaned) ? cleaned.replace(",", ".") : cleaned.replace(/,/g, "");
+  }
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
 };
+
+const getFirstPricingValue = (tour: ExcursionTour) => parseNumericPrice(tour.pricing?.[0]?.price);
 
 export default function ExcursionesCatalog({
   tours,
@@ -86,46 +95,59 @@ export default function ExcursionesCatalog({
 
         <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {filteredTours.map((tour) => {
-            const minPrice = getMinPricing(tour.pricing);
-            const displayPrice =
-              minPrice != null ? formatTourPrice(tour.currency, minPrice) : "Consultar precio";
+            const firstPricingValue = getFirstPricingValue(tour);
+            const computedPrice = Number.isFinite(firstPricingValue)
+              ? formatTourPrice(tour.currency, firstPricingValue)
+              : "Consultar precio";
+            const slug = tour.slug ?? "";
+            const title = tour.title ?? "Tour";
+            const peekUrl = tour.peekProId ? peekBookingUrl(tour.peekProId) : "#";
 
             return (
               <article
                 key={tour._id}
-                className="group flex h-[30rem] flex-col overflow-hidden rounded-[2rem] bg-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
               >
-                <div className="relative h-[60%] w-full overflow-hidden">
+                <div className="relative">
                   {tour.mainImage ? (
                     <Image
-                      src={urlFor(tour.mainImage).width(900).height(700).fit("crop").url()}
-                      alt={tour.title}
-                      fill
+                      src={urlFor(tour.mainImage).width(1200).height(800).fit("crop").url()}
+                      alt={title}
+                      width={1200}
+                      height={800}
+                      className="h-56 w-full object-cover"
                       sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 25vw"
-                      className="object-cover transition duration-500 group-hover:scale-105 group-hover:brightness-105"
                     />
                   ) : (
-                    <div className="h-full w-full bg-slate-200" />
+                    <div className="h-56 w-full bg-slate-200" />
                   )}
                 </div>
-                <div className="h-1 bg-gradient-to-r from-cyan-400 to-blue-500" />
-                <div className="h-[40%] p-6">
-                  <div className="mb-3 inline-flex rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-orange-500">
-                    From {displayPrice}
+                <div className="space-y-4 p-5">
+                  <div className="inline-flex items-center gap-2 text-sm text-slate-600">
+                    <Clock3 className="h-4 w-4" />
+                    <span>{tour.duration || "Duration on request"}</span>
                   </div>
-                  <h2 className="text-xl font-semibold tracking-tight text-[#0a192f]">
-                    {tour.title}
-                  </h2>
-                  <p className="mt-2 text-sm text-slate-600">
+                  <h2 className="text-xl font-semibold leading-tight text-slate-900">{title}</h2>
+                  <p className="text-sm text-slate-600">
                     {tour.category?.title || tour.category?.slug || "Uncategorized"}
-                    {tour.duration ? ` • ${tour.duration}` : ""}
                   </p>
-                  <Link
-                    href={`/excursions/${tour.slug}`}
-                    className="mt-5 inline-flex rounded-full bg-[#0a192f] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#132a46]"
-                  >
-                    View Details
-                  </Link>
+                  <p className="text-lg font-semibold text-blue-950">From {computedPrice}</p>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <a
+                      href={peekUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-11 flex-1 items-center justify-center rounded-xl bg-orange-500 px-4 text-sm font-semibold text-white transition hover:bg-orange-600"
+                    >
+                      Book Now
+                    </a>
+                    <Link
+                      href={slug ? `/excursions/${slug}` : "/excursions"}
+                      className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                    >
+                      More Info
+                    </Link>
+                  </div>
                 </div>
               </article>
             );

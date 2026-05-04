@@ -22,6 +22,6 @@ export async function generateStaticParams() {
 export default async function LocalizedTourDetailPage({
   params,
 }: LocalizedTourDetailPageProps) {
-  const { slug } = await params;
-  return <TourDetailPage params={Promise.resolve({ slug })} />;
+  const { slug, locale } = await params;
+  return <TourDetailPage params={Promise.resolve({ slug, locale })} />;
 }

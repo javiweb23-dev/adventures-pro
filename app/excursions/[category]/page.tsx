@@ -1,8 +1,12 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
+import { Clock3 } from "lucide-react";
+import { groq } from "next-sanity";
+import { Link } from "@/i18n/navigation";
 import { client } from "@/sanity/lib/client";
-import TourCard from "@/components/TourCard";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { peekBookingUrl } from "@/lib/tourPrice";
+import { formatTourPrice, peekBookingUrl } from "@/lib/tourPrice";
+import { urlFor } from "@/sanity/lib/image";
 
 type ListingPageProps = {
   params: Promise<{ category: string }>;
@@ -13,11 +17,10 @@ type ListingTour = {
   title: string;
   slug: string;
   duration?: string;
-  listingImage?: { asset: unknown };
-  highlightBadge?: string;
-  peekProId: string;
+  listingImage?: unknown;
+  peekProId?: string;
   currency?: string;
-  pricing?: Array<{ price?: string }>;
+  pricing?: Array<{ price?: number | string | null }>;
 };
 
 const CATEGORIES = [
@@ -28,17 +31,44 @@ const CATEGORIES = [
   "multidays-tours",
 ];
 
-const TOURS_BY_CATEGORY_QUERY = `*[_type == "tour" && category->slug.current == $category]{
+const TOURS_BY_CATEGORY_QUERY = groq`*[_type == "tour" && category->slug.current == $category]{
   _id,
-  "title": coalesce(title.en, title),
+  "title": coalesce(title.en, title.es, title.frCA, title),
   "slug": slug.current,
-  duration,
+  "duration": coalesce(duration.en, duration.es, duration.frCA, duration),
   listingImage,
-  highlightBadge,
   peekProId,
   "currency": coalesce(currency, "USD"),
   pricing[]{price}
 } | order(_createdAt desc)`;
+
+const parseNumericPrice = (value?: string | number | null) => {
+  if (value == null) return Number.NaN;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string") return Number.NaN;
+  const trimmed = value.trim();
+  if (!trimmed) return Number.NaN;
+  const cleaned = trimmed.replace(/[^\d.,-]/g, "");
+  if (!cleaned) return Number.NaN;
+  let normalized = cleaned;
+  if (cleaned.includes(",") && cleaned.includes(".")) {
+    normalized = cleaned.replace(/,/g, "");
+  } else if (cleaned.includes(",") && !cleaned.includes(".")) {
+    normalized = /,\d{1,2}$/.test(cleaned) ? cleaned.replace(",", ".") : cleaned.replace(/,/g, "");
+  }
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
+};
+
+const getFirstPricingValue = (tour: ListingTour) => parseNumericPrice(tour.pricing?.[0]?.price);
+
+const buildImageUrl = (image: unknown) => {
+  try {
+    return image ? urlFor(image).width(900).height(700).fit("crop").url() : null;
+  } catch {
+    return null;
+  }
+};
 
 const formatCategoryTitle = (value: string) =>
   (value?.split("-") || [])
@@ -73,22 +103,61 @@ export default async function CategoryPage({ params }: ListingPageProps) {
         <p className="mt-3 text-slate-600">
           Find your perfect excursion.
         </p>
-        <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-8 grid gap-8 md:grid-cols-2 xl:grid-cols-3">
           {(tours || []).map((tour) => {
+            const firstPricingValue = getFirstPricingValue(tour);
+            const computedPrice = Number.isFinite(firstPricingValue)
+              ? formatTourPrice(tour.currency ?? "USD", firstPricingValue)
+              : "Consultar precio";
+            const slug = tour.slug ?? "";
+            const title = tour.title ?? "Tour";
+            const imageUrl = buildImageUrl(tour.listingImage);
+            const peekUrl = tour.peekProId ? peekBookingUrl(tour.peekProId) : "#";
+
             return (
-              <TourCard
+              <article
                 key={tour._id}
-                tour={{
-                  title: tour.title,
-                  slug: tour.slug,
-                  duration: tour.duration,
-                  listingImage: tour.listingImage,
-                  highlightBadge: tour.highlightBadge,
-                  pricing: tour.pricing,
-                  currency: tour.currency,
-                  peekUrl: peekBookingUrl(tour.peekProId),
-                }}
-              />
+                className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+              >
+                <div className="relative">
+                  {imageUrl ? (
+                    <Image
+                      src={imageUrl}
+                      alt={title}
+                      width={1200}
+                      height={800}
+                      className="h-56 w-full object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 25vw"
+                    />
+                  ) : (
+                    <div className="h-56 w-full bg-slate-200" />
+                  )}
+                </div>
+                <div className="space-y-4 p-5">
+                  <div className="inline-flex items-center gap-2 text-sm text-slate-600">
+                    <Clock3 className="h-4 w-4" />
+                    <span>{tour.duration || "Duration on request"}</span>
+                  </div>
+                  <h3 className="text-xl font-semibold leading-tight text-slate-900">{title}</h3>
+                  <p className="text-lg font-semibold text-blue-950">From {computedPrice}</p>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <a
+                      href={peekUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-11 flex-1 items-center justify-center rounded-xl bg-orange-500 px-4 text-sm font-semibold text-white transition hover:bg-orange-600"
+                    >
+                      Book Now
+                    </a>
+                    <Link
+                      href={slug ? `/excursions/${slug}` : "/excursions"}
+                      className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                    >
+                      More Info
+                    </Link>
+                  </div>
+                </div>
+              </article>
             );
           })}
         </div>

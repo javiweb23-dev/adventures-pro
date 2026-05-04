@@ -1,6 +1,11 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { groq, PortableText, type PortableTextComponents } from "next-sanity";
+import {
+  groq,
+  PortableText,
+  type PortableTextBlock,
+  type PortableTextComponents,
+} from "next-sanity";
 import { Link } from "@/i18n/navigation";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
@@ -16,7 +21,7 @@ type PostDoc = {
   title?: string | null;
   mainImage?: { asset: unknown };
   publishedAt?: string;
-  body?: unknown[];
+  body?: PortableTextBlock[];
 };
 
 const POST_QUERY = groq`*[_type == "post" && slug.current == $slug][0]{
@@ -108,7 +113,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       })
     : null;
 
-  const bodyValue = Array.isArray(post.body) ? post.body : [];
+  const bodyValue = post.body ?? [];
 
   return (
     <article className="min-h-screen bg-white text-slate-900">
@@ -140,7 +145,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
         {bodyValue.length > 0 ? (
           <div className="mt-12 max-w-none border-t border-slate-100 pt-12">
-            <PortableText value={bodyValue as any} components={portableComponents} />
+            <PortableText value={bodyValue} components={portableComponents} />
           </div>
         ) : null}
       </div>

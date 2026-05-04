@@ -1,10 +1,8 @@
 import {
   Baby,
-  Backpack,
   Calendar,
   Camera,
   Check,
-  ChevronRight,
   Clock,
   ShieldCheck,
   Ticket,
@@ -16,15 +14,10 @@ import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { formatTourPrice, peekBookingUrl } from "@/lib/tourPrice";
+import { routing, type AppLocale } from "@/i18n/routing";
 
 type TourPageProps = {
-  params: Promise<{ slug: string }>;
-};
-
-type PortableTextBlock = {
-  _type: "block";
-  _key: string;
-  children?: Array<{ _type: "span"; _key: string; text?: string }>;
+  params: Promise<{ slug: string; locale?: AppLocale }>;
 };
 
 type TourData = {
@@ -39,38 +32,33 @@ type TourData = {
   starts: string;
   peekProId: string;
   gallery?: Array<{ _key: string; asset: unknown }> | null;
-  infoTour?: PortableTextBlock[] | null;
-  program?: PortableTextBlock[] | null;
-  whatToBring?: string[] | null;
-  whatsIncluded?: string[] | null;
-  goodToKnow?: PortableTextBlock[] | null;
-  faq?: Array<{ _key: string; question: string; answer: string }> | null;
+  infoTour?: string | null;
+  whatHappens?: string | null;
+  includes?: string | null;
+  excludes?: string | null;
+  goodToKnow?: string | null;
+  faq?: string | null;
 };
 
 const TOUR_QUERY = `*[_type == "tour" && slug.current == $slug][0]{
-  "title": coalesce(title.en, title),
+  "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
   "slug": slug.current,
   "category": category->slug.current,
   "currency": coalesce(currency, "USD"),
   pricing[]{_key, label, price},
-  duration,
-  availability,
-  ages,
-  starts,
+  "duration": coalesce(select($locale == "fr-ca" => duration.frCA, duration[$locale]), duration.en, duration.es, duration.frCA),
+  "availability": coalesce(select($locale == "fr-ca" => availability.frCA, availability[$locale]), availability.en, availability.es, availability.frCA),
+  "ages": coalesce(select($locale == "fr-ca" => ages.frCA, ages[$locale]), ages.en, ages.es, ages.frCA),
+  "starts": coalesce(select($locale == "fr-ca" => starts.frCA, starts[$locale]), starts.en, starts.es, starts.frCA),
   peekProId,
   gallery[]{_key, asset},
-  infoTour,
-  program,
-  whatToBring,
-  whatsIncluded,
-  goodToKnow,
-  faq[]{_key, question, answer}
+  "infoTour": coalesce(select($locale == "fr-ca" => infoTour.frCA, infoTour[$locale]), infoTour.en, infoTour.es, infoTour.frCA),
+  "whatHappens": coalesce(select($locale == "fr-ca" => whatHappens.frCA, whatHappens[$locale]), whatHappens.en, whatHappens.es, whatHappens.frCA),
+  "includes": coalesce(select($locale == "fr-ca" => includes.frCA, includes[$locale]), includes.en, includes.es, includes.frCA),
+  "excludes": coalesce(select($locale == "fr-ca" => excludes.frCA, excludes[$locale]), excludes.en, excludes.es, excludes.frCA),
+  "goodToKnow": coalesce(select($locale == "fr-ca" => goodToKnow.frCA, goodToKnow[$locale]), goodToKnow.en, goodToKnow.es, goodToKnow.frCA),
+  "faq": coalesce(select($locale == "fr-ca" => faq.frCA, faq[$locale]), faq.en, faq.es, faq.frCA)
 }`;
-
-const extractPortableText = (blocks?: PortableTextBlock[] | null) =>
-  (blocks ?? [])
-    .map((block) => (block?.children ?? []).map((child) => child.text ?? "").join(""))
-    .filter((line) => line.trim().length > 0);
 
 const formatCategoryTitle = (value: string) =>
   (value?.split("-") || [])
@@ -101,18 +89,28 @@ const pickAdultLeadPricing = (
   return partial ?? null;
 };
 
+const splitLines = (value?: string | null) =>
+  (value ?? "")
+    .split(/\r?\n/g)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
 export default async function TourDetailPage({ params }: TourPageProps) {
-  const { slug } = await params;
-  const tour = await client.fetch<TourData | null>(TOUR_QUERY, { slug });
+  const { slug, locale } = await params;
+  const activeLocale = locale ?? routing.defaultLocale;
+  const tour = await client.fetch<TourData | null>(TOUR_QUERY, { slug, locale: activeLocale });
 
   if (!tour) {
     notFound();
   }
 
   const currency = tour.currency || "USD";
-  const infoTourLines = extractPortableText(tour.infoTour);
-  const programLines = extractPortableText(tour.program);
-  const goodToKnowLines = extractPortableText(tour.goodToKnow);
+  const infoTourLines = splitLines(tour.infoTour);
+  const programLines = splitLines(tour.whatHappens);
+  const goodToKnowLines = splitLines(tour.goodToKnow);
+  const includesLines = splitLines(tour.includes);
+  const excludesLines = splitLines(tour.excludes);
+  const faqText = (tour.faq ?? "").trim();
   const gallery = (tour.gallery ?? []).slice(0, 3);
   const galleryLightbox = (tour.gallery ?? []).slice(0, 5);
   const pricing = tour.pricing ?? [];
@@ -267,21 +265,16 @@ export default async function TourDetailPage({ params }: TourPageProps) {
 
             <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
               <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-                What to bring
+                Excludes
               </h2>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
-                {(tour.whatToBring ?? []).map((item) => (
-                  <div
-                    key={item}
-                    className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
-                  >
-                    <Backpack className="h-5 w-5 text-slate-700" />
-                    <span className="text-sm font-medium text-slate-800">
-                      {item}
-                    </span>
-                  </div>
+              <ul className="mt-6 space-y-3">
+                {(excludesLines ?? []).map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400" />
+                    <span className="text-[15px] text-slate-700">{item}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </section>
 
             <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
@@ -289,7 +282,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
                 What&apos;s included
               </h2>
               <ul className="mt-6 space-y-3">
-                {(tour.whatsIncluded ?? []).map((item) => (
+                {(includesLines ?? []).map((item) => (
                   <li key={item} className="flex items-start gap-3">
                     <Check className="mt-0.5 h-5 w-5 text-emerald-500" />
                     <span className="text-[15px] text-slate-700">{item}</span>
@@ -313,21 +306,10 @@ export default async function TourDetailPage({ params }: TourPageProps) {
               <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
                 FAQs
               </h2>
-              <div className="mt-6 divide-y divide-slate-200 rounded-xl border border-slate-200">
-                {(tour.faq ?? []).map((faq) => (
-                  <details
-                    key={faq._key}
-                    className="group px-5 py-4 open:bg-slate-50"
-                  >
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left text-base font-medium text-slate-900">
-                      {faq.question}
-                      <ChevronRight className="h-5 w-5 text-slate-500 transition group-open:rotate-90" />
-                    </summary>
-                    <p className="pt-3 text-[15px] leading-7 text-slate-700">
-                      {faq.answer}
-                    </p>
-                  </details>
-                ))}
+              <div className="mt-6 rounded-xl border border-slate-200 bg-white px-5 py-4">
+                <p className="whitespace-pre-line text-[15px] leading-7 text-slate-700">
+                  {faqText}
+                </p>
               </div>
             </section>
           </div>
