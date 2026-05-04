@@ -78,6 +78,7 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
         activePriceRange === "all" ||
         (activePriceRange === "under-100" &&
           Number.isFinite(firstPrice) &&
+          firstPrice >= 0 &&
           firstPrice < 100) ||
         (activePriceRange === "100-200" &&
           Number.isFinite(firstPrice) &&

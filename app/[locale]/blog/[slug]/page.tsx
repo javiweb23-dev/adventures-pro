@@ -140,7 +140,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
         {bodyValue.length > 0 ? (
           <div className="mt-12 max-w-none border-t border-slate-100 pt-12">
-            <PortableText value={bodyValue} components={portableComponents} />
+            <PortableText value={bodyValue as any} components={portableComponents} />
           </div>
         ) : null}
       </div>
