@@ -3,6 +3,9 @@ import TourDetailPage from "@/app/tours/[slug]/page";
 import { client } from "@/sanity/lib/client";
 import { routing, type AppLocale } from "@/i18n/routing";
 
+export const revalidate = 0;
+export const dynamicParams = true;
+
 type LocalizedTourDetailPageProps = {
   params: Promise<{ locale: AppLocale; slug: string }>;
 };

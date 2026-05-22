@@ -41,7 +41,7 @@ type ComboDay = {
 type TourData = {
   title: string;
   slug: string;
-  category: string;
+  category?: string | null;
   currency?: string;
   pricing?: Array<{ _key: string; label: string; price?: number | string | null }> | null;
   duration?: string;
@@ -65,9 +65,13 @@ type TourData = {
 const TOUR_QUERY = `*[_type == "tour" && slug.current == $slug][0]{
   "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title.es, title.frCA),
   "slug": slug.current,
-  "category": select(
-    isCombo == true => mainTour->category->slug.current,
-    category->slug.current
+  "category": coalesce(
+    select(
+      isCombo == true => mainTour->category->slug.current,
+      category->slug.current
+    ),
+    coalesce(comboDays, comboItems)[0].tour->category->slug.current,
+    "multidays-tours"
   ),
   "currency": coalesce(currency, mainTour->currency, "USD"),
   pricing[]{_key, label, price},
@@ -77,7 +81,7 @@ const TOUR_QUERY = `*[_type == "tour" && slug.current == $slug][0]{
   "gallery": (
     coalesce(gallery, []) +
     coalesce(mainTour->gallery, []) +
-    coalesce(comboDays[].tour->gallery, [])
+    coalesce(coalesce(comboDays, comboItems)[].tour->gallery, [])
   )[]{_key, asset},
   "comboComments": coalesce(select($locale == "fr-ca" => comboComments.frCA, comboComments[$locale]), comboComments.en, comboComments.es, comboComments.frCA),
   "duration": select(
@@ -116,7 +120,7 @@ const TOUR_QUERY = `*[_type == "tour" && slug.current == $slug][0]{
     ),
     coalesce(select($locale == "fr-ca" => starts.frCA, starts[$locale]), starts.en, starts.es, starts.frCA)
   ),
-  comboDays[]{
+  "comboDays": coalesce(comboDays, comboItems)[]{
     _key,
     dayLabel,
     tour->{
@@ -196,9 +200,13 @@ const buildGallery = (
 export default async function TourDetailPage({ params }: TourPageProps) {
   const { slug, locale } = await params;
   const activeLocale = locale ?? routing.defaultLocale;
-  const tour = await client.fetch<TourData | null>(TOUR_QUERY, { slug, locale: activeLocale });
+  const tour = await client.fetch<TourData | null>(
+    TOUR_QUERY,
+    { slug, locale: activeLocale },
+    { cache: "no-store" },
+  );
 
-  if (!tour) {
+  if (!tour?.slug) {
     notFound();
   }
 
@@ -224,7 +232,8 @@ export default async function TourDetailPage({ params }: TourPageProps) {
       : "Consultar precio"
     : null;
   const peekUrl = peekBookingUrl(tour.peekProId);
-  const categoryTitle = formatCategoryTitle(tour.category);
+  const categorySlug = tour.category || "multidays-tours";
+  const categoryTitle = formatCategoryTitle(categorySlug);
 
   return (
     <div className="bg-slate-50 text-slate-900">
@@ -232,7 +241,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
         <Breadcrumbs
           items={[
             { label: "Home", href: "/" },
-            { label: categoryTitle, href: `/excursions/${tour.category}` },
+            { label: categoryTitle, href: `/excursions/${categorySlug}` },
             { label: tour.title },
           ]}
         />

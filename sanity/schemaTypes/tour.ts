@@ -89,6 +89,40 @@ export const tourType = defineType({
       ],
     }),
     defineField({
+      name: "comboItems",
+      title: "Combo Days (legacy)",
+      type: "array",
+      readOnly: true,
+      deprecated: { reason: "Use Combo Days. Remove this field after migrating." },
+      hidden: ({ document }) => {
+        const d = document as {
+          isCombo?: boolean;
+          comboItems?: unknown[];
+          comboDays?: unknown[];
+        };
+        if (!d?.isCombo || !d?.comboItems?.length) return true;
+        return Boolean(d?.comboDays?.length);
+      },
+      of: [
+        {
+          type: "object",
+          fields: [
+            defineField({
+              name: "dayLabel",
+              title: "Day Label",
+              type: "string",
+            }),
+            defineField({
+              name: "tour",
+              title: "Tour",
+              type: "reference",
+              to: [{ type: "tour" }],
+            }),
+          ],
+        },
+      ],
+    }),
+    defineField({
       name: "comboComments",
       title: "Combo Comments",
       type: "localizedText",
