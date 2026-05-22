@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { client } from "@/sanity/lib/client";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { formatTourPrice, peekBookingUrl } from "@/lib/tourPrice";
+import { tourExcursionPath } from "@/lib/tourSlug";
 import { urlFor } from "@/sanity/lib/image";
 
 type ListingPageProps = {
@@ -150,7 +151,7 @@ export default async function CategoryPage({ params }: ListingPageProps) {
                       Book Now
                     </a>
                     <Link
-                      href={slug ? `/excursions/${slug}` : "/excursions"}
+                      href={tourExcursionPath(slug)}
                       className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
                     >
                       More Info

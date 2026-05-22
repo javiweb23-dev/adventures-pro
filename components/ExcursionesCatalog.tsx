@@ -6,6 +6,7 @@ import { Clock3 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { urlFor } from "@/sanity/lib/image";
 import { formatTourPrice, peekBookingUrl } from "@/lib/tourPrice";
+import { tourExcursionPath } from "@/lib/tourSlug";
 
 export type ExcursionTour = {
   _id: string;
@@ -142,7 +143,7 @@ export default function ExcursionesCatalog({
                       Book Now
                     </a>
                     <Link
-                      href={slug ? `/excursions/${slug}` : "/excursions"}
+                      href={tourExcursionPath(slug)}
                       className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
                     >
                       More Info

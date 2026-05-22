@@ -14,6 +14,7 @@ import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { formatTourPrice, peekBookingUrl } from "@/lib/tourPrice";
+import { slugLookupVariants } from "@/lib/tourSlug";
 import { routing, type AppLocale } from "@/i18n/routing";
 
 type TourPageProps = {
@@ -62,7 +63,7 @@ type TourData = {
   faq?: string | null;
 };
 
-const TOUR_QUERY = `*[_type == "tour" && slug.current == $slug][0]{
+const TOUR_QUERY = `*[_type == "tour" && slug.current in $slugCandidates][0]{
   "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title.es, title.frCA),
   "slug": slug.current,
   "category": coalesce(
@@ -200,9 +201,10 @@ const buildGallery = (
 export default async function TourDetailPage({ params }: TourPageProps) {
   const { slug, locale } = await params;
   const activeLocale = locale ?? routing.defaultLocale;
+  const slugCandidates = slugLookupVariants(slug);
   const tour = await client.fetch<TourData | null>(
     TOUR_QUERY,
-    { slug, locale: activeLocale },
+    { slugCandidates, locale: activeLocale },
     { cache: "no-store" },
   );
 

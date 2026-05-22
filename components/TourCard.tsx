@@ -2,6 +2,7 @@ import { Clock3 } from "lucide-react";
 import { urlFor } from "@/sanity/lib/image";
 import { Link } from "@/i18n/navigation";
 import { formatTourPrice } from "@/lib/tourPrice";
+import { tourExcursionPath } from "@/lib/tourSlug";
 
 type TourCardProps = {
   tour: {
@@ -41,7 +42,7 @@ export default function TourCard({ tour }: TourCardProps) {
     ? `From ${formatTourPrice(tour.currency || "USD", firstPriceValue)}`
     : tour.fromPriceLabel || "Consultar precio";
   const safeSlug = tour.slug || "";
-  const detailsHref = safeSlug ? `/excursions/${safeSlug}` : "/excursions";
+  const detailsHref = tourExcursionPath(safeSlug);
   const imageUrl = (() => {
     try {
       return tour.listingImage?.asset

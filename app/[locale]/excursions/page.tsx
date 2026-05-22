@@ -5,11 +5,15 @@ import ExcursionesCatalog, {
 import { client } from "@/sanity/lib/client";
 import { type AppLocale } from "@/i18n/routing";
 
-const excursionsQuery = groq`*[_type == "tour" && (!defined($category) || category->slug.current == $category)] | order(_createdAt desc) {
+const excursionsQuery = groq`*[_type == "tour" && (
+  !defined($category) ||
+  category->slug.current == $category ||
+  (isCombo == true && mainTour->category->slug.current == $category)
+)] | order(_createdAt desc) {
   _id,
   "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
   "slug": slug.current,
-  "mainImage": listingImage,
+  "mainImage": coalesce(listingImage, mainTour->listingImage),
   pricing[]{price},
   "duration": coalesce(select($locale == "fr-ca" => duration.frCA, duration[$locale]), duration.en, duration.es, duration.frCA),
   peekProId,

@@ -24,11 +24,33 @@ export const tourType = defineType({
       options: {
         source: (doc) => {
           const d = doc as TourSlugSourceDoc;
-          return d.title?.en || d.title?.es || "";
+          const raw = d.title?.en || d.title?.es || "";
+          return raw
+            .toLowerCase()
+            .replace(/https?:\/\//g, "")
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
         },
         maxLength: 96,
+        slugify: (input) =>
+          input
+            .toLowerCase()
+            .replace(/https?:\/\//g, "")
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, ""),
       },
-      validation: (rule) => rule.required(),
+      validation: (rule) =>
+        rule.required().custom((value) => {
+          const current = (value as { current?: string } | undefined)?.current;
+          if (!current) return true;
+          if (/[/.]/.test(current) && current.includes(".")) {
+            return "Use a short slug without domains or dots (e.g. saona-island-monkeyland-combo)";
+          }
+          if (current.includes("/")) {
+            return "Slug cannot contain slashes";
+          }
+          return true;
+        }),
     }),
     defineField({
       name: "isCombo",
