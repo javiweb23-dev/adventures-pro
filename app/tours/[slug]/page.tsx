@@ -52,6 +52,7 @@ type TourData = {
   mainImage?: { asset: unknown } | null;
   gallery?: GalleryImage[] | null;
   isCombo?: boolean;
+  comboComments?: string | null;
   comboDays?: ComboDay[] | null;
   infoTour?: string | null;
   whatHappens?: string | null;
@@ -64,8 +65,11 @@ type TourData = {
 const TOUR_QUERY = `*[_type == "tour" && slug.current == $slug][0]{
   "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title.es, title.frCA),
   "slug": slug.current,
-  "category": category->slug.current,
-  "currency": coalesce(currency, "USD"),
+  "category": select(
+    isCombo == true => mainTour->category->slug.current,
+    category->slug.current
+  ),
+  "currency": coalesce(currency, mainTour->currency, "USD"),
   pricing[]{_key, label, price},
   isCombo,
   peekProId,
@@ -75,6 +79,7 @@ const TOUR_QUERY = `*[_type == "tour" && slug.current == $slug][0]{
     coalesce(mainTour->gallery, []) +
     coalesce(comboDays[].tour->gallery, [])
   )[]{_key, asset},
+  "comboComments": coalesce(select($locale == "fr-ca" => comboComments.frCA, comboComments[$locale]), comboComments.en, comboComments.es, comboComments.frCA),
   "duration": select(
     isCombo == true => coalesce(
       select($locale == "fr-ca" => mainTour->duration.frCA, mainTour->duration[$locale]),
@@ -199,6 +204,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
 
   const currency = tour.currency || "USD";
   const isCombo = tour.isCombo === true;
+  const comboCommentsLines = splitLines(tour.comboComments);
   const comboDays = tour.comboDays ?? [];
   const infoTourLines = splitLines(tour.infoTour);
   const programLines = splitLines(tour.whatHappens);
@@ -336,6 +342,24 @@ export default async function TourDetailPage({ params }: TourPageProps) {
         <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-[1fr_360px] lg:gap-12">
           <div className="space-y-6 md:space-y-12">
             {isCombo ? (
+              <>
+                {comboCommentsLines.length > 0 ? (
+                  <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
+                    <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+                      Combo notes
+                    </h2>
+                    <div className="mt-4 space-y-3">
+                      {comboCommentsLines.map((line) => (
+                        <p
+                          key={line}
+                          className="text-[15px] leading-relaxed text-slate-700"
+                        >
+                          {line}
+                        </p>
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
               <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
                 <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
                   Itinerario del Combo
@@ -446,6 +470,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
                   })}
                 </div>
               </section>
+              </>
             ) : (
               <>
                 <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">

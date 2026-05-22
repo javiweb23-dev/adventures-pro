@@ -1,6 +1,10 @@
 import { defineField, defineType } from "sanity";
 
 type TourSlugSourceDoc = { title?: { en?: string; es?: string; frCA?: string } };
+type TourDoc = { isCombo?: boolean };
+
+const hideWhenCombo = (ctx: { document?: unknown }) =>
+  (ctx.document as TourDoc | undefined)?.isCombo === true;
 
 export const tourType = defineType({
   name: "tour",
@@ -27,17 +31,6 @@ export const tourType = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
-      name: "description",
-      title: "Description",
-      type: "localizedText",
-    }),
-    defineField({
-      name: "isFeatured",
-      title: "Featured on Home",
-      type: "boolean",
-      initialValue: false,
-    }),
-    defineField({
       name: "isCombo",
       title: "¿Es un Combo?",
       type: "boolean",
@@ -51,7 +44,7 @@ export const tourType = defineType({
       hidden: ({ document }) => !document?.isCombo,
       validation: (rule) =>
         rule.custom((value, context) => {
-          const doc = context.document as { isCombo?: boolean };
+          const doc = context.document as TourDoc;
           if (doc?.isCombo && !value) return "Main tour is required for combos";
           return true;
         }),
@@ -96,17 +89,10 @@ export const tourType = defineType({
       ],
     }),
     defineField({
-      name: "category",
-      title: "Category",
-      type: "reference",
-      to: [{ type: "category" }],
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: "currency",
-      title: "Currency",
-      type: "string",
-      initialValue: "USD",
+      name: "comboComments",
+      title: "Combo Comments",
+      type: "localizedText",
+      hidden: ({ document }) => !document?.isCombo,
     }),
     defineField({
       name: "pricing",
@@ -140,53 +126,98 @@ export const tourType = defineType({
       validation: (rule) => rule.min(1),
     }),
     defineField({
-      name: "listingImage",
-      title: "Listing Image",
-      type: "image",
-      options: { hotspot: true },
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: "highlightBadge",
-      title: "Highlight Badge",
-      type: "string",
-    }),
-    defineField({
-      name: "duration",
-      title: "Duration",
-      type: "localizedString",
-      hidden: ({ document }) => document?.isCombo === true,
-    }),
-    defineField({
-      name: "availability",
-      title: "Availability",
-      type: "localizedString",
-    }),
-    defineField({
-      name: "ages",
-      title: "Ages",
-      type: "localizedString",
-    }),
-    defineField({
-      name: "starts",
-      title: "Starts",
-      type: "localizedString",
-    }),
-    defineField({
       name: "peekProId",
       title: "PeekPro ID",
       type: "string",
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: "description",
+      title: "Description",
+      type: "localizedText",
+      hidden: hideWhenCombo,
+    }),
+    defineField({
+      name: "isFeatured",
+      title: "Featured on Home",
+      type: "boolean",
+      initialValue: false,
+      hidden: hideWhenCombo,
+    }),
+    defineField({
+      name: "category",
+      title: "Category",
+      type: "reference",
+      to: [{ type: "category" }],
+      hidden: hideWhenCombo,
+      validation: (rule) =>
+        rule.custom((value, context) => {
+          const doc = context.document as TourDoc;
+          if (doc?.isCombo) return true;
+          if (!value) return "Category is required";
+          return true;
+        }),
+    }),
+    defineField({
+      name: "currency",
+      title: "Currency",
+      type: "string",
+      initialValue: "USD",
+      hidden: hideWhenCombo,
+    }),
+    defineField({
+      name: "listingImage",
+      title: "Listing Image",
+      type: "image",
+      options: { hotspot: true },
+      hidden: hideWhenCombo,
+      validation: (rule) =>
+        rule.custom((value, context) => {
+          const doc = context.document as TourDoc;
+          if (doc?.isCombo) return true;
+          if (!value) return "Listing image is required";
+          return true;
+        }),
+    }),
+    defineField({
+      name: "highlightBadge",
+      title: "Highlight Badge",
+      type: "string",
+      hidden: hideWhenCombo,
+    }),
+    defineField({
+      name: "duration",
+      title: "Duration",
+      type: "localizedString",
+      hidden: hideWhenCombo,
+    }),
+    defineField({
+      name: "availability",
+      title: "Availability",
+      type: "localizedString",
+      hidden: hideWhenCombo,
+    }),
+    defineField({
+      name: "ages",
+      title: "Ages",
+      type: "localizedString",
+      hidden: hideWhenCombo,
+    }),
+    defineField({
+      name: "starts",
+      title: "Starts",
+      type: "localizedString",
+      hidden: hideWhenCombo,
+    }),
+    defineField({
       name: "gallery",
       title: "Gallery",
       type: "array",
       of: [{ type: "image", options: { hotspot: true } }],
-      hidden: ({ document }) => document?.isCombo === true,
+      hidden: hideWhenCombo,
       validation: (rule) =>
         rule.custom((value, context) => {
-          const doc = context.document as { isCombo?: boolean };
+          const doc = context.document as TourDoc;
           if (doc?.isCombo) return true;
           if (!value || value.length < 1) return "At least one gallery image is required";
           return true;
@@ -196,43 +227,43 @@ export const tourType = defineType({
       name: "infoTour",
       title: "Info Tour",
       type: "localizedText",
-      hidden: ({ document }) => document?.isCombo === true,
+      hidden: hideWhenCombo,
     }),
     defineField({
       name: "whatHappens",
       title: "What Happens",
       type: "localizedText",
-      hidden: ({ document }) => document?.isCombo === true,
+      hidden: hideWhenCombo,
     }),
     defineField({
       name: "includes",
       title: "Includes",
       type: "localizedText",
-      hidden: ({ document }) => document?.isCombo === true,
+      hidden: hideWhenCombo,
     }),
     defineField({
       name: "whatToBring",
       title: "What to Bring",
       type: "localizedText",
-      hidden: ({ document }) => document?.isCombo === true,
+      hidden: hideWhenCombo,
     }),
     defineField({
       name: "excludes",
       title: "Excludes",
       type: "localizedText",
-      hidden: ({ document }) => document?.isCombo === true,
+      hidden: hideWhenCombo,
     }),
     defineField({
       name: "goodToKnow",
       title: "Good to Know",
       type: "localizedText",
-      hidden: ({ document }) => document?.isCombo === true,
+      hidden: hideWhenCombo,
     }),
     defineField({
       name: "faq",
       title: "FAQ",
       type: "localizedText",
-      hidden: ({ document }) => document?.isCombo === true,
+      hidden: hideWhenCombo,
     }),
   ],
   preview: {
@@ -242,10 +273,15 @@ export const tourType = defineType({
       titleFr: "title.frCA",
       slug: "slug.current",
       currency: "currency",
+      isCombo: "isCombo",
     },
-    prepare({ titleEn, titleEs, titleFr, slug, currency }) {
+    prepare({ titleEn, titleEs, titleFr, slug, currency, isCombo }) {
       const title = titleEn || titleEs || titleFr || "Untitled tour";
-      const subtitleParts = [slug ? `/${slug}` : "", currency || ""].filter(Boolean);
+      const subtitleParts = [
+        isCombo ? "Combo" : null,
+        slug ? `/${slug}` : null,
+        currency || null,
+      ].filter(Boolean);
       return {
         title,
         subtitle: subtitleParts.join(" • "),
