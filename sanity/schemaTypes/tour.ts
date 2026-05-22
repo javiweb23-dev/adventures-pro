@@ -38,6 +38,57 @@ export const tourType = defineType({
       initialValue: false,
     }),
     defineField({
+      name: "isCombo",
+      title: "¿Es un Combo?",
+      type: "boolean",
+      initialValue: false,
+    }),
+    defineField({
+      name: "comboItems",
+      title: "Combo Items",
+      type: "array",
+      hidden: ({ document }) => !document?.isCombo,
+      of: [
+        {
+          type: "object",
+          fields: [
+            defineField({
+              name: "dayLabel",
+              title: "Day Label",
+              type: "string",
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: "tour",
+              title: "Tour",
+              type: "reference",
+              to: [{ type: "tour" }],
+              validation: (rule) => rule.required(),
+            }),
+          ],
+          preview: {
+            select: {
+              dayLabel: "dayLabel",
+              titleEn: "tour.title.en",
+              titleEs: "tour.title.es",
+            },
+            prepare({ dayLabel, titleEn, titleEs }) {
+              return {
+                title: dayLabel,
+                subtitle: titleEn || titleEs,
+              };
+            },
+          },
+        },
+      ],
+    }),
+    defineField({
+      name: "comboComments",
+      title: "Combo Comments",
+      type: "localizedText",
+      hidden: ({ document }) => !document?.isCombo,
+    }),
+    defineField({
       name: "category",
       title: "Category",
       type: "reference",
@@ -130,11 +181,13 @@ export const tourType = defineType({
       name: "infoTour",
       title: "Info Tour",
       type: "localizedText",
+      hidden: ({ document }) => document?.isCombo === true,
     }),
     defineField({
       name: "whatHappens",
       title: "What Happens",
       type: "localizedText",
+      hidden: ({ document }) => document?.isCombo === true,
     }),
     defineField({
       name: "includes",

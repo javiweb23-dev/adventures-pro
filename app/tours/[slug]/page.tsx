@@ -20,6 +20,20 @@ type TourPageProps = {
   params: Promise<{ slug: string; locale?: AppLocale }>;
 };
 
+type ComboTourRef = {
+  title: string;
+  mainImage?: { asset: unknown } | null;
+  duration?: string | null;
+  infoTour?: string | null;
+  whatHappens?: string | null;
+};
+
+type ComboItem = {
+  _key: string;
+  dayLabel: string;
+  tour?: ComboTourRef | null;
+};
+
 type TourData = {
   title: string;
   slug: string;
@@ -32,6 +46,9 @@ type TourData = {
   starts: string;
   peekProId: string;
   gallery?: Array<{ _key: string; asset: unknown }> | null;
+  isCombo?: boolean;
+  comboComments?: string | null;
+  comboItems?: ComboItem[] | null;
   infoTour?: string | null;
   whatHappens?: string | null;
   includes?: string | null;
@@ -52,6 +69,19 @@ const TOUR_QUERY = `*[_type == "tour" && slug.current == $slug][0]{
   "starts": coalesce(select($locale == "fr-ca" => starts.frCA, starts[$locale]), starts.en, starts.es, starts.frCA),
   peekProId,
   gallery[]{_key, asset},
+  isCombo,
+  "comboComments": coalesce(select($locale == "fr-ca" => comboComments.frCA, comboComments[$locale]), comboComments.en, comboComments.es, comboComments.frCA),
+  comboItems[]{
+    _key,
+    dayLabel,
+    tour->{
+      "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title.es, title.frCA),
+      "mainImage": listingImage,
+      "duration": coalesce(select($locale == "fr-ca" => duration.frCA, duration[$locale]), duration.en, duration.es, duration.frCA),
+      "infoTour": coalesce(select($locale == "fr-ca" => infoTour.frCA, infoTour[$locale]), infoTour.en, infoTour.es, infoTour.frCA),
+      "whatHappens": coalesce(select($locale == "fr-ca" => whatHappens.frCA, whatHappens[$locale]), whatHappens.en, whatHappens.es, whatHappens.frCA)
+    }
+  },
   "infoTour": coalesce(select($locale == "fr-ca" => infoTour.frCA, infoTour[$locale]), infoTour.en, infoTour.es, infoTour.frCA),
   "whatHappens": coalesce(select($locale == "fr-ca" => whatHappens.frCA, whatHappens[$locale]), whatHappens.en, whatHappens.es, whatHappens.frCA),
   "includes": coalesce(select($locale == "fr-ca" => includes.frCA, includes[$locale]), includes.en, includes.es, includes.frCA),
@@ -105,6 +135,9 @@ export default async function TourDetailPage({ params }: TourPageProps) {
   }
 
   const currency = tour.currency || "USD";
+  const isCombo = tour.isCombo === true;
+  const comboCommentsLines = splitLines(tour.comboComments);
+  const comboItems = tour.comboItems ?? [];
   const infoTourLines = splitLines(tour.infoTour);
   const programLines = splitLines(tour.whatHappens);
   const goodToKnowLines = splitLines(tour.goodToKnow);
@@ -229,39 +262,112 @@ export default async function TourDetailPage({ params }: TourPageProps) {
 
         <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-[1fr_360px] lg:gap-12">
           <div className="space-y-6 md:space-y-12">
-            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
-              <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-                Tour overview
-              </h2>
-              <div className="mt-4 space-y-3">
-                {(infoTourLines ?? []).map((line) => (
-                  <p
-                    key={line}
-                    className="mb-6 text-[15px] leading-relaxed text-slate-700 last:mb-0"
-                  >
-                    {line}
-                  </p>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
-              <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-                What happens on this tour
-              </h2>
-              <div className="mt-6 space-y-5">
-                {(programLines ?? []).map((step, index) => (
-                  <div key={`${index}-${step}`} className="flex gap-4">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
-                      {index + 1}
+            {isCombo ? (
+              <>
+                {comboCommentsLines.length > 0 ? (
+                  <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
+                    <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+                      Combo notes
+                    </h2>
+                    <div className="mt-4 space-y-3">
+                      {comboCommentsLines.map((line) => (
+                        <p
+                          key={line}
+                          className="text-[15px] leading-relaxed text-slate-700"
+                        >
+                          {line}
+                        </p>
+                      ))}
                     </div>
-                    <p className="pt-1 text-[15px] leading-7 text-slate-700">
-                      {step}
-                    </p>
+                  </section>
+                ) : null}
+                {comboItems.map((item) => {
+                  const ref = item.tour;
+                  const itemInfoLines = splitLines(ref?.infoTour);
+                  const itemProgramLines = splitLines(ref?.whatHappens);
+                  return (
+                    <section
+                      key={item._key}
+                      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8"
+                    >
+                      <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+                        {ref?.title
+                          ? `${item.dayLabel} — ${ref.title}`
+                          : item.dayLabel}
+                      </h2>
+                      {ref?.duration ? (
+                        <p className="mt-3 inline-flex items-center gap-2 text-sm text-slate-600">
+                          <Clock className="h-4 w-4" />
+                          {ref.duration}
+                        </p>
+                      ) : null}
+                      {itemInfoLines.length > 0 ? (
+                        <div className="mt-6 space-y-3">
+                          {itemInfoLines.map((line) => (
+                            <p
+                              key={line}
+                              className="text-[15px] leading-relaxed text-slate-700"
+                            >
+                              {line}
+                            </p>
+                          ))}
+                        </div>
+                      ) : null}
+                      {itemProgramLines.length > 0 ? (
+                        <div className="mt-8 space-y-4 border-t border-slate-100 pt-8">
+                          {itemProgramLines.map((step, index) => (
+                            <div key={`${index}-${step}`} className="flex gap-4">
+                              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">
+                                {index + 1}
+                              </div>
+                              <p className="pt-0.5 text-[15px] leading-7 text-slate-700">
+                                {step}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </section>
+                  );
+                })}
+              </>
+            ) : (
+              <>
+                <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
+                  <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+                    Tour overview
+                  </h2>
+                  <div className="mt-4 space-y-3">
+                    {(infoTourLines ?? []).map((line) => (
+                      <p
+                        key={line}
+                        className="mb-6 text-[15px] leading-relaxed text-slate-700 last:mb-0"
+                      >
+                        {line}
+                      </p>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </section>
+                </section>
+
+                <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
+                  <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+                    What happens on this tour
+                  </h2>
+                  <div className="mt-6 space-y-5">
+                    {(programLines ?? []).map((step, index) => (
+                      <div key={`${index}-${step}`} className="flex gap-4">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
+                          {index + 1}
+                        </div>
+                        <p className="pt-1 text-[15px] leading-7 text-slate-700">
+                          {step}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </>
+            )}
 
             <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
               <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
