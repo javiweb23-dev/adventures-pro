@@ -14,14 +14,16 @@ type BlogPostPageProps = {
 
 type PostDoc = {
   title?: string | null;
+  excerpt?: string | null;
   mainImage?: { asset: unknown };
   publishedAt?: string;
   body?: string | null;
 };
 
 const POST_QUERY = groq`*[_type == "post" && slug.current == $slug][0]{
-  "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
-  "body": coalesce(select($locale == "fr-ca" => body.frCA, body[$locale]), body.en, body),
+  "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title.es, title.frCA),
+  "excerpt": coalesce(select($locale == "fr-ca" => excerpt.frCA, excerpt[$locale]), excerpt.en, excerpt.es, excerpt.frCA),
+  "body": coalesce(select($locale == "fr-ca" => body.frCA, body[$locale]), body.en, body.es, body.frCA),
   mainImage,
   publishedAt
 }`;
@@ -53,6 +55,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       })
     : null;
 
+  const title = post.title.trim();
+  const excerpt = post.excerpt?.trim();
   const bodyParagraphs = (post.body ?? "")
     .split(/\n\n+/)
     .map((p) => p.trim())
@@ -72,7 +76,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <div className="relative mt-10 aspect-[16/9] w-full overflow-hidden rounded-lg bg-slate-100">
             <Image
               src={imageUrl}
-              alt={post.title}
+              alt={title}
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 768px"
@@ -82,9 +86,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         ) : null}
 
         <header className="mt-10">
-          <h1 className="text-3xl font-semibold tracking-tight text-blue-950 md:text-4xl">{post.title}</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-blue-950 md:text-4xl">{title}</h1>
           {dateLabel ? <p className="mt-3 text-sm text-slate-500">{dateLabel}</p> : null}
         </header>
+
+        {excerpt ? (
+          <p className="mt-6 text-lg leading-relaxed text-slate-700">{excerpt}</p>
+        ) : null}
 
         {bodyParagraphs.length > 0 ? (
           <div className="mt-12 max-w-none space-y-5 border-t border-slate-100 pt-12 text-[15px] leading-relaxed text-slate-700 md:text-base">

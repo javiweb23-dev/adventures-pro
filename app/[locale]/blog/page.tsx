@@ -1,7 +1,8 @@
 import { groq } from "next-sanity";
-import Link from "next/link";
+import { setRequestLocale } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { client } from "@/sanity/lib/client";
-import { routing } from "@/i18n/routing";
+import type { AppLocale } from "@/i18n/routing";
 
 type PostRow = {
   _id: string;
@@ -17,8 +18,13 @@ const ALL_POSTS_QUERY = groq`*[_type == "post"] | order(publishedAt desc) {
   "excerpt": coalesce(select($locale == "fr-ca" => excerpt.frCA, excerpt[$locale]), excerpt.en, excerpt.es, excerpt.frCA)
 }`;
 
-export default async function BlogIndexPage() {
-  const locale = routing.defaultLocale;
+type BlogIndexPageProps = {
+  params: Promise<{ locale: AppLocale }>;
+};
+
+export default async function BlogIndexPage({ params }: BlogIndexPageProps) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const posts = await client.fetch<PostRow[]>(ALL_POSTS_QUERY, { locale });
 
   return (
