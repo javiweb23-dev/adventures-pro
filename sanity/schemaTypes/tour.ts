@@ -44,8 +44,21 @@ export const tourType = defineType({
       initialValue: false,
     }),
     defineField({
-      name: "comboItems",
-      title: "Combo Items",
+      name: "mainTour",
+      title: "Main Tour",
+      type: "reference",
+      to: [{ type: "tour" }],
+      hidden: ({ document }) => !document?.isCombo,
+      validation: (rule) =>
+        rule.custom((value, context) => {
+          const doc = context.document as { isCombo?: boolean };
+          if (doc?.isCombo && !value) return "Main tour is required for combos";
+          return true;
+        }),
+    }),
+    defineField({
+      name: "comboDays",
+      title: "Combo Days",
       type: "array",
       hidden: ({ document }) => !document?.isCombo,
       of: [
@@ -81,12 +94,6 @@ export const tourType = defineType({
           },
         },
       ],
-    }),
-    defineField({
-      name: "comboComments",
-      title: "Combo Comments",
-      type: "localizedText",
-      hidden: ({ document }) => !document?.isCombo,
     }),
     defineField({
       name: "category",
@@ -148,6 +155,7 @@ export const tourType = defineType({
       name: "duration",
       title: "Duration",
       type: "localizedString",
+      hidden: ({ document }) => document?.isCombo === true,
     }),
     defineField({
       name: "availability",
@@ -175,7 +183,14 @@ export const tourType = defineType({
       title: "Gallery",
       type: "array",
       of: [{ type: "image", options: { hotspot: true } }],
-      validation: (rule) => rule.min(1),
+      hidden: ({ document }) => document?.isCombo === true,
+      validation: (rule) =>
+        rule.custom((value, context) => {
+          const doc = context.document as { isCombo?: boolean };
+          if (doc?.isCombo) return true;
+          if (!value || value.length < 1) return "At least one gallery image is required";
+          return true;
+        }),
     }),
     defineField({
       name: "infoTour",
@@ -193,21 +208,31 @@ export const tourType = defineType({
       name: "includes",
       title: "Includes",
       type: "localizedText",
+      hidden: ({ document }) => document?.isCombo === true,
+    }),
+    defineField({
+      name: "whatToBring",
+      title: "What to Bring",
+      type: "localizedText",
+      hidden: ({ document }) => document?.isCombo === true,
     }),
     defineField({
       name: "excludes",
       title: "Excludes",
       type: "localizedText",
+      hidden: ({ document }) => document?.isCombo === true,
     }),
     defineField({
       name: "goodToKnow",
       title: "Good to Know",
       type: "localizedText",
+      hidden: ({ document }) => document?.isCombo === true,
     }),
     defineField({
       name: "faq",
       title: "FAQ",
       type: "localizedText",
+      hidden: ({ document }) => document?.isCombo === true,
     }),
   ],
   preview: {
