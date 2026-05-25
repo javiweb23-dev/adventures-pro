@@ -2,12 +2,12 @@ import HeroSearch from "@/components/HeroSearch";
 import HomeHeroText from "@/components/HomeHeroText";
 import HomeHeroSlider from "@/components/HomeHeroSlider";
 import PromoBanner from "@/components/PromoBanner";
-import FeaturedAdventures from "@/components/FeaturedAdventures";
+import FeaturedAdventures, { type FeaturedTour } from "@/components/FeaturedAdventures";
 import ReviewsSection from "@/components/ReviewsSection";
 import BoutiqueBanner from "@/components/BoutiqueBanner";
 import AllianceLogos from "@/components/AllianceLogos";
 import BlogSection from "@/components/BlogSection";
-import LiveDiscoveryHub from "@/components/LiveDiscoveryHub";
+import LiveDiscoveryHub, { type DiscoveryTour } from "@/components/LiveDiscoveryHub";
 import LeadForm from "@/components/LeadForm";
 import { client } from "@/sanity/lib/client";
 import { groq } from "next-sanity";
@@ -24,9 +24,52 @@ type LandingPageData = {
   sliderImages?: Array<{ url?: string }>;
 };
 
+const featuredToursQuery = groq`*[_type == "tour" && isFeatured == true] | order(_createdAt desc) {
+  _id,
+  "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
+  "slug": slug.current,
+  "listingImage": coalesce(listingImage, mainTour->listingImage),
+  highlightBadge,
+  peekProId,
+  "currency": coalesce(currency, mainTour->currency, "USD"),
+  "duration": coalesce(
+    select(isCombo == true => coalesce(
+      select($locale == "fr-ca" => mainTour->duration.frCA, mainTour->duration[$locale]),
+      mainTour->duration.en,
+      mainTour->duration.es,
+      mainTour->duration.frCA
+    ), null),
+    coalesce(select($locale == "fr-ca" => duration.frCA, duration[$locale]), duration.en, duration.es, duration.frCA)
+  ),
+  pricing[]{price}
+}`;
+
+const allDiscoveryToursQuery = groq`*[_type == "tour"] | order(_createdAt desc) {
+  _id,
+  "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
+  "slug": slug.current,
+  "mainImage": coalesce(listingImage, mainTour->listingImage),
+  "category": coalesce(
+    select(isCombo == true => mainTour->category->slug.current, category->slug.current),
+    coalesce(comboDays, comboItems)[0].tour->category->slug.current
+  ),
+  "duration": coalesce(
+    select(isCombo == true => coalesce(
+      select($locale == "fr-ca" => mainTour->duration.frCA, mainTour->duration[$locale]),
+      mainTour->duration.en,
+      mainTour->duration.es,
+      mainTour->duration.frCA
+    ), null),
+    coalesce(select($locale == "fr-ca" => duration.frCA, duration[$locale]), duration.en, duration.es, duration.frCA)
+  ),
+  peekProId,
+  "currency": coalesce(currency, mainTour->currency, "USD"),
+  pricing[]{price}
+}`;
+
 export default async function Home({ params }: HomePageProps) {
   const { locale } = await params;
-  
+
   const landingPage = await client
     .fetch<LandingPageData | null>(
       groq`*[_type == "landingPage"][0]{
@@ -40,22 +83,10 @@ export default async function Home({ params }: HomePageProps) {
     )
     .catch(() => null);
 
-  const discoveryTours = await client
-    .fetch(
-      groq`*[_type == "tour"] | order(isFeatured desc, _createdAt desc) [0...12] {
-      _id,
-      "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
-      "slug": slug.current,
-      "mainImage": listingImage,
-      "category": category->slug.current,
-      "duration": coalesce(select($locale == "fr-ca" => duration.frCA, duration[$locale]), duration.en, duration.es, duration.frCA),
-      peekProId,
-      "currency": coalesce(currency, "USD"),
-      pricing[]{price}
-    }`,
-      { locale },
-    )
-    .catch(() => []);
+  const [featuredTours, allDiscoveryTours] = await Promise.all([
+    client.fetch<FeaturedTour[]>(featuredToursQuery, { locale }).catch(() => []),
+    client.fetch<DiscoveryTour[]>(allDiscoveryToursQuery, { locale }).catch(() => []),
+  ]);
 
   const cmsTitle = landingPage?.title?.trim() || null;
   const cmsSubtitle = landingPage?.subtitle?.trim() || null;
@@ -89,11 +120,11 @@ export default async function Home({ params }: HomePageProps) {
         <PromoBanner />
 
         <section className="mx-auto max-w-7xl px-6 pb-20 pt-14 md:px-10 md:pb-24 md:pt-16 lg:px-12">
-          <LiveDiscoveryHub tours={discoveryTours} />
+          <LiveDiscoveryHub tours={allDiscoveryTours} />
         </section>
 
         <section className="mx-auto max-w-7xl px-6 pb-24 pt-16 md:px-10 md:pb-32 md:pt-20 lg:px-12">
-          <FeaturedAdventures locale={locale} />
+          <FeaturedAdventures tours={featuredTours} />
         </section>
 
         <section className="mx-auto w-full max-w-4xl px-6 py-12 md:px-10 lg:px-12">

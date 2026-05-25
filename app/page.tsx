@@ -9,10 +9,26 @@ import ReviewsSection from "@/components/ReviewsSection";
 import BoutiqueBanner from "@/components/BoutiqueBanner";
 import AllianceLogos from "@/components/AllianceLogos";
 import BlogSection from "@/components/BlogSection";
+import { client } from "@/sanity/lib/client";
+import { groq } from "next-sanity";
 import { routing } from "@/i18n/routing";
 import enMessages from "../messages/en.json";
 
-export default function Home() {
+const featuredToursQuery = groq`*[_type == "tour" && isFeatured == true] | order(_createdAt desc) {
+  _id,
+  "title": coalesce(title.en, title.es, title.frCA),
+  "slug": slug.current,
+  listingImage,
+  highlightBadge,
+  peekProId,
+  "currency": coalesce(currency, "USD"),
+  "duration": coalesce(duration.en, duration.es, duration.frCA),
+  pricing[]{price}
+}`;
+
+export default async function Home() {
+  const featuredTours = await client.fetch(featuredToursQuery).catch(() => []);
+
   return (
     <NextIntlClientProvider locale={routing.defaultLocale} messages={enMessages}>
       <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -38,7 +54,7 @@ export default function Home() {
           </section>
 
           <section className="mx-auto max-w-7xl px-6 pb-24 pt-16 md:px-10 md:pb-32 md:pt-20 lg:px-12">
-            <FeaturedAdventures locale={routing.defaultLocale} />
+            <FeaturedAdventures tours={featuredTours} />
           </section>
 
           <ReviewsSection />

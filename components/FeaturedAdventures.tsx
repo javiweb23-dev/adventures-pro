@@ -1,12 +1,9 @@
-import { groq } from "next-sanity";
-import { client } from "@/sanity/lib/client";
 import TourCard from "@/components/TourCard";
 import FeaturedAdventuresHeading from "@/components/FeaturedAdventuresHeading";
 import FeaturedAdventuresEmpty from "@/components/FeaturedAdventuresEmpty";
 import { peekBookingUrl } from "@/lib/tourPrice";
-import { type AppLocale } from "@/i18n/routing";
 
-type FeaturedTour = {
+export type FeaturedTour = {
   _id: string;
   title?: string;
   slug?: string;
@@ -18,23 +15,11 @@ type FeaturedTour = {
   pricing?: Array<{ price?: number | string | null }>;
 };
 
-const FEATURED_TOURS_QUERY = groq`*[_type == "tour" && isFeatured == true] | order(_createdAt desc) [0...6] {
-  _id,
-  "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
-  "slug": slug.current,
-  "duration": coalesce(select($locale == "fr-ca" => duration.frCA, duration[$locale]), duration.en, duration.es, duration.frCA),
-  listingImage,
-  highlightBadge,
-  peekProId,
-  "currency": coalesce(currency, "USD"),
-  pricing[]{price}
-}`;
+type FeaturedAdventuresProps = {
+  tours: FeaturedTour[];
+};
 
-export default async function FeaturedAdventures({ locale }: { locale: AppLocale }) {
-  const tours = await client
-    .fetch<FeaturedTour[]>(FEATURED_TOURS_QUERY, { locale })
-    .catch(() => []);
-
+export default function FeaturedAdventures({ tours }: FeaturedAdventuresProps) {
   return (
     <section className="w-full">
       <FeaturedAdventuresHeading />
