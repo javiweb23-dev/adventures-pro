@@ -49,9 +49,12 @@ const allDiscoveryToursQuery = groq`*[_type == "tour"] | order(_createdAt desc) 
   "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
   "slug": slug.current,
   "mainImage": coalesce(listingImage, mainTour->listingImage),
-  "category": coalesce(
-    select(isCombo == true => mainTour->category->slug.current, category->slug.current),
-    coalesce(comboDays, comboItems)[0].tour->category->slug.current
+  "category": select(
+    isCombo == true => "combo-tours",
+    coalesce(
+      category->slug.current,
+      coalesce(comboDays, comboItems)[0].tour->category->slug.current
+    )
   ),
   "duration": coalesce(
     select(isCombo == true => coalesce(

@@ -26,6 +26,7 @@ const categoryFilters = [
   { id: "all", label: "All" },
   { id: "water-tours", label: "Water" },
   { id: "land-tours", label: "Land" },
+  { id: "combo-tours", label: "Combos" },
   { id: "private-tours", label: "Private" },
   { id: "multidays-tours", label: "Multidays" },
 ] as const;
@@ -91,8 +92,6 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
     });
   }, [activePriceRange, activeCategory, tours]);
 
-  const visibleTours = filteredTours.slice(0, 4);
-
   const resultsHref = useMemo(() => {
     const params = new URLSearchParams();
     if (activeCategory !== "all") params.set("category", activeCategory);
@@ -147,7 +146,7 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
         })}
       </div>
 
-      {visibleTours.length === 0 ? (
+      {filteredTours.length === 0 ? (
         <div className="mt-10 rounded-3xl border border-slate-200 bg-slate-50 px-6 py-12 text-center">
           <p className="text-lg font-semibold text-[#0a192f]">No tours found</p>
           <p className="mt-2 text-sm text-slate-600">
@@ -156,7 +155,7 @@ export default function LiveDiscoveryHub({ tours }: { tours?: DiscoveryTour[] })
         </div>
       ) : (
         <div className="mt-10 grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-          {visibleTours.map((tour) => {
+          {filteredTours.map((tour) => {
             const firstPricingValue = getFirstPricingValue(tour);
             const computedPrice = Number.isFinite(firstPricingValue)
               ? formatTourPrice(tour.currency ?? "USD", firstPricingValue)
