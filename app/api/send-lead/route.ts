@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 
 const LEAD_RECIPIENT = "javi.web23@gmail.com";
 
+
 type LeadPayload = {
   name?: string;
   email?: string;
