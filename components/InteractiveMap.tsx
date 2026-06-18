@@ -8,13 +8,13 @@ import { destinationExcursionPath } from "@/lib/destinationPath";
 import { type MapDestination } from "@/lib/sanityDestinations";
 
 const mapPositions: Record<string, { top: number; left: number }> = {
+  "puerto-plata": { top: 12, left: 28 },
+  samana: { top: 35, left: 68 },
+  miches: { top: 48, left: 76 },
   "punta-cana": { top: 60, left: 86 },
-  "la-romana-bayahibe": { top: 72, left: 75 },
-  "juan-dolio": { top: 72, left: 58 },
-  "santo-domingo": { top: 74, left: 48 },
-  samana: { top: 38, left: 62 },
-  miches: { top: 48, left: 72 },
-  "puerto-plata": { top: 18, left: 32 },
+  "bayahibe-la-romana": { top: 70, left: 70 },
+  "juan-dolio": { top: 73, left: 55 },
+  "santo-domingo": { top: 75, left: 48 },
 };
 
 type InteractiveMapProps = {
