@@ -2,6 +2,7 @@
   "Nav": {
     "home": "Home",
     "excursions": "Excursions",
+    "allExcursions": "All Excursions",
     "destinations": "Destinations",
     "transfers": "Transfers",
     "about": "Who We Are",
@@ -76,5 +77,11 @@
   },
   "CategoryBanners": {
     "exploreTours": "Explore Tours"
+  },
+  "CategoryPage": {
+    "searchPlaceholder": "Search tours in this category",
+    "searchButton": "Search",
+    "empty": "New adventures in this category are coming soon.",
+    "noResults": "No tours match your search."
   }
 }

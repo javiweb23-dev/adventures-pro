@@ -44,11 +44,10 @@ const featuredToursQuery = groq`*[_type == "tour" && isFeatured == true] | order
   pricing[]{price}
 }`;
 
-const categoriesQuery = groq`*[_type == "category"] | order(coalesce(title.en, title.es, title.frCA) asc) {
-  _id,
-  "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
+const categoriesQuery = groq`*[_type == "category"] {
   "slug": slug.current,
-  "mainImage": mainImage.asset->url
+  mainImage,
+  title
 }`;
 
 export default async function Home({ params }: HomePageProps) {
@@ -69,7 +68,7 @@ export default async function Home({ params }: HomePageProps) {
 
   const [featuredTours, categories] = await Promise.all([
     client.fetch<FeaturedTour[]>(featuredToursQuery, { locale }).catch(() => []),
-    client.fetch<CategoryBanner[]>(categoriesQuery, { locale }).catch(() => []),
+    client.fetch<CategoryBanner[]>(categoriesQuery).catch(() => []),
   ]);
 
   const cmsTitle = landingPage?.title?.trim() || null;

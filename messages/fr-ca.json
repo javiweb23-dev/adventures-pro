@@ -2,6 +2,7 @@
   "Nav": {
     "home": "Accueil",
     "excursions": "Excursions",
+    "allExcursions": "Toutes les excursions",
     "destinations": "Destinations",
     "transfers": "Navettes",
     "about": "Qui Nous Sommes",
@@ -78,5 +79,11 @@
   },
   "CategoryBanners": {
     "exploreTours": "Explorer les excursions"
+  },
+  "CategoryPage": {
+    "searchPlaceholder": "Rechercher des excursions dans cette catégorie",
+    "searchButton": "Rechercher",
+    "empty": "De nouvelles aventures arrivent bientôt dans cette catégorie.",
+    "noResults": "Aucune excursion ne correspond à votre recherche."
   }
 }

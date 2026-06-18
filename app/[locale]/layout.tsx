@@ -5,6 +5,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { routing } from "@/i18n/routing";
+import { client } from "@/sanity/lib/client";
+import { navCategoriesQuery, type NavCategory } from "@/lib/sanityCategories";
 
 type LocaleLayoutProps = {
   children: React.ReactNode;
@@ -27,10 +29,13 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
   const messages = await getMessages();
+  const categories = await client
+    .fetch<NavCategory[]>(navCategoriesQuery, { locale })
+    .catch(() => []);
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <Navbar />
+      <Navbar categories={categories} />
       {children}
       <Footer />
       <WhatsAppButton />

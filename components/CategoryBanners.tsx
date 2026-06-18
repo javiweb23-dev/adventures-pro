@@ -3,13 +3,15 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { categoryExcursionPath } from "@/lib/categoryPath";
+import { resolveLocalizedTitle, type LocalizedString } from "@/lib/localizedTitle";
+import { urlFor } from "@/sanity/lib/image";
 import { type AppLocale } from "@/i18n/routing";
 
 export type CategoryBanner = {
-  _id: string;
-  title?: string;
   slug?: string;
-  mainImage?: string;
+  title?: LocalizedString | string;
+  mainImage?: unknown;
 };
 
 type CategoryBannersProps = {
@@ -27,18 +29,27 @@ export default function CategoryBanners({ categories, locale }: CategoryBannersP
   return (
     <div key={locale} className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
       {categories.map((category) => {
-        const title = category.title ?? "Category";
         const slug = category.slug ?? "";
-        const href = slug ? `/excursions?category=${slug}` : "/excursions";
+        const title = resolveLocalizedTitle(category.title, locale) || "Category";
+        const href = slug ? categoryExcursionPath(slug) : "/excursions";
+        const imageUrl = (() => {
+          try {
+            return category.mainImage
+              ? urlFor(category.mainImage).width(1200).height(800).fit("crop").url()
+              : null;
+          } catch {
+            return null;
+          }
+        })();
 
         return (
           <article
-            key={category._id}
+            key={slug || title}
             className="group relative min-h-[280px] overflow-hidden rounded-xl shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl md:min-h-[320px]"
           >
-            {category.mainImage ? (
+            {imageUrl ? (
               <Image
-                src={category.mainImage}
+                src={imageUrl}
                 alt={title}
                 fill
                 className="object-cover transition duration-500 group-hover:scale-105"
