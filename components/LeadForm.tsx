@@ -33,6 +33,7 @@ export default function LeadForm() {
   const [guests, setGuests] = useState("");
   const [tripKey, setTripKey] = useState<TripKey | "">("");
   const [frequencyKey, setFrequencyKey] = useState<FrequencyKey | "">("");
+  const [botField, setBotField] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -73,6 +74,7 @@ export default function LeadForm() {
     setGuests("");
     setTripKey("");
     setFrequencyKey("");
+    setBotField("");
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -95,13 +97,13 @@ export default function LeadForm() {
           guests: Number(guests),
           tripType: tripKey ? TRIP_TO_EN[tripKey] : "",
           travelFrequency: frequencyKey ? FREQUENCY_TO_EN[frequencyKey] : "",
+          botField,
         }),
       });
 
-      const result = (await response.json()) as { error?: string };
       if (!response.ok) {
         setStatus("error");
-        setErrorMessage(result.error || t("errorGeneric"));
+        setErrorMessage(t("errorGeneric"));
         return;
       }
 
@@ -118,7 +120,17 @@ export default function LeadForm() {
       <h2 className="text-2xl font-semibold tracking-tight text-slate-900">{t("title")}</h2>
       <p className="mt-2 text-sm text-slate-600">{t("subtitle")}</p>
 
-      <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+      <form className="relative mt-6 space-y-4" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="botField"
+          value={botField}
+          onChange={(event) => setBotField(event.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="pointer-events-none absolute -z-50 h-0 w-0 opacity-0"
+        />
         <div>
           <label htmlFor="lead-name" className="mb-1.5 block text-sm font-medium text-slate-900">
             {t("name")}
