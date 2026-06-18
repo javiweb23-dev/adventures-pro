@@ -7,7 +7,7 @@ import ReviewsSection from "@/components/ReviewsSection";
 import BoutiqueBanner from "@/components/BoutiqueBanner";
 import AllianceLogos from "@/components/AllianceLogos";
 import BlogSection from "@/components/BlogSection";
-import LiveDiscoveryHub, { type DiscoveryTour } from "@/components/LiveDiscoveryHub";
+import CategoryBanners, { type CategoryBanner } from "@/components/CategoryBanners";
 import LeadForm from "@/components/LeadForm";
 import { client } from "@/sanity/lib/client";
 import { groq } from "next-sanity";
@@ -44,30 +44,11 @@ const featuredToursQuery = groq`*[_type == "tour" && isFeatured == true] | order
   pricing[]{price}
 }`;
 
-const allDiscoveryToursQuery = groq`*[_type == "tour"] | order(_createdAt desc) {
+const categoriesQuery = groq`*[_type == "category"] | order(coalesce(title.en, title.es, title.frCA) asc) {
   _id,
   "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
   "slug": slug.current,
-  "mainImage": coalesce(listingImage, mainTour->listingImage),
-  "category": select(
-    isCombo == true => "combo-tours",
-    coalesce(
-      category->slug.current,
-      coalesce(comboDays, comboItems)[0].tour->category->slug.current
-    )
-  ),
-  "duration": coalesce(
-    select(isCombo == true => coalesce(
-      select($locale == "fr-ca" => mainTour->duration.frCA, mainTour->duration[$locale]),
-      mainTour->duration.en,
-      mainTour->duration.es,
-      mainTour->duration.frCA
-    ), null),
-    coalesce(select($locale == "fr-ca" => duration.frCA, duration[$locale]), duration.en, duration.es, duration.frCA)
-  ),
-  peekProId,
-  "currency": coalesce(currency, mainTour->currency, "USD"),
-  pricing[]{price}
+  "mainImage": mainImage.asset->url
 }`;
 
 export default async function Home({ params }: HomePageProps) {
@@ -86,9 +67,9 @@ export default async function Home({ params }: HomePageProps) {
     )
     .catch(() => null);
 
-  const [featuredTours, allDiscoveryTours] = await Promise.all([
+  const [featuredTours, categories] = await Promise.all([
     client.fetch<FeaturedTour[]>(featuredToursQuery, { locale }).catch(() => []),
-    client.fetch<DiscoveryTour[]>(allDiscoveryToursQuery, { locale }).catch(() => []),
+    client.fetch<CategoryBanner[]>(categoriesQuery, { locale }).catch(() => []),
   ]);
 
   const cmsTitle = landingPage?.title?.trim() || null;
@@ -123,7 +104,7 @@ export default async function Home({ params }: HomePageProps) {
         <PromoBanner />
 
         <section className="mx-auto max-w-7xl px-6 pb-20 pt-14 md:px-10 md:pb-24 md:pt-16 lg:px-12">
-          <LiveDiscoveryHub tours={allDiscoveryTours} />
+          <CategoryBanners categories={categories} locale={locale} />
         </section>
 
         <section className="mx-auto max-w-7xl px-6 pb-24 pt-16 md:px-10 md:pb-32 md:pt-20 lg:px-12">

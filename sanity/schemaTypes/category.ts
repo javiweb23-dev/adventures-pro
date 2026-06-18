@@ -24,6 +24,12 @@ export const categoryType = defineType({
       },
       validation: (rule) => rule.required(),
     }),
+    defineField({
+      name: "mainImage",
+      title: "Main image",
+      type: "image",
+      options: { hotspot: true },
+    }),
   ],
   preview: {
     select: {

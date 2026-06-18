@@ -73,5 +73,8 @@
     "headline": "¡RESERVA 2 O MÁS ACTIVIDADES Y OBTÉN UN 10 % DE DESCUENTO!",
     "copyCode": "Copiar código",
     "copied": "¡Copiado!"
+  },
+  "CategoryBanners": {
+    "exploreTours": "Explorar tours"
   }
 }
