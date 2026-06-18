@@ -17,13 +17,15 @@ type CategoryData = {
   title?: string;
   slug?: string;
   mainImage?: unknown;
+  bannerImage?: unknown;
 };
 
 const categoryBySlugQuery = groq`*[_type == "category" && slug.current == $slug][0] {
   _id,
   "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title.es, title.frCA),
   "slug": slug.current,
-  mainImage
+  mainImage,
+  bannerImage
 }`;
 
 const categoryToursQuery = groq`*[_type == "tour" && category->slug.current == $slug] | order(_createdAt desc) {
@@ -75,7 +77,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <CategoryPageHero title={title} mainImage={category.mainImage} />
+      <CategoryPageHero
+        title={title}
+        bannerImage={category.bannerImage}
+        mainImage={category.mainImage}
+      />
       <CategorySearch tours={tours} categorySlug={slug} />
     </div>
   );

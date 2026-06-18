@@ -3,13 +3,19 @@ import { urlFor } from "@/sanity/lib/image";
 
 type CategoryPageHeroProps = {
   title: string;
+  bannerImage?: unknown;
   mainImage?: unknown;
 };
 
-export default function CategoryPageHero({ title, mainImage }: CategoryPageHeroProps) {
+export default function CategoryPageHero({
+  title,
+  bannerImage,
+  mainImage,
+}: CategoryPageHeroProps) {
+  const heroImage = bannerImage ?? mainImage;
   const imageUrl = (() => {
     try {
-      return mainImage ? urlFor(mainImage).width(1920).height(600).fit("crop").url() : null;
+      return heroImage ? urlFor(heroImage).width(1920).height(600).fit("crop").url() : null;
     } catch {
       return null;
     }
@@ -23,7 +29,7 @@ export default function CategoryPageHero({ title, mainImage }: CategoryPageHeroP
           alt={title}
           fill
           priority
-          className="object-cover"
+          className="object-cover object-center"
           sizes="100vw"
         />
       ) : (

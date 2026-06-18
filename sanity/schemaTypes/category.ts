@@ -30,6 +30,12 @@ export const categoryType = defineType({
       type: "image",
       options: { hotspot: true },
     }),
+    defineField({
+      name: "bannerImage",
+      title: "Internal Page Banner (Panoramic)",
+      type: "image",
+      options: { hotspot: true },
+    }),
   ],
   preview: {
     select: {
