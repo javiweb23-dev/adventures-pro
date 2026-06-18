@@ -86,5 +86,19 @@
     "searchButton": "Rechercher",
     "empty": "De nouvelles aventures arrivent bientôt dans cette catégorie.",
     "noResults": "Aucune excursion ne correspond à votre recherche."
+  },
+  "InteractiveMap": {
+    "kicker": "Explorer par destination",
+    "headline": "Découvrez la République dominicaine",
+    "mapAlt": "Carte de la République dominicaine",
+    "destinations": {
+      "punta-cana": "Punta Cana",
+      "la-romana-bayahibe": "La Romana / Bayahibe",
+      "juan-dolio": "Juan Dolio",
+      "santo-domingo": "Saint-Domingue",
+      "samana": "Samaná",
+      "miches": "Miches",
+      "puerto-plata": "Puerto Plata"
+    }
   }
 }

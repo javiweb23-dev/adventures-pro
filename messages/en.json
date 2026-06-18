@@ -84,5 +84,19 @@
     "searchButton": "Search",
     "empty": "New adventures in this category are coming soon.",
     "noResults": "No tours match your search."
+  },
+  "InteractiveMap": {
+    "kicker": "Explore by destination",
+    "headline": "Discover the Dominican Republic",
+    "mapAlt": "Map of the Dominican Republic",
+    "destinations": {
+      "punta-cana": "Punta Cana",
+      "la-romana-bayahibe": "La Romana / Bayahibe",
+      "juan-dolio": "Juan Dolio",
+      "santo-domingo": "Santo Domingo",
+      "samana": "Samaná",
+      "miches": "Miches",
+      "puerto-plata": "Puerto Plata"
+    }
   }
 }
