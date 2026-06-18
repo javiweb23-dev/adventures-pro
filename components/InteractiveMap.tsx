@@ -12,8 +12,8 @@ const mapPositions: Record<string, { top: number; left: number }> = {
   samana: { top: 35, left: 68 },
   miches: { top: 48, left: 76 },
   "punta-cana": { top: 60, left: 86 },
-  "bayahibe-la-romana": { top: 74, left: 78 },
-  "juan-dolio": { top: 73, left: 57 },
+  "bayahibe-la-romana": { top: 65, left: 73 },
+  "juan-dolio": { top: 68, left: 58 },
   "santo-domingo": { top: 75, left: 48 },
 };
 
