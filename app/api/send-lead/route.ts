@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
-const LEAD_RECIPIENT = "commercial@adventuresfinder.com";
+const LEAD_RECIPIENT = "javi.web23@gmail.com";
 
 type LeadPayload = {
   name?: string;
