@@ -20,10 +20,15 @@ export type CategoryTour = {
 type CategorySearchProps = {
   tours: CategoryTour[];
   categorySlug: string;
+  messagesNamespace?: "CategoryPage" | "DestinationPage";
 };
 
-export default function CategorySearch({ tours, categorySlug }: CategorySearchProps) {
-  const t = useTranslations("CategoryPage");
+export default function CategorySearch({
+  tours,
+  categorySlug,
+  messagesNamespace = "CategoryPage",
+}: CategorySearchProps) {
+  const t = useTranslations(messagesNamespace);
   const [query, setQuery] = useState("");
 
   const filteredTours = useMemo(() => {

@@ -1,5 +1,6 @@
 ﻿import { type SchemaTypeDefinition } from "sanity";
 import { categoryType } from "./category";
+import { destinationType } from "./destination";
 import { localizedStringType } from "./localizedString";
 import { localizedTextType } from "./localizedText";
 import { postType } from "./post";
@@ -14,6 +15,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     localizedStringType,
     localizedTextType,
     categoryType,
+    destinationType,
     tourType,
     postType,
     reviewType,

@@ -1,21 +1,43 @@
 "use client";
 
 import Image from "next/image";
+import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { destinationExcursionPath } from "@/lib/destinationPath";
+import { type MapDestination } from "@/lib/sanityDestinations";
 
-const destinations = [
-  { slug: "punta-cana", top: 62, left: 85 },
-  { slug: "la-romana-bayahibe", top: 72, left: 75 },
-  { slug: "juan-dolio", top: 76, left: 65 },
-  { slug: "santo-domingo", top: 78, left: 53 },
-  { slug: "samana", top: 35, left: 68 },
-  { slug: "miches", top: 43, left: 72 },
-  { slug: "puerto-plata", top: 22, left: 32 },
-] as const;
+const mapPositions: Record<string, { top: number; left: number }> = {
+  "punta-cana": { top: 62, left: 85 },
+  "la-romana-bayahibe": { top: 72, left: 75 },
+  "juan-dolio": { top: 76, left: 65 },
+  "santo-domingo": { top: 78, left: 53 },
+  samana: { top: 35, left: 68 },
+  miches: { top: 43, left: 72 },
+  "puerto-plata": { top: 22, left: 32 },
+};
 
-export default function InteractiveMap() {
+type InteractiveMapProps = {
+  destinations?: MapDestination[];
+};
+
+export default function InteractiveMap({ destinations = [] }: InteractiveMapProps) {
   const t = useTranslations("InteractiveMap");
+
+  const pinnedDestinations = useMemo(
+    () =>
+      destinations
+        .map((destination) => {
+          const position = mapPositions[destination.slug];
+          if (!position) return null;
+          return {
+            ...destination,
+            ...position,
+          };
+        })
+        .filter((item): item is MapDestination & { top: number; left: number } => item !== null),
+    [destinations],
+  );
 
   return (
     <section className="w-full">
@@ -27,28 +49,28 @@ export default function InteractiveMap() {
           {t("headline")}
         </h2>
       </div>
-      <div className="relative mx-auto aspect-video w-full max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-blue-950 shadow-lg md:h-[420px] md:aspect-auto">
+      <div className="relative mx-auto aspect-[16/9] h-auto w-full max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-blue-950 shadow-lg">
         <Image
           src="/images/dr-map.jpg"
           alt={t("mapAlt")}
           fill
-          className="object-cover object-center"
+          className="object-contain object-center"
           sizes="(max-width: 768px) 100vw, 1024px"
         />
-        {destinations.map((destination) => (
+        {pinnedDestinations.map((destination) => (
           <Link
             key={destination.slug}
-            href={`/excursions?destination=${destination.slug}`}
-            className="group absolute z-10 -translate-x-1/2 -translate-y-1/2"
+            href={destinationExcursionPath(destination.slug)}
+            className="group absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5 transition hover:scale-105"
             style={{ top: `${destination.top}%`, left: `${destination.left}%` }}
-            aria-label={t(`destinations.${destination.slug}`)}
+            aria-label={destination.title}
           >
             <span className="relative flex h-5 w-5 items-center justify-center">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-60" />
-              <span className="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-white bg-orange-500 shadow-md transition group-hover:scale-125" />
+              <span className="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-white bg-orange-500 shadow-md" />
             </span>
-            <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#0a192f] px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-lg transition duration-200 group-hover:opacity-100 md:text-sm">
-              {t(`destinations.${destination.slug}`)}
+            <span className="whitespace-nowrap rounded bg-black/50 px-2 py-0.5 text-xs font-semibold text-white shadow-[0_1px_4px_rgba(0,0,0,0.45)] md:text-sm">
+              {destination.title}
             </span>
           </Link>
         ))}

@@ -100,5 +100,11 @@
       "miches": "Miches",
       "puerto-plata": "Puerto Plata"
     }
+  },
+  "DestinationPage": {
+    "searchPlaceholder": "Rechercher des excursions dans cette destination",
+    "searchButton": "Rechercher",
+    "empty": "De nouvelles aventures arrivent bientôt dans cette destination.",
+    "noResults": "Aucune excursion ne correspond à votre recherche."
   }
 }

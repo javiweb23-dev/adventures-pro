@@ -4,6 +4,7 @@ import HomeHeroSlider from "@/components/HomeHeroSlider";
 import PromoBanner from "@/components/PromoBanner";
 import FeaturedAdventures, { type FeaturedTour } from "@/components/FeaturedAdventures";
 import InteractiveMap from "@/components/InteractiveMap";
+import { mapDestinationsQuery, type MapDestination } from "@/lib/sanityDestinations";
 import ReviewsSection from "@/components/ReviewsSection";
 import BoutiqueBanner from "@/components/BoutiqueBanner";
 import AllianceLogos from "@/components/AllianceLogos";
@@ -67,9 +68,10 @@ export default async function Home({ params }: HomePageProps) {
     )
     .catch(() => null);
 
-  const [featuredTours, categories] = await Promise.all([
+  const [featuredTours, categories, mapDestinations] = await Promise.all([
     client.fetch<FeaturedTour[]>(featuredToursQuery, { locale }).catch(() => []),
     client.fetch<CategoryBanner[]>(categoriesQuery).catch(() => []),
+    client.fetch<MapDestination[]>(mapDestinationsQuery, { locale }).catch(() => []),
   ]);
 
   const cmsTitle = landingPage?.title?.trim() || null;
@@ -112,7 +114,7 @@ export default async function Home({ params }: HomePageProps) {
         </section>
 
         <section className="mx-auto max-w-7xl px-6 pb-24 pt-8 md:px-10 md:pb-32 md:pt-12 lg:px-12">
-          <InteractiveMap />
+          <InteractiveMap destinations={mapDestinations} />
         </section>
 
         <section className="mx-auto w-full max-w-4xl px-6 py-12 md:px-10 lg:px-12">

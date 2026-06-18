@@ -98,5 +98,11 @@
       "miches": "Miches",
       "puerto-plata": "Puerto Plata"
     }
+  },
+  "DestinationPage": {
+    "searchPlaceholder": "Search tours in this destination",
+    "searchButton": "Search",
+    "empty": "New adventures in this destination are coming soon.",
+    "noResults": "No tours match your search."
   }
 }
