@@ -5,13 +5,23 @@ import { useTranslations } from "next-intl";
 
 type TripKey = "privateVacation" | "corporateRetreat" | "golfTrip" | "groupTravel";
 
+type FrequencyKey = "firstTime" | "oneToTwoTimes" | "frequentVisitor";
+
 const TRIP_ORDER: TripKey[] = ["privateVacation", "corporateRetreat", "golfTrip", "groupTravel"];
+
+const FREQUENCY_ORDER: FrequencyKey[] = ["firstTime", "oneToTwoTimes", "frequentVisitor"];
 
 const TRIP_TO_EN: Record<TripKey, string> = {
   privateVacation: "Private Vacation",
   corporateRetreat: "Corporate Retreat",
   golfTrip: "Golf Trip",
   groupTravel: "Group Travel",
+};
+
+const FREQUENCY_TO_EN: Record<FrequencyKey, string> = {
+  firstTime: "First time",
+  oneToTwoTimes: "1-2 times a year",
+  frequentVisitor: "Frequent visitor",
 };
 
 export default function LeadForm() {
@@ -22,6 +32,7 @@ export default function LeadForm() {
   const [travelDates, setTravelDates] = useState("");
   const [guests, setGuests] = useState("");
   const [tripKey, setTripKey] = useState<TripKey | "">("");
+  const [frequencyKey, setFrequencyKey] = useState<FrequencyKey | "">("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -34,6 +45,13 @@ export default function LeadForm() {
           ? t("tripTypeGolfTrip")
           : t("tripTypeGroupTravel");
 
+  const frequencyLabel = (id: FrequencyKey) =>
+    id === "firstTime"
+      ? t("travelFrequencyFirstTime")
+      : id === "oneToTwoTimes"
+        ? t("travelFrequencyOneToTwoTimes")
+        : t("travelFrequencyFrequentVisitor");
+
   const canSubmit = useMemo(() => {
     return (
       name.trim().length > 1 &&
@@ -42,9 +60,10 @@ export default function LeadForm() {
       travelDates.trim().length > 1 &&
       guests.trim().length > 0 &&
       tripKey.length > 0 &&
+      frequencyKey.length > 0 &&
       status !== "loading"
     );
-  }, [name, email, phone, travelDates, guests, tripKey, status]);
+  }, [name, email, phone, travelDates, guests, tripKey, frequencyKey, status]);
 
   const resetForm = () => {
     setName("");
@@ -53,6 +72,7 @@ export default function LeadForm() {
     setTravelDates("");
     setGuests("");
     setTripKey("");
+    setFrequencyKey("");
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -74,6 +94,7 @@ export default function LeadForm() {
           travelDates: travelDates.trim(),
           guests: Number(guests),
           tripType: tripKey ? TRIP_TO_EN[tripKey] : "",
+          travelFrequency: frequencyKey ? FREQUENCY_TO_EN[frequencyKey] : "",
         }),
       });
 
@@ -188,6 +209,29 @@ export default function LeadForm() {
                   }`}
                 >
                   {tripLabel(id)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <p className="mb-2 text-sm font-medium text-slate-900">{t("travelFrequency")}</p>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            {FREQUENCY_ORDER.map((id) => {
+              const active = frequencyKey === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setFrequencyKey(id)}
+                  className={`rounded-xl border px-4 py-3 text-left text-sm font-medium transition ${
+                    active
+                      ? "border-cyan-500 bg-cyan-50 text-slate-900"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                  }`}
+                >
+                  {frequencyLabel(id)}
                 </button>
               );
             })}

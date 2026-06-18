@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
+const LEAD_RECIPIENT = "commercial@adventuresfinder.com";
+
 type LeadPayload = {
   name?: string;
   email?: string;
@@ -8,6 +10,7 @@ type LeadPayload = {
   travelDates?: string;
   guests?: number;
   tripType?: string;
+  travelFrequency?: string;
 };
 
 export async function POST(request: Request) {
@@ -21,6 +24,7 @@ export async function POST(request: Request) {
       travelDates: String(body.travelDates ?? "").trim(),
       guests: Number(body.guests),
       tripType: String(body.tripType ?? "").trim(),
+      travelFrequency: String(body.travelFrequency ?? "").trim(),
     };
 
     if (
@@ -30,7 +34,8 @@ export async function POST(request: Request) {
       !lead.travelDates ||
       !Number.isFinite(lead.guests) ||
       lead.guests <= 0 ||
-      !lead.tripType
+      !lead.tripType ||
+      !lead.travelFrequency
     ) {
       return NextResponse.json({ error: "Invalid lead payload." }, { status: 400 });
     }
@@ -60,7 +65,7 @@ export async function POST(request: Request) {
 
     await transporter.sendMail({
       from,
-      to: "commercial@adventuresfinder.com",
+      to: LEAD_RECIPIENT,
       replyTo: lead.email,
       subject: `New lead: ${lead.name}`,
       text: JSON.stringify(mailBody, null, 2),
@@ -72,6 +77,7 @@ export async function POST(request: Request) {
         <p><strong>Travel Dates:</strong> ${lead.travelDates}</p>
         <p><strong>Guests:</strong> ${lead.guests}</p>
         <p><strong>Trip Type:</strong> ${lead.tripType}</p>
+        <p><strong>Frequency of travel to Punta Cana:</strong> ${lead.travelFrequency}</p>
         <p><strong>Source:</strong> Home Lead Form</p>
         <p><strong>Submitted At:</strong> ${mailBody.submittedAt}</p>
       `,
