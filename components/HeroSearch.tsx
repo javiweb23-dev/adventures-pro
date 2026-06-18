@@ -1,8 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import { X } from "lucide-react";
-import { useMemo, useState, useRef, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useMemo, useState, useRef, useEffect, useCallback } from "react";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
+import { formatTourPrice } from "@/lib/tourPrice";
+import { tourExcursionPath } from "@/lib/tourSlug";
+import { type AppLocale } from "@/i18n/routing";
 
 type TripType = "one_way" | "round_trip";
 
@@ -12,6 +17,41 @@ type TransferHotel = {
   n: string;
   ow: string;
   rt: string;
+};
+
+type SearchTourResult = {
+  _id: string;
+  title?: string;
+  slug?: string;
+  imageUrl?: string;
+  currency?: string;
+  pricing?: Array<{ price?: number | string | null }>;
+};
+
+const parseNumericPrice = (value?: string | number | null) => {
+  if (value == null) return Number.NaN;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string") return Number.NaN;
+  const trimmed = value.trim();
+  if (!trimmed) return Number.NaN;
+  const cleaned = trimmed.replace(/[^\d.,-]/g, "");
+  if (!cleaned) return Number.NaN;
+  let normalized = cleaned;
+  if (cleaned.includes(",") && cleaned.includes(".")) {
+    normalized = cleaned.replace(/,/g, "");
+  } else if (cleaned.includes(",") && !cleaned.includes(".")) {
+    normalized = /,\d{1,2}$/.test(cleaned) ? cleaned.replace(",", ".") : cleaned.replace(/,/g, "");
+  }
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
+};
+
+const formatResultPrice = (tour: SearchTourResult) => {
+  const firstPrice = parseNumericPrice(tour.pricing?.[0]?.price);
+  if (Number.isFinite(firstPrice)) {
+    return `From ${formatTourPrice(tour.currency ?? "USD", firstPrice)}`;
+  }
+  return null;
 };
 
 const hotels: TransferHotel[] = [
@@ -171,6 +211,8 @@ function buildPeekTransferHref(
 
 export default function HeroSearch() {
   const t = useTranslations("HeroSearch");
+  const locale = useLocale() as AppLocale;
+  const router = useRouter();
   const originOptions = useMemo(
     () =>
       [
@@ -182,12 +224,16 @@ export default function HeroSearch() {
 
   const [tab, setTab] = useState<"activities" | "transfers">("activities");
   const [activityQuery, setActivityQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchTourResult[]>([]);
+  const [activityListOpen, setActivityListOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [tripType, setTripType] = useState<TripType>("one_way");
   const [origin, setOrigin] = useState<OriginCode>("PUJ");
   const [hotelQuery, setHotelQuery] = useState("");
   const [selectedHotel, setSelectedHotel] = useState<TransferHotel | null>(null);
   const [listOpen, setListOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const activityWrapRef = useRef<HTMLDivElement>(null);
 
   const filteredHotels = useMemo(() => {
     const q = hotelQuery.trim().toLowerCase();
@@ -208,6 +254,67 @@ export default function HeroSearch() {
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
+
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (!activityWrapRef.current?.contains(e.target as Node)) setActivityListOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  useEffect(() => {
+    const trimmed = activityQuery.trim();
+    if (!trimmed) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({ q: trimmed, locale });
+        const response = await fetch(`/api/tours/search?${params.toString()}`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          setSearchResults([]);
+          setIsSearching(false);
+          return;
+        }
+        const data = (await response.json()) as { tours?: SearchTourResult[] };
+        setSearchResults(data.tours ?? []);
+        setIsSearching(false);
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") {
+          setSearchResults([]);
+          setIsSearching(false);
+        }
+      }
+    }, 300);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeoutId);
+    };
+  }, [activityQuery, locale]);
+
+  const navigateToTour = useCallback(
+    (slug: string) => {
+      setActivityListOpen(false);
+      setActivityQuery("");
+      setSearchResults([]);
+      router.push(tourExcursionPath(slug));
+    },
+    [router],
+  );
+
+  const handleActivitySubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setActivityListOpen(true);
+  };
 
   const transferHref = selectedHotel
     ? buildPeekTransferHref(
@@ -255,20 +362,74 @@ export default function HeroSearch() {
 
       <div className="p-4 md:p-6">
         {tab === "activities" ? (
-          <div className="pb-6 md:pb-8">
+          <div ref={activityWrapRef} className="relative pb-6 md:pb-8">
             <form
-              action="/excursions/water-tours"
-              method="get"
-              className="flex flex-col gap-3 md:flex-row md:items-center"
+              onSubmit={handleActivitySubmit}
+              className="flex flex-col gap-3 md:flex-row md:items-start"
             >
-              <input
-                type="search"
-                name="q"
-                value={activityQuery}
-                onChange={(e) => setActivityQuery(e.target.value)}
-                placeholder={t("searchPlaceholder")}
-                className="h-12 w-full rounded-xl border border-slate-200 px-4 text-sm text-slate-800 outline-none transition focus:border-blue-800 focus:ring-2 focus:ring-blue-800/15"
-              />
+              <div className="relative w-full">
+                <input
+                  type="search"
+                  name="q"
+                  autoComplete="off"
+                  value={activityQuery}
+                  onChange={(event) => {
+                    setActivityQuery(event.target.value);
+                    setActivityListOpen(true);
+                  }}
+                  onFocus={() => setActivityListOpen(true)}
+                  placeholder={t("searchPlaceholder")}
+                  className="h-12 w-full rounded-xl border border-slate-200 px-4 text-sm text-slate-800 outline-none transition focus:border-blue-800 focus:ring-2 focus:ring-blue-800/15"
+                />
+                {activityListOpen && activityQuery.trim().length > 0 ? (
+                  searchResults.length > 0 ? (
+                    <ul className="absolute z-50 mt-2 max-h-80 w-full overflow-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+                      {searchResults.map((tour) => {
+                        const slug = tour.slug ?? "";
+                        const title = tour.title ?? "Tour";
+                        const priceLabel = formatResultPrice(tour);
+
+                        return (
+                          <li key={tour._id}>
+                            <button
+                              type="button"
+                              className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition hover:bg-slate-50"
+                              onMouseDown={(event) => event.preventDefault()}
+                              onClick={() => {
+                                if (slug) navigateToTour(slug);
+                              }}
+                            >
+                              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                                {tour.imageUrl ? (
+                                  <Image
+                                    src={tour.imageUrl}
+                                    alt={title}
+                                    fill
+                                    className="object-cover object-center"
+                                    sizes="48px"
+                                  />
+                                ) : null}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-semibold text-slate-900">
+                                  {title}
+                                </p>
+                                {priceLabel ? (
+                                  <p className="text-xs font-medium text-blue-950">{priceLabel}</p>
+                                ) : null}
+                              </div>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : !isSearching ? (
+                    <div className="absolute z-50 mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-lg">
+                      {t("noToursFound")}
+                    </div>
+                  ) : null
+                ) : null}
+              </div>
               <button
                 type="submit"
                 className="h-12 w-full shrink-0 rounded-xl bg-orange-500 px-6 text-sm font-semibold text-white shadow-md shadow-orange-500/25 transition hover:bg-orange-600 md:w-auto"

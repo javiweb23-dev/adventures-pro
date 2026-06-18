@@ -38,7 +38,8 @@
     "hotelDestination": "Hotel Destination",
     "hotelSearchPlaceholder": "Type to search your hotel",
     "clearHotel": "Clear hotel",
-    "noHotelsMatch": "No hotels match your search."
+    "noHotelsMatch": "No hotels match your search.",
+    "noToursFound": "No tours found"
   },
   "Featured": {
     "kicker": "Our recommended adventures",

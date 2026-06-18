@@ -40,7 +40,8 @@
     "hotelDestination": "Hôtel de destination",
     "hotelSearchPlaceholder": "Tapez pour chercher votre hôtel",
     "clearHotel": "Effacer l'hôtel",
-    "noHotelsMatch": "Aucun hôtel ne correspond à votre recherche."
+    "noHotelsMatch": "Aucun hôtel ne correspond à votre recherche.",
+    "noToursFound": "Aucune excursion trouvée"
   },
   "Featured": {
     "kicker": "Nos aventures recommandées",
