@@ -23,31 +23,6 @@ export const transferVehicleType = defineType({
       type: "image",
       options: { hotspot: true },
     }),
-    defineField({
-      name: "price",
-      title: "Price",
-      type: "number",
-      validation: (rule) => rule.required().min(0),
-    }),
-    defineField({
-      name: "peekOneWayUrl",
-      title: "Peek one-way URL",
-      type: "url",
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: "peekRoundTripUrl",
-      title: "Peek round-trip URL",
-      type: "url",
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: "zones",
-      title: "Operating zones",
-      type: "array",
-      of: [{ type: "reference", to: [{ type: "transferZone" }] }],
-      validation: (rule) => rule.min(1),
-    }),
   ],
   preview: {
     select: {

@@ -11,6 +11,7 @@ import { landingPageType } from "./landingPage";
 import { aboutPageType } from "./aboutPage";
 import { transferZoneType } from "./transferZone";
 import { transferVehicleType } from "./transferVehicle";
+import { transferRouteType } from "./transferRoute";
 import { transferHotelType } from "./transferHotel";
 
 export const schema: { types: SchemaTypeDefinition[] } = {
@@ -27,6 +28,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     aboutPageType,
     transferZoneType,
     transferVehicleType,
+    transferRouteType,
     transferHotelType,
   ],
 };
