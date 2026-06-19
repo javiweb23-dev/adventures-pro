@@ -41,7 +41,9 @@
     "hotelSearchPlaceholder": "Tapez pour chercher votre hôtel",
     "clearHotel": "Effacer l'hôtel",
     "noHotelsMatch": "Aucun hôtel ne correspond à votre recherche.",
-    "noToursFound": "Aucune excursion trouvée"
+    "noToursFound": "Aucune excursion trouvée",
+    "selectVehicle": "Choisissez votre véhicule",
+    "noVehiclesAvailable": "Aucun véhicule disponible pour cette zone."
   },
   "Featured": {
     "kicker": "Nos aventures recommandées",

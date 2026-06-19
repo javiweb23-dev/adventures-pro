@@ -13,10 +13,24 @@ type TripType = "one_way" | "round_trip";
 
 type OriginCode = "PUJ" | "LRM";
 
-type TransferHotel = {
-  n: string;
-  ow: string;
-  rt: string;
+type TransferVehicleOption = {
+  _id: string;
+  title: string;
+  capacity: string;
+  price: number;
+  peekOneWayUrl: string;
+  peekRoundTripUrl: string;
+  imageUrl?: string;
+};
+
+type TransferHotelOption = {
+  _id: string;
+  title: string;
+  zone: {
+    id?: string;
+    title?: string;
+  };
+  vehicles: TransferVehicleOption[];
 };
 
 type SearchTourResult = {
@@ -54,156 +68,12 @@ const formatResultPrice = (tour: SearchTourResult) => {
   return null;
 };
 
-const hotels: TransferHotel[] = [
-  {
-    n: "AC Marriot Hotel",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Alsol Tiara Cap Cana",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/8m1X5",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/aDke6",
-  },
-  {
-    n: "ART VILLA DOMINICANA",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Bahía Príncipe Grand Bavaro",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Barceló Bávaro Palace",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Be Live Collection Punta Cana",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Casa de Campo",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/EPeyo",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmk2z",
-  },
-  {
-    n: "Club Med Michès Playa Esmeralda",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/mYxlz",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/B0RO0",
-  },
-  {
-    n: "Dreams Dominicus La Romana",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbd1",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/aDke6",
-  },
-  {
-    n: "Dreams Royal Beach",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Excellence El Carmen",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/V3jLJ",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/PWb4D",
-  },
-  {
-    n: "Excellence Punta Cana",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/V3jLJ",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/PWb4D",
-  },
-  {
-    n: "Hard Rock Hotel & Casino",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Hyatt Ziva Cap Cana",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/8m1X5",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/aDke6",
-  },
-  {
-    n: "Iberostar Grand Bávaro",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Impressive Punta Cana",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Lopesan Costa Bávaro",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Majestic Elegance Punta Cana",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Meliá Caribe Beach Resort",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Nickelodeon Hotels & Resorts",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/V3jLJ",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/PWb4D",
-  },
-  {
-    n: "Ocean El Faro",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/V3jLJ",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/PWb4D",
-  },
-  {
-    n: "Paradisus Palma Real",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Riu República",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Royalton Bávaro",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Sanctuary Cap Cana",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/8m1X5",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/aDke6",
-  },
-  {
-    n: "Secrets Royal Beach",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "TRS Turquesa Hotel",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-  {
-    n: "Vista Sol Punta Cana",
-    ow: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/LRbq4",
-    rt: "https://book.peek.com/s/d11643a7-7613-46f8-b5cd-5cd508dfbc46/dmkA8",
-  },
-];
-
 function buildPeekTransferHref(
-  hotel: TransferHotel,
+  vehicle: TransferVehicleOption,
   tripType: TripType,
-  originCode: OriginCode,
   originLabel: string,
 ) {
-  const base = tripType === "one_way" ? hotel.ow : hotel.rt;
+  const base = tripType === "one_way" ? vehicle.peekOneWayUrl : vehicle.peekRoundTripUrl;
   const url = new URL(base);
   url.searchParams.set("pickup_airport", originLabel);
   return url.toString();
@@ -230,20 +100,26 @@ export default function HeroSearch() {
   const [tripType, setTripType] = useState<TripType>("one_way");
   const [origin, setOrigin] = useState<OriginCode>("PUJ");
   const [hotelQuery, setHotelQuery] = useState("");
-  const [selectedHotel, setSelectedHotel] = useState<TransferHotel | null>(null);
+  const [transferHotels, setTransferHotels] = useState<TransferHotelOption[]>([]);
+  const [hotelsLoading, setHotelsLoading] = useState(true);
+  const [selectedHotel, setSelectedHotel] = useState<TransferHotelOption | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<TransferVehicleOption | null>(null);
   const [listOpen, setListOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const activityWrapRef = useRef<HTMLDivElement>(null);
 
   const filteredHotels = useMemo(() => {
     const q = hotelQuery.trim().toLowerCase();
-    if (!q) return hotels;
-    return hotels.filter((h) => h.n.toLowerCase().includes(q));
-  }, [hotelQuery]);
+    if (!q) return transferHotels;
+    return transferHotels.filter((hotel) => hotel.title.toLowerCase().includes(q));
+  }, [hotelQuery, transferHotels]);
+
+  const availableVehicles = selectedHotel?.vehicles ?? [];
 
   const clearHotelField = () => {
     setHotelQuery("");
     setSelectedHotel(null);
+    setSelectedVehicle(null);
     setListOpen(true);
   };
 
@@ -253,6 +129,32 @@ export default function HeroSearch() {
     };
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const loadHotels = async () => {
+      try {
+        const response = await fetch("/api/transfers");
+        if (!response.ok) return;
+        const data = (await response.json()) as { hotels?: TransferHotelOption[] };
+        if (active) {
+          setTransferHotels(data.hotels ?? []);
+        }
+      } catch {
+        if (active) {
+          setTransferHotels([]);
+        }
+      } finally {
+        if (active) {
+          setHotelsLoading(false);
+        }
+      }
+    };
+    loadHotels();
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -316,16 +218,16 @@ export default function HeroSearch() {
     setActivityListOpen(true);
   };
 
-  const transferHref = selectedHotel
-    ? buildPeekTransferHref(
-        selectedHotel,
-        tripType,
-        origin,
-        originOptions.find((o) => o.code === origin)?.label ?? "",
-      )
-    : "";
+  const transferHref =
+    selectedVehicle && selectedHotel
+      ? buildPeekTransferHref(
+          selectedVehicle,
+          tripType,
+          originOptions.find((o) => o.code === origin)?.label ?? "",
+        )
+      : "";
 
-  const transferReady = Boolean(selectedHotel);
+  const transferReady = Boolean(selectedHotel && selectedVehicle);
 
   return (
     <div className="rounded-2xl bg-white p-1 shadow-lg md:p-2">
@@ -507,11 +409,15 @@ export default function HeroSearch() {
                   onChange={(e) => {
                     setHotelQuery(e.target.value);
                     setSelectedHotel(null);
+                    setSelectedVehicle(null);
                     setListOpen(true);
                   }}
                   onFocus={() => {
                     setListOpen(true);
-                    if (selectedHotel) setSelectedHotel(null);
+                    if (selectedHotel) {
+                      setSelectedHotel(null);
+                      setSelectedVehicle(null);
+                    }
                   }}
                   placeholder={t("hotelSearchPlaceholder")}
                   className="h-12 w-full rounded-xl border border-slate-200 py-2 pl-4 pr-11 text-sm text-slate-800 outline-none transition focus:border-blue-800 focus:ring-2 focus:ring-blue-800/15"
@@ -537,30 +443,81 @@ export default function HeroSearch() {
               {listOpen ? (
                 filteredHotels.length > 0 ? (
                   <ul className="absolute z-20 mt-2 max-h-72 w-full overflow-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
-                    {filteredHotels.map((h) => (
-                      <li key={h.n}>
+                    {filteredHotels.map((hotel) => (
+                      <li key={hotel._id}>
                         <button
                           type="button"
                           className="w-full px-4 py-3 text-left text-sm text-blue-950 transition hover:bg-blue-50"
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => {
-                            setSelectedHotel(h);
-                            setHotelQuery(h.n);
+                            setSelectedHotel(hotel);
+                            setSelectedVehicle(null);
+                            setHotelQuery(hotel.title);
                             setListOpen(false);
                           }}
                         >
-                          {h.n}
+                          <span className="block font-medium">{hotel.title}</span>
+                          {hotel.zone?.title ? (
+                            <span className="mt-0.5 block text-xs text-slate-500">{hotel.zone.title}</span>
+                          ) : null}
                         </button>
                       </li>
                     ))}
                   </ul>
-                ) : hotelQuery.trim().length > 0 ? (
+                ) : hotelQuery.trim().length > 0 && !hotelsLoading ? (
                   <div className="absolute z-20 mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-lg">
                     {t("noHotelsMatch")}
                   </div>
                 ) : null
               ) : null}
             </div>
+
+            {selectedHotel ? (
+              <div>
+                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-blue-950">
+                  {t("selectVehicle")}
+                </p>
+                {availableVehicles.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    {availableVehicles.map((vehicle) => {
+                      const active = selectedVehicle?._id === vehicle._id;
+                      const priceLabel = formatTourPrice("USD", vehicle.price);
+                      return (
+                        <button
+                          key={vehicle._id}
+                          type="button"
+                          onClick={() => setSelectedVehicle(vehicle)}
+                          className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${
+                            active
+                              ? "border-cyan-500 bg-cyan-50 shadow-sm"
+                              : "border-slate-200 bg-white hover:border-slate-300"
+                          }`}
+                        >
+                          <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                            {vehicle.imageUrl ? (
+                              <Image
+                                src={vehicle.imageUrl}
+                                alt={vehicle.title}
+                                fill
+                                className="object-cover object-center"
+                                sizes="80px"
+                              />
+                            ) : null}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-slate-900">{vehicle.title}</p>
+                            <p className="text-xs text-slate-600">{vehicle.capacity}</p>
+                            <p className="mt-1 text-sm font-semibold text-blue-950">{priceLabel}</p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">{t("noVehiclesAvailable")}</p>
+                )}
+              </div>
+            ) : null}
 
             <div className="flex flex-col gap-3 pt-1 md:flex-row md:items-center md:justify-end">
               <a

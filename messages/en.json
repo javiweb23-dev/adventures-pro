@@ -39,7 +39,9 @@
     "hotelSearchPlaceholder": "Type to search your hotel",
     "clearHotel": "Clear hotel",
     "noHotelsMatch": "No hotels match your search.",
-    "noToursFound": "No tours found"
+    "noToursFound": "No tours found",
+    "selectVehicle": "Choose your vehicle",
+    "noVehiclesAvailable": "No vehicles available for this zone."
   },
   "Featured": {
     "kicker": "Our recommended adventures",
