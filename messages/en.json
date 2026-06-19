@@ -35,6 +35,7 @@
     "origin": "Origin",
     "originPUJ": "Punta Cana Airport (PUJ)",
     "originLRM": "La Romana Airport (LRM)",
+    "originSDQ": "Santo Domingo Airport (SDQ)",
     "hotelDestination": "Hotel Destination",
     "hotelSearchPlaceholder": "Type to search your hotel",
     "clearHotel": "Clear hotel",

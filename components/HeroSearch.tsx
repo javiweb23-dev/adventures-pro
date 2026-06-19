@@ -11,16 +11,30 @@ import { type AppLocale } from "@/i18n/routing";
 
 type TripType = "one_way" | "round_trip";
 
-type OriginCode = "PUJ" | "LRM";
+type OriginCode = "PUJ" | "LRM" | "SDQ";
 
-type TransferVehicleOption = {
-  _id: string;
-  title: string;
-  capacity: string;
-  price: number;
+type TransferPricingRate = {
+  _key?: string;
+  priceOneWay: number;
+  priceRoundTrip: number;
   peekOneWayUrl: string;
   peekRoundTripUrl: string;
-  imageUrl?: string;
+  vehicle: {
+    _id: string;
+    title: string;
+    capacity: string;
+    imageUrl?: string;
+  };
+};
+
+type TransferRouteOption = {
+  _id: string;
+  originCode: OriginCode;
+  destinationZone: {
+    id?: string;
+    title?: string;
+  };
+  pricingRates: TransferPricingRate[];
 };
 
 type TransferHotelOption = {
@@ -30,7 +44,11 @@ type TransferHotelOption = {
     id?: string;
     title?: string;
   };
-  vehicles: TransferVehicleOption[];
+};
+
+type TransferData = {
+  hotels: TransferHotelOption[];
+  routes: TransferRouteOption[];
 };
 
 type SearchTourResult = {
@@ -69,14 +87,18 @@ const formatResultPrice = (tour: SearchTourResult) => {
 };
 
 function buildPeekTransferHref(
-  vehicle: TransferVehicleOption,
+  rate: TransferPricingRate,
   tripType: TripType,
   originLabel: string,
 ) {
-  const base = tripType === "one_way" ? vehicle.peekOneWayUrl : vehicle.peekRoundTripUrl;
+  const base = tripType === "one_way" ? rate.peekOneWayUrl : rate.peekRoundTripUrl;
   const url = new URL(base);
   url.searchParams.set("pickup_airport", originLabel);
   return url.toString();
+}
+
+function rateKey(rate: TransferPricingRate) {
+  return rate._key ?? rate.vehicle._id;
 }
 
 export default function HeroSearch() {
@@ -88,6 +110,7 @@ export default function HeroSearch() {
       [
         { code: "PUJ" as const, label: t("originPUJ") },
         { code: "LRM" as const, label: t("originLRM") },
+        { code: "SDQ" as const, label: t("originSDQ") },
       ] satisfies { code: OriginCode; label: string }[],
     [t],
   );
@@ -101,9 +124,10 @@ export default function HeroSearch() {
   const [origin, setOrigin] = useState<OriginCode>("PUJ");
   const [hotelQuery, setHotelQuery] = useState("");
   const [transferHotels, setTransferHotels] = useState<TransferHotelOption[]>([]);
-  const [hotelsLoading, setHotelsLoading] = useState(true);
+  const [transferRoutes, setTransferRoutes] = useState<TransferRouteOption[]>([]);
+  const [transfersLoading, setTransfersLoading] = useState(true);
   const [selectedHotel, setSelectedHotel] = useState<TransferHotelOption | null>(null);
-  const [selectedVehicle, setSelectedVehicle] = useState<TransferVehicleOption | null>(null);
+  const [selectedRate, setSelectedRate] = useState<TransferPricingRate | null>(null);
   const [listOpen, setListOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const activityWrapRef = useRef<HTMLDivElement>(null);
@@ -114,12 +138,24 @@ export default function HeroSearch() {
     return transferHotels.filter((hotel) => hotel.title.toLowerCase().includes(q));
   }, [hotelQuery, transferHotels]);
 
-  const availableVehicles = selectedHotel?.vehicles ?? [];
+  const activeRoute = useMemo(() => {
+    if (!selectedHotel?.zone?.id) return null;
+    return (
+      transferRoutes.find(
+        (route) =>
+          route.originCode === origin && route.destinationZone?.id === selectedHotel.zone.id,
+      ) ?? null
+    );
+  }, [origin, selectedHotel, transferRoutes]);
+
+  const availableRates = useMemo(() => {
+    return (activeRoute?.pricingRates ?? []).filter((rate) => rate.vehicle?._id);
+  }, [activeRoute]);
 
   const clearHotelField = () => {
     setHotelQuery("");
     setSelectedHotel(null);
-    setSelectedVehicle(null);
+    setSelectedRate(null);
     setListOpen(true);
   };
 
@@ -133,29 +169,35 @@ export default function HeroSearch() {
 
   useEffect(() => {
     let active = true;
-    const loadHotels = async () => {
+    const loadTransfers = async () => {
       try {
         const response = await fetch("/api/transfers");
         if (!response.ok) return;
-        const data = (await response.json()) as { hotels?: TransferHotelOption[] };
+        const data = (await response.json()) as TransferData;
         if (active) {
           setTransferHotels(data.hotels ?? []);
+          setTransferRoutes(data.routes ?? []);
         }
       } catch {
         if (active) {
           setTransferHotels([]);
+          setTransferRoutes([]);
         }
       } finally {
         if (active) {
-          setHotelsLoading(false);
+          setTransfersLoading(false);
         }
       }
     };
-    loadHotels();
+    loadTransfers();
     return () => {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    setSelectedRate(null);
+  }, [origin, tripType, selectedHotel?._id]);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -219,15 +261,15 @@ export default function HeroSearch() {
   };
 
   const transferHref =
-    selectedVehicle && selectedHotel
+    selectedRate && selectedHotel
       ? buildPeekTransferHref(
-          selectedVehicle,
+          selectedRate,
           tripType,
           originOptions.find((o) => o.code === origin)?.label ?? "",
         )
       : "";
 
-  const transferReady = Boolean(selectedHotel && selectedVehicle);
+  const transferReady = Boolean(selectedHotel && selectedRate);
 
   return (
     <div className="rounded-2xl bg-white p-1 shadow-lg md:p-2">
@@ -382,7 +424,10 @@ export default function HeroSearch() {
               <select
                 id="hero-origin"
                 value={origin}
-                onChange={(e) => setOrigin(e.target.value as OriginCode)}
+                onChange={(e) => {
+                  setOrigin(e.target.value as OriginCode);
+                  setSelectedRate(null);
+                }}
                 className="h-12 w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 outline-none transition focus:border-blue-800 focus:ring-2 focus:ring-blue-800/15"
               >
                 {originOptions.map((o) => (
@@ -409,14 +454,14 @@ export default function HeroSearch() {
                   onChange={(e) => {
                     setHotelQuery(e.target.value);
                     setSelectedHotel(null);
-                    setSelectedVehicle(null);
+                    setSelectedRate(null);
                     setListOpen(true);
                   }}
                   onFocus={() => {
                     setListOpen(true);
                     if (selectedHotel) {
                       setSelectedHotel(null);
-                      setSelectedVehicle(null);
+                      setSelectedRate(null);
                     }
                   }}
                   placeholder={t("hotelSearchPlaceholder")}
@@ -451,7 +496,7 @@ export default function HeroSearch() {
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => {
                             setSelectedHotel(hotel);
-                            setSelectedVehicle(null);
+                            setSelectedRate(null);
                             setHotelQuery(hotel.title);
                             setListOpen(false);
                           }}
@@ -464,7 +509,7 @@ export default function HeroSearch() {
                       </li>
                     ))}
                   </ul>
-                ) : hotelQuery.trim().length > 0 && !hotelsLoading ? (
+                ) : hotelQuery.trim().length > 0 && !transfersLoading ? (
                   <div className="absolute z-20 mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-lg">
                     {t("noHotelsMatch")}
                   </div>
@@ -477,16 +522,19 @@ export default function HeroSearch() {
                 <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-blue-950">
                   {t("selectVehicle")}
                 </p>
-                {availableVehicles.length > 0 ? (
+                {availableRates.length > 0 ? (
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                    {availableVehicles.map((vehicle) => {
-                      const active = selectedVehicle?._id === vehicle._id;
-                      const priceLabel = formatTourPrice("USD", vehicle.price);
+                    {availableRates.map((rate) => {
+                      const active = selectedRate ? rateKey(selectedRate) === rateKey(rate) : false;
+                      const price =
+                        tripType === "one_way" ? rate.priceOneWay : rate.priceRoundTrip;
+                      const priceLabel = formatTourPrice("USD", price);
+                      const vehicle = rate.vehicle;
                       return (
                         <button
-                          key={vehicle._id}
+                          key={rateKey(rate)}
                           type="button"
-                          onClick={() => setSelectedVehicle(vehicle)}
+                          onClick={() => setSelectedRate(rate)}
                           className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${
                             active
                               ? "border-cyan-500 bg-cyan-50 shadow-sm"
