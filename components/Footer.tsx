@@ -10,7 +10,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 py-14 text-center md:grid-cols-2 md:gap-12 md:px-10 md:text-left lg:grid-cols-4 lg:gap-14 lg:px-12">
         <div className="space-y-4">
           <Image
-            src="/logo-v2.png"
+            src="/logo-v3.png"
             alt="Adventures Finder"
             width={190}
             height={64}

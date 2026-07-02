@@ -49,7 +49,7 @@ export default function Navbar({ categories = [] }: NavbarProps) {
       <div className="mx-auto flex h-24 w-full max-w-7xl items-center justify-between px-4 md:px-10 lg:px-12">
         <Link href="/" className="inline-flex w-[192px] items-center">
           <Image
-            src="/logo-v2.png"
+            src="/logo-v3.png"
             alt="Adventures Finder"
             width={192}
             height={64}
