@@ -12,9 +12,9 @@ export default function Footer() {
           <Image
             src="/logo-v3.png"
             alt="Adventures Finder"
-            width={190}
-            height={64}
-            className="mx-auto h-14 w-auto brightness-0 invert md:mx-0"
+            width={247}
+            height={83}
+            className="mx-auto h-[73px] w-auto brightness-0 invert md:mx-0"
           />
         </div>
 

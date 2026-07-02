@@ -47,13 +47,13 @@ export default function Navbar({ categories = [] }: NavbarProps) {
   return (
     <header className="sticky top-0 z-50 w-full bg-white">
       <div className="mx-auto flex h-24 w-full max-w-7xl items-center justify-between px-4 md:px-10 lg:px-12">
-        <Link href="/" className="inline-flex w-[192px] items-center">
+        <Link href="/" className="inline-flex w-[250px] items-center">
           <Image
             src="/logo-v3.png"
             alt="Adventures Finder"
-            width={192}
-            height={64}
-            className="h-16 w-auto"
+            width={250}
+            height={83}
+            className="h-[83px] w-auto"
           />
         </Link>
         <nav className="hidden items-center gap-6 text-sm font-medium text-slate-800 md:flex">
