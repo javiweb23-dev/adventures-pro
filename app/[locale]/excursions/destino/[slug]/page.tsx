@@ -26,7 +26,7 @@ const destinationBySlugQuery = groq`*[_type == "destination" && slug.current == 
   mainImage
 }`;
 
-const destinationToursQuery = groq`*[_type == "tour" && destination->slug.current == $slug] | order(_createdAt desc) {
+const destinationToursQuery = groq`*[_type == "tour" && destination->slug.current == $slug] {
   _id,
   "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
   "slug": slug.current,
@@ -43,8 +43,9 @@ const destinationToursQuery = groq`*[_type == "tour" && destination->slug.curren
     ), null),
     coalesce(select($locale == "fr-ca" => duration.frCA, duration[$locale]), duration.en, duration.es, duration.frCA)
   ),
-  pricing[]{price}
-}`;
+  pricing[]{price},
+  "price": coalesce(pricing[0].price, mainTour->pricing[0].price, 0)
+} | order(price asc)`;
 
 export async function generateStaticParams() {
   const destinations = await client.fetch<Array<{ slug: string }>>(

@@ -215,6 +215,13 @@ export const tourType = defineType({
         }),
     }),
     defineField({
+      name: "categories",
+      title: "Categories",
+      type: "array",
+      of: [{ type: "reference", to: [{ type: "category" }] }],
+      hidden: hideWhenCombo,
+    }),
+    defineField({
       name: "destination",
       title: "Destination",
       type: "reference",

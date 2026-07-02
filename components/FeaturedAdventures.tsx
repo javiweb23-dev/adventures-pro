@@ -26,7 +26,7 @@ export default function FeaturedAdventures({ tours }: FeaturedAdventuresProps) {
       {tours.length === 0 ? (
         <FeaturedAdventuresEmpty />
       ) : (
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {tours.map((tour) => {
             const slug = tour.slug ?? "";
             const title = tour.title ?? "Tour";

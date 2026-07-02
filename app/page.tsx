@@ -14,7 +14,7 @@ import { groq } from "next-sanity";
 import { routing } from "@/i18n/routing";
 import enMessages from "../messages/en.json";
 
-const featuredToursQuery = groq`*[_type == "tour" && isFeatured == true] | order(_createdAt desc) {
+const featuredToursQuery = groq`*[_type == "tour" && isFeatured == true] {
   _id,
   "title": coalesce(title.en, title.es, title.frCA),
   "slug": slug.current,
@@ -23,8 +23,9 @@ const featuredToursQuery = groq`*[_type == "tour" && isFeatured == true] | order
   peekProId,
   "currency": coalesce(currency, "USD"),
   "duration": coalesce(duration.en, duration.es, duration.frCA),
-  pricing[]{price}
-}`;
+  pricing[]{price},
+  "price": coalesce(pricing[0].price, mainTour->pricing[0].price, 0)
+} | order(price asc)`;
 
 export default async function Home() {
   const featuredTours = await client.fetch(featuredToursQuery).catch(() => []);

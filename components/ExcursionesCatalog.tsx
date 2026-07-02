@@ -19,6 +19,7 @@ export type ExcursionTour = {
     slug?: string;
     title?: string;
   };
+  categorySlugs?: string[];
   currency: string;
   pricing?: Array<{ price?: number | string | null }>;
 };
@@ -61,7 +62,11 @@ export default function ExcursionesCatalog({
 
   const filteredTours = useMemo(() => {
     if (activeCategory === "all") return tours;
-    return tours.filter((tour) => tour.category?.slug === activeCategory);
+    return tours.filter(
+      (tour) =>
+        tour.category?.slug === activeCategory ||
+        tour.categorySlugs?.includes(activeCategory),
+    );
   }, [activeCategory, tours]);
 
   return (
@@ -94,7 +99,7 @@ export default function ExcursionesCatalog({
           })}
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredTours.map((tour) => {
             const firstPricingValue = getFirstPricingValue(tour);
             const computedPrice = Number.isFinite(firstPricingValue)

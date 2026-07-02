@@ -7,14 +7,15 @@ const tourSearchQuery = groq`*[_type == "tour" && defined(slug.current) && (
   coalesce(title.en, "") match $pattern ||
   coalesce(title.es, "") match $pattern ||
   coalesce(title.frCA, "") match $pattern
-)] | order(_createdAt desc) [0...8] {
+)] {
   _id,
   "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
   "slug": slug.current,
   "imageUrl": coalesce(listingImage, mainTour->listingImage).asset->url,
   pricing[]{price},
+  "price": coalesce(pricing[0].price, mainTour->pricing[0].price, 0),
   "currency": coalesce(currency, mainTour->currency, "USD")
-}`;
+} | order(price asc) [0...8]`;
 
 function sanitizeSearchTerm(value: string) {
   return value.trim().replace(/[^\p{L}\p{N}\s-]/gu, "");

@@ -26,7 +26,7 @@ type LandingPageData = {
   sliderImages?: Array<{ url?: string }>;
 };
 
-const featuredToursQuery = groq`*[_type == "tour" && isFeatured == true] | order(_createdAt desc) {
+const featuredToursQuery = groq`*[_type == "tour" && isFeatured == true] {
   _id,
   "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
   "slug": slug.current,
@@ -43,8 +43,9 @@ const featuredToursQuery = groq`*[_type == "tour" && isFeatured == true] | order
     ), null),
     coalesce(select($locale == "fr-ca" => duration.frCA, duration[$locale]), duration.en, duration.es, duration.frCA)
   ),
-  pricing[]{price}
-}`;
+  pricing[]{price},
+  "price": coalesce(pricing[0].price, mainTour->pricing[0].price, 0)
+} | order(price asc)`;
 
 const categoriesQuery = groq`*[_type == "category"] {
   "slug": slug.current,

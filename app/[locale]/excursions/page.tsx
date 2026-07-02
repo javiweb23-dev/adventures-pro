@@ -7,14 +7,16 @@ import { type AppLocale } from "@/i18n/routing";
 
 const excursionsQuery = groq`*[_type == "tour" && (
   !defined($category) ||
+  $category in categories[]->slug.current ||
   category->slug.current == $category ||
   (isCombo == true && mainTour->category->slug.current == $category)
-)] | order(_createdAt desc) {
+)] {
   _id,
   "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
   "slug": slug.current,
   "mainImage": coalesce(listingImage, mainTour->listingImage),
   pricing[]{price},
+  "price": coalesce(pricing[0].price, mainTour->pricing[0].price, 0),
   "duration": coalesce(select($locale == "fr-ca" => duration.frCA, duration[$locale]), duration.en, duration.es, duration.frCA),
   peekProId,
   "category": {
@@ -26,8 +28,9 @@ const excursionsQuery = groq`*[_type == "tour" && (
       category->title.frCA
     )
   },
+  "categorySlugs": array::compact([category->slug.current, ...categories[]->slug.current]),
   "currency": coalesce(currency, "USD")
-}`;
+} | order(price asc)`;
 
 const categoriesQuery = groq`*[_type == "category"] | order(coalesce(title.en, title.es, title.frCA) asc){
   "slug": slug.current,

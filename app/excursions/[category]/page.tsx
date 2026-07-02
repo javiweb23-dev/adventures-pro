@@ -32,7 +32,10 @@ const CATEGORIES = [
   "multidays-tours",
 ];
 
-const TOURS_BY_CATEGORY_QUERY = groq`*[_type == "tour" && category->slug.current == $category]{
+const TOURS_BY_CATEGORY_QUERY = groq`*[_type == "tour" && (
+  $category in categories[]->slug.current ||
+  category->slug.current == $category
+)]{
   _id,
   "title": coalesce(title.en, title.es, title.frCA, title),
   "slug": slug.current,
@@ -40,8 +43,9 @@ const TOURS_BY_CATEGORY_QUERY = groq`*[_type == "tour" && category->slug.current
   listingImage,
   peekProId,
   "currency": coalesce(currency, "USD"),
-  pricing[]{price}
-} | order(_createdAt desc)`;
+  pricing[]{price},
+  "price": coalesce(pricing[0].price, 0)
+} | order(price asc)`;
 
 const parseNumericPrice = (value?: string | number | null) => {
   if (value == null) return Number.NaN;
@@ -104,7 +108,7 @@ export default async function CategoryPage({ params }: ListingPageProps) {
         <p className="mt-3 text-slate-600">
           Find your perfect excursion.
         </p>
-        <div className="mt-8 grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {(tours || []).map((tour) => {
             const firstPricingValue = getFirstPricingValue(tour);
             const computedPrice = Number.isFinite(firstPricingValue)
