@@ -49,6 +49,20 @@
     "headline": "Momentos de viaje excepcionales pensados para ti",
     "empty": "Las excursiones destacadas aparecerán aquí cuando las marques en el CMS."
   },
+  "Contact": {
+    "pageTitle": "Contáctanos",
+    "pageSubtitle": "Envíanos un mensaje y nuestro equipo te responderá lo antes posible.",
+    "title": "Ponte en contacto",
+    "subtitle": "Completa el formulario y te responderemos pronto.",
+    "fullName": "Nombre completo",
+    "email": "Correo electrónico",
+    "subject": "Asunto",
+    "message": "Mensaje",
+    "submit": "Enviar mensaje",
+    "submitting": "Enviando...",
+    "success": "Gracias. Tu mensaje se envió correctamente.",
+    "errorGeneric": "No pudimos enviar tu mensaje. Inténtalo de nuevo."
+  },
   "LeadForm": {
     "title": "Planifica tu viaje ideal",
     "subtitle": "Cuéntanos tus preferencias y nuestro equipo te contactará con una propuesta a medida.",

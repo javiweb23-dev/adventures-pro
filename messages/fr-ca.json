@@ -51,6 +51,20 @@
     "headline": "Des moments de voyage exceptionnels pensés pour vous",
     "empty": "Les excursions en vedette s'afficheront ici lorsqu'elles seront marquées dans le CMS."
   },
+  "Contact": {
+    "pageTitle": "Nous joindre",
+    "pageSubtitle": "Envoyez-nous un message et notre équipe vous répondra dès que possible.",
+    "title": "Contactez-nous",
+    "subtitle": "Remplissez le formulaire et nous vous répondrons sous peu.",
+    "fullName": "Nom complet",
+    "email": "Courriel",
+    "subject": "Sujet",
+    "message": "Message",
+    "submit": "Envoyer le message",
+    "submitting": "Envoi en cours...",
+    "success": "Merci. Votre message a été envoyé avec succès.",
+    "errorGeneric": "Nous n'avons pas pu envoyer votre message. Veuillez réessayer."
+  },
   "LeadForm": {
     "title": "Planifiez le voyage parfait",
     "subtitle": "Partagez vos préférences et notre équipe vous contactera avec une proposition sur mesure.",

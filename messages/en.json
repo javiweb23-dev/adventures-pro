@@ -49,6 +49,20 @@
     "headline": "Exceptional travel moments designed with You in mind",
     "empty": "Featured tours will appear here when marked in the CMS."
   },
+  "Contact": {
+    "pageTitle": "Contact Us",
+    "pageSubtitle": "Send us a message and our team will get back to you as soon as possible.",
+    "title": "Get in Touch",
+    "subtitle": "Fill out the form below and we will respond shortly.",
+    "fullName": "Full Name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Message",
+    "submit": "Send Message",
+    "submitting": "Sending...",
+    "success": "Thank you. Your message has been sent successfully.",
+    "errorGeneric": "We could not send your message. Please try again."
+  },
   "LeadForm": {
     "title": "Plan Your Perfect Trip",
     "subtitle": "Share your preferences and our team will contact you with a tailored proposal.",
