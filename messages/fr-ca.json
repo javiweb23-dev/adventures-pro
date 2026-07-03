@@ -108,6 +108,17 @@
     "empty": "De nouvelles aventures arrivent bientôt dans cette catégorie.",
     "noResults": "Aucune excursion ne correspond à votre recherche."
   },
+  "TourFilters": {
+    "sortLabel": "Trier par",
+    "sortLowToHigh": "Prix : croissant",
+    "sortHighToLow": "Prix : décroissant",
+    "priceAll": "Tous",
+    "priceUpTo200": "Jusqu'à 200 $ USD",
+    "priceUpTo500": "Jusqu'à 500 $ USD",
+    "priceOver500": "+500 $ USD",
+    "noPriceRangeResults": "Aucune excursion dans cette fourchette de prix",
+    "resetFilters": "Réinitialiser les filtres"
+  },
   "InteractiveMap": {
     "kicker": "Explorer par destination",
     "headline": "Découvrez la République dominicaine",

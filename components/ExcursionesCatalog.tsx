@@ -3,8 +3,16 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import { Clock3 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import TourFilters from "@/components/TourFilters";
 import { urlFor } from "@/sanity/lib/image";
+import {
+  filterAndSortTours,
+  getTourNumericPrice,
+  type PriceRange,
+  type SortOrder,
+} from "@/lib/tourFilters";
 import { formatTourPrice, peekBookingUrl } from "@/lib/tourPrice";
 import { tourExcursionPath } from "@/lib/tourSlug";
 
@@ -22,32 +30,13 @@ export type ExcursionTour = {
   categorySlugs?: string[];
   currency: string;
   pricing?: Array<{ price?: number | string | null }>;
+  price?: number | string | null;
 };
 
 type CatalogCategory = {
   slug: string;
   title: string;
 };
-
-const parseNumericPrice = (value?: string | number | null) => {
-  if (value == null) return Number.NaN;
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value !== "string") return Number.NaN;
-  const trimmed = value.trim();
-  if (!trimmed) return Number.NaN;
-  const cleaned = trimmed.replace(/[^\d.,-]/g, "");
-  if (!cleaned) return Number.NaN;
-  let normalized = cleaned;
-  if (cleaned.includes(",") && cleaned.includes(".")) {
-    normalized = cleaned.replace(/,/g, "");
-  } else if (cleaned.includes(",") && !cleaned.includes(".")) {
-    normalized = /,\d{1,2}$/.test(cleaned) ? cleaned.replace(",", ".") : cleaned.replace(/,/g, "");
-  }
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : Number.NaN;
-};
-
-const getFirstPricingValue = (tour: ExcursionTour) => parseNumericPrice(tour.pricing?.[0]?.price);
 
 export default function ExcursionesCatalog({
   tours,
@@ -58,9 +47,12 @@ export default function ExcursionesCatalog({
   categories: CatalogCategory[];
   initialCategory?: string;
 }) {
+  const tFilters = useTranslations("TourFilters");
   const [activeCategory, setActiveCategory] = useState<string>(initialCategory);
+  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+  const [priceRange, setPriceRange] = useState<PriceRange>("all");
 
-  const filteredTours = useMemo(() => {
+  const categoryFilteredTours = useMemo(() => {
     if (activeCategory === "all") return tours;
     return tours.filter(
       (tour) =>
@@ -68,6 +60,22 @@ export default function ExcursionesCatalog({
         tour.categorySlugs?.includes(activeCategory),
     );
   }, [activeCategory, tours]);
+
+  const displayTours = useMemo(
+    () => filterAndSortTours(categoryFilteredTours, sortOrder, priceRange),
+    [categoryFilteredTours, sortOrder, priceRange],
+  );
+
+  const handleResetFilters = () => {
+    setSortOrder("asc");
+    setPriceRange("all");
+  };
+
+  const showPriceRangeEmpty =
+    tours.length > 0 &&
+    categoryFilteredTours.length > 0 &&
+    displayTours.length === 0 &&
+    priceRange !== "all";
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -99,66 +107,88 @@ export default function ExcursionesCatalog({
           })}
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredTours.map((tour) => {
-            const firstPricingValue = getFirstPricingValue(tour);
-            const computedPrice = Number.isFinite(firstPricingValue)
-              ? formatTourPrice(tour.currency, firstPricingValue)
-              : "Consultar precio";
-            const slug = tour.slug ?? "";
-            const title = tour.title ?? "Tour";
-            const peekUrl = tour.peekProId ? peekBookingUrl(tour.peekProId) : "#";
+        {tours.length > 0 ? (
+          <TourFilters
+            sortOrder={sortOrder}
+            priceRange={priceRange}
+            onSortOrderChange={setSortOrder}
+            onPriceRangeChange={setPriceRange}
+          />
+        ) : null}
 
-            return (
-              <article
-                key={tour._id}
-                className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
-              >
-                <div className="relative">
-                  {tour.mainImage ? (
-                    <Image
-                      src={urlFor(tour.mainImage).width(1200).height(800).fit("crop").url()}
-                      alt={title}
-                      width={1200}
-                      height={800}
-                      className="h-56 w-full object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 25vw"
-                    />
-                  ) : (
-                    <div className="h-56 w-full bg-slate-200" />
-                  )}
-                </div>
-                <div className="space-y-4 p-5">
-                  <div className="inline-flex items-center gap-2 text-sm text-slate-600">
-                    <Clock3 className="h-4 w-4" />
-                    <span>{tour.duration || "Duration on request"}</span>
+        {showPriceRangeEmpty ? (
+          <div className="mt-16 text-center">
+            <p className="text-lg text-slate-600">{tFilters("noPriceRangeResults")}</p>
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="mt-4 inline-flex h-11 items-center justify-center rounded-xl border border-blue-800 bg-white px-6 text-sm font-semibold text-blue-800 transition hover:bg-blue-50"
+            >
+              {tFilters("resetFilters")}
+            </button>
+          </div>
+        ) : (
+          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {displayTours.map((tour) => {
+              const firstPricingValue = getTourNumericPrice(tour);
+              const computedPrice = Number.isFinite(firstPricingValue)
+                ? formatTourPrice(tour.currency, firstPricingValue)
+                : "Consultar precio";
+              const slug = tour.slug ?? "";
+              const title = tour.title ?? "Tour";
+              const peekUrl = tour.peekProId ? peekBookingUrl(tour.peekProId) : "#";
+
+              return (
+                <article
+                  key={tour._id}
+                  className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+                >
+                  <div className="relative">
+                    {tour.mainImage ? (
+                      <Image
+                        src={urlFor(tour.mainImage).width(1200).height(800).fit("crop").url()}
+                        alt={title}
+                        width={1200}
+                        height={800}
+                        className="h-56 w-full object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 25vw"
+                      />
+                    ) : (
+                      <div className="h-56 w-full bg-slate-200" />
+                    )}
                   </div>
-                  <h2 className="text-xl font-semibold leading-tight text-slate-900">{title}</h2>
-                  <p className="text-sm text-slate-600">
-                    {tour.category?.title || tour.category?.slug || "Uncategorized"}
-                  </p>
-                  <p className="text-lg font-semibold text-blue-950">From {computedPrice}</p>
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <a
-                      href={peekUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-11 flex-1 items-center justify-center rounded-xl bg-orange-500 px-4 text-sm font-semibold text-white transition hover:bg-orange-600"
-                    >
-                      Book Now
-                    </a>
-                    <Link
-                      href={tourExcursionPath(slug)}
-                      className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
-                    >
-                      More Info
-                    </Link>
+                  <div className="space-y-4 p-5">
+                    <div className="inline-flex items-center gap-2 text-sm text-slate-600">
+                      <Clock3 className="h-4 w-4" />
+                      <span>{tour.duration || "Duration on request"}</span>
+                    </div>
+                    <h2 className="text-xl font-semibold leading-tight text-slate-900">{title}</h2>
+                    <p className="text-sm text-slate-600">
+                      {tour.category?.title || tour.category?.slug || "Uncategorized"}
+                    </p>
+                    <p className="text-lg font-semibold text-blue-950">From {computedPrice}</p>
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      <a
+                        href={peekUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex h-11 flex-1 items-center justify-center rounded-xl bg-orange-500 px-4 text-sm font-semibold text-white transition hover:bg-orange-600"
+                      >
+                        Book Now
+                      </a>
+                      <Link
+                        href={tourExcursionPath(slug)}
+                        className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                      >
+                        More Info
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </main>
     </div>
   );

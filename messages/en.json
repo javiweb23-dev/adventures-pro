@@ -106,6 +106,17 @@
     "empty": "New adventures in this category are coming soon.",
     "noResults": "No tours match your search."
   },
+  "TourFilters": {
+    "sortLabel": "Sort by",
+    "sortLowToHigh": "Price: Low to High",
+    "sortHighToLow": "Price: High to Low",
+    "priceAll": "All",
+    "priceUpTo200": "Up to $200 USD",
+    "priceUpTo500": "Up to $500 USD",
+    "priceOver500": "+$500 USD",
+    "noPriceRangeResults": "No tours found in this price range",
+    "resetFilters": "Reset filters"
+  },
   "InteractiveMap": {
     "kicker": "Explore by destination",
     "headline": "Discover the Dominican Republic",
