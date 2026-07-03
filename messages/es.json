@@ -125,5 +125,19 @@
     "searchButton": "Buscar",
     "empty": "Pronto habrá nuevas aventuras en este destino.",
     "noResults": "Ningún tour coincide con tu búsqueda."
+  },
+  "Transfers": {
+    "heroTitle": "¡Bienvenido al servicio premier de traslados al aeropuerto en Punta Cana!",
+    "heroSubtitle": "Ya sea que busques lujo VIP o servicios de shuttle confiables, ofrecemos opciones de transporte sin complicaciones hacia y desde el aeropuerto, para que tus viajes por República Dominicana sean cómodos y sin estrés.",
+    "section1Text": "Explora nuestras opciones flexibles de traslado al aeropuerto. Descubre nuestra amplia gama de soluciones de transporte adaptadas a tus necesidades. Desde viajeros individuales hasta grupos grandes, nuestros servicios se extienden desde Punta Cana a cualquier destino en República Dominicana. Elige de nuestra flota moderna, incluyendo Suburbans VIP para ese toque extra de lujo.",
+    "busesImageAlt": "Autobuses de traslado al aeropuerto",
+    "suvImageAlt": "Chevrolet Suburban VIP",
+    "fleetBadge": "Flota moderna",
+    "section2Title": "Reserva tu traslado al aeropuerto: pasos simples para asegurar tu transporte",
+    "section2Text": "Reservar tu traslado al aeropuerto está a solo unos clics. Proporciónanos tu nombre completo, número de vuelo, aerolínea, fecha y hora de llegada, y tu destino. Nuestro servicio confiable garantiza recogidas y entregas puntuales, asegurando que llegues a tu destino de forma rápida y cómoda.",
+    "section3Text": "Contáctanos para arreglos de viaje personalizados. ¿Necesitas asistencia o tienes solicitudes especiales? Contáctanos por correo a commercial@adventuresfinder.com o por WhatsApp/teléfono al +1 (829) 421 6101. Nuestro equipo está listo para atender tus necesidades y preferencias de viaje, garantizando un trayecto sin complicaciones.",
+    "suvChevyImageAlt": "SUV VIP de traslado al aeropuerto",
+    "outroText": "Experimenta la máxima comodidad y confiabilidad con nuestros servicios de traslado al aeropuerto en Punta Cana. ¡Reserva tu viaje hoy y comienza tu viaje con el pie derecho!",
+    "ctaButton": "Contáctanos"
   }
 }

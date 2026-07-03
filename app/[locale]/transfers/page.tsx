@@ -1,141 +1,123 @@
 import Image from "next/image";
-import Link from "next/link";
-import { BadgeDollarSign, Plane, ShieldCheck } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 
-const fleet = [
-  {
-    title: "VIP Excellence",
-    subtitle: "Chevrolet Suburban",
-    description:
-      "A private luxury transfer focused on discretion, premium comfort, and a seamless arrival experience.",
-    image:
-      "https://images.unsplash.com/photo-1617469767053-3a17f31e89ac?auto=format&fit=crop&w=1500&q=80",
-  },
-  {
-    title: "Executive Vans",
-    subtitle: "Group Comfort",
-    description:
-      "Ideal for families and medium groups with generous luggage space and powerful climate control.",
-    image:
-      "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1500&q=80",
-  },
-  {
-    title: "Private Coaches",
-    subtitle: "Event Logistics",
-    description:
-      "Reliable movement for large groups, destination weddings, and corporate programs with coordinated timing.",
-    image:
-      "https://images.unsplash.com/photo-1570125909517-53cb21c89ff2?auto=format&fit=crop&w=1500&q=80",
-  },
-];
+type TransfersPageProps = {
+  params: Promise<{ locale: "en" | "es" | "fr-ca" }>;
+};
 
-const trustItems = [
-  {
-    title: "Fixed Pricing",
-    description: "Clear rates confirmed before pickup.",
-    icon: BadgeDollarSign,
-  },
-  {
-    title: "Flight Monitoring",
-    description: "Real-time tracking to adapt to delays or early arrivals.",
-    icon: Plane,
-  },
-  {
-    title: "Bilingual Drivers",
-    description: "Professional drivers trained for hospitality and safety.",
-    icon: ShieldCheck,
-  },
-];
+export default async function TransfersPage({ params }: TransfersPageProps) {
+  await params;
+  const t = await getTranslations("Transfers");
 
-export default function TransfersPage() {
   return (
-    <div className="bg-white text-slate-800">
-      <section className="relative h-[76vh] min-h-[560px] w-full overflow-hidden">
-        <Image
-          src="https://images.unsplash.com/photo-1485291571150-772bcfc10da5?auto=format&fit=crop&w=2100&q=80"
-          alt="VIP airport transfer in Punta Cana"
-          fill
-          priority
-          className="object-cover"
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-black/45" />
-        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-6 text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-white md:text-6xl">
-            Punta Cana Airport Transfers
+    <div className="min-h-screen bg-white text-slate-800">
+      <section className="relative overflow-hidden bg-[#0a192f] px-6 py-20 md:px-10 md:py-28 lg:px-12">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a192f] via-[#0f2744] to-[#0a192f]" />
+        <div className="relative mx-auto max-w-4xl text-center">
+          <h1 className="text-3xl font-bold tracking-tight text-white md:text-5xl md:leading-tight">
+            {t("heroTitle")}
           </h1>
-          <p className="mt-5 max-w-3xl text-lg text-slate-100 md:text-2xl">
-            Luxury and Reliability from Touchdown to Destination
+          <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-slate-200 md:text-lg">
+            {t("heroSubtitle")}
+          </p>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-16 md:px-10 md:py-24 lg:px-12">
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <div>
+            <p className="text-lg leading-relaxed text-slate-700 md:text-xl">
+              {t("section1Text")}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="relative col-span-2 aspect-[16/10] overflow-hidden rounded-2xl shadow-lg">
+              <Image
+                src="/images/buses.jpg"
+                alt={t("busesImageAlt")}
+                fill
+                className="object-cover object-center"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+            </div>
+            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-lg">
+              <Image
+                src="/images/suv-chevy4.jpg"
+                alt={t("suvImageAlt")}
+                fill
+                className="object-cover object-center"
+                sizes="(max-width: 1024px) 50vw, 25vw"
+              />
+            </div>
+            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 shadow-lg">
+              <div className="flex h-full items-center justify-center p-6 text-center">
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#0a192f]">
+                  {t("fleetBadge")}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-slate-50 px-6 py-16 md:px-10 md:py-24 lg:px-12">
+        <div className="mx-auto max-w-4xl text-center">
+          <h2 className="text-2xl font-semibold tracking-tight text-[#0a192f] md:text-4xl">
+            {t("section2Title")}
+          </h2>
+          <p className="mt-6 text-base leading-relaxed text-slate-700 md:text-lg">
+            {t("section2Text")}
+          </p>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-16 md:px-10 md:py-24 lg:px-12">
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-lg lg:order-1">
+            <Image
+              src="/images/suv-chevy.jpg"
+              alt={t("suvChevyImageAlt")}
+              fill
+              className="object-cover object-center"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
+          </div>
+          <div className="lg:order-2">
+            <p className="text-lg leading-relaxed text-slate-700 md:text-xl">
+              {t("section3Text")}
+            </p>
+            <div className="mt-6 flex flex-col gap-3 text-sm text-slate-600 md:text-base">
+              <a
+                href="mailto:commercial@adventuresfinder.com"
+                className="font-medium text-[#0a192f] transition hover:text-blue-700"
+              >
+                commercial@adventuresfinder.com
+              </a>
+              <a
+                href="https://wa.me/18294216101"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-[#0a192f] transition hover:text-blue-700"
+              >
+                +1 (829) 421 6101
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-slate-200 bg-white px-6 py-16 md:px-10 md:py-20 lg:px-12">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-lg leading-relaxed text-slate-700 md:text-xl">
+            {t("outroText")}
           </p>
           <Link
-            href="https://wa.me/18294216101"
-            target="_blank"
-            className="mt-10 rounded-full bg-cyan-500 px-8 py-3 text-base font-semibold text-white transition-all duration-300 hover:bg-cyan-400"
+            href="/contact"
+            className="mt-8 inline-flex h-12 items-center justify-center rounded-xl bg-blue-600 px-8 text-sm font-semibold text-white transition hover:bg-blue-700"
           >
-            Book via WhatsApp
+            {t("ctaButton")}
           </Link>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-        <h2 className="text-center text-3xl font-semibold text-[#0a192f] md:text-4xl">
-          Fleet Showcase
-        </h2>
-        <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {fleet.map((item) => (
-            <article
-              key={item.title}
-              className="overflow-hidden rounded-3xl bg-white shadow-lg"
-            >
-              <div className="relative h-64 w-full">
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 33vw"
-                />
-              </div>
-              <div className="p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-cyan-700">
-                  {item.subtitle}
-                </p>
-                <h3 className="mt-2 text-xl font-semibold text-[#0a192f]">
-                  {item.title}
-                </h3>
-                <p className="mt-3 leading-relaxed text-slate-700">
-                  {item.description}
-                </p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="bg-gray-50 py-16 md:py-20">
-        <div className="mx-auto max-w-7xl px-6">
-          <h2 className="text-center text-3xl font-semibold text-[#0a192f] md:text-4xl">
-            Trust Block
-          </h2>
-          <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {trustItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <article
-                  key={item.title}
-                  className="rounded-3xl bg-white p-7 text-center shadow-md"
-                >
-                  <Icon className="mx-auto h-8 w-8 text-cyan-600" />
-                  <h3 className="mt-4 text-xl font-semibold text-[#0a192f]">
-                    {item.title}
-                  </h3>
-                  <p className="mt-2 leading-relaxed text-slate-700">
-                    {item.description}
-                  </p>
-                </article>
-              );
-            })}
-          </div>
         </div>
       </section>
     </div>

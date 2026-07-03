@@ -127,5 +127,19 @@
     "searchButton": "Rechercher",
     "empty": "De nouvelles aventures arrivent bientôt dans cette destination.",
     "noResults": "Aucune excursion ne correspond à votre recherche."
+  },
+  "Transfers": {
+    "heroTitle": "Bienvenue au service de transfert aéroportuaire de premier plan à Punta Cana !",
+    "heroSubtitle": "Que vous recherchiez le luxe VIP ou des services de navette fiables, nous offrons des options de transport fluides vers et depuis l'aéroport, pour des voyages confortables et sans stress en République dominicaine.",
+    "section1Text": "Découvrez nos options flexibles de transfert aéroportuaire. Explorez notre gamme variée de solutions de transport adaptées à vos besoins. Des voyageurs solo aux grands groupes, nos services s'étendent de Punta Cana à toute destination en République dominicaine. Choisissez parmi notre flotte moderne, y compris des Suburban VIP pour une touche de luxe supplémentaire.",
+    "busesImageAlt": "Autobus de transfert aéroportuaire",
+    "suvImageAlt": "Chevrolet Suburban VIP",
+    "fleetBadge": "Flotte moderne",
+    "section2Title": "Réservez votre transfert aéroportuaire : étapes simples pour sécuriser votre transport",
+    "section2Text": "Réserver votre transfert aéroportuaire ne prend que quelques clics. Fournissez-nous votre nom complet, numéro de vol, compagnie aérienne, date et heure d'arrivée, et votre destination. Notre service fiable garantit des prises en charge et des déposes ponctuelles, pour arriver à destination rapidement et confortablement.",
+    "section3Text": "Contactez-nous pour des arrangements de voyage personnalisés. Besoin d'aide ou de demandes spéciales ? Contactez-nous par courriel à commercial@adventuresfinder.com ou par WhatsApp/téléphone au +1 (829) 421 6101. Notre équipe est prête à répondre à vos besoins et préférences de voyage, pour un trajet sans tracas.",
+    "suvChevyImageAlt": "SUV VIP de transfert aéroportuaire",
+    "outroText": "Profitez du summum de la commodité et de la fiabilité avec nos services de transfert aéroportuaire à Punta Cana. Réservez votre trajet aujourd'hui et commencez votre voyage du bon pied !",
+    "ctaButton": "Nous joindre"
   }
 }
