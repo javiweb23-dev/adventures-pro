@@ -7,10 +7,12 @@ export const mapDestinationsQuery = groq`*[_type == "destination"] | order(coale
     title.en,
     title.es,
     title.frCA
-  )
+  ),
+  "tourCount": count(*[_type == "tour" && destination->slug.current == ^.slug.current])
 }`;
 
 export type MapDestination = {
   slug: string;
   title: string;
+  tourCount: number;
 };

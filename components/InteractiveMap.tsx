@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { destinationExcursionPath } from "@/lib/destinationPath";
 import { type MapDestination } from "@/lib/sanityDestinations";
 
@@ -21,8 +21,12 @@ type InteractiveMapProps = {
   destinations?: MapDestination[];
 };
 
+type PinnedDestination = MapDestination & { top: number; left: number };
+
 export default function InteractiveMap({ destinations = [] }: InteractiveMapProps) {
   const t = useTranslations("InteractiveMap");
+  const router = useRouter();
+  const [comingSoonSlug, setComingSoonSlug] = useState<string | null>(null);
 
   const pinnedDestinations = useMemo(
     () =>
@@ -35,8 +39,26 @@ export default function InteractiveMap({ destinations = [] }: InteractiveMapProp
             ...position,
           };
         })
-        .filter((item): item is MapDestination & { top: number; left: number } => item !== null),
+        .filter((item): item is PinnedDestination => item !== null),
     [destinations],
+  );
+
+  useEffect(() => {
+    if (!comingSoonSlug) return;
+    const timer = window.setTimeout(() => setComingSoonSlug(null), 2500);
+    return () => window.clearTimeout(timer);
+  }, [comingSoonSlug]);
+
+  const handlePinClick = useCallback(
+    (event: React.MouseEvent, destination: PinnedDestination) => {
+      if (destination.tourCount > 0) {
+        router.push(destinationExcursionPath(destination.slug));
+        return;
+      }
+      event.preventDefault();
+      setComingSoonSlug(destination.slug);
+    },
+    [router],
   );
 
   return (
@@ -57,23 +79,44 @@ export default function InteractiveMap({ destinations = [] }: InteractiveMapProp
           className="object-contain object-center"
           sizes="(max-width: 768px) 100vw, 1024px"
         />
-        {pinnedDestinations.map((destination) => (
-          <Link
-            key={destination.slug}
-            href={destinationExcursionPath(destination.slug)}
-            className="group absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5 transition hover:scale-105"
-            style={{ top: `${destination.top}%`, left: `${destination.left}%` }}
-            aria-label={destination.title}
-          >
-            <span className="relative flex h-5 w-5 items-center justify-center">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-60" />
-              <span className="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-white bg-orange-500 shadow-md" />
-            </span>
-            <span className="whitespace-nowrap rounded bg-black/50 px-2 py-0.5 text-xs font-semibold text-white shadow-[0_1px_4px_rgba(0,0,0,0.45)] md:text-sm">
-              {destination.title}
-            </span>
-          </Link>
-        ))}
+        {pinnedDestinations.map((destination) => {
+          const hasTours = destination.tourCount > 0;
+          const showComingSoon = comingSoonSlug === destination.slug;
+
+          return (
+            <button
+              key={destination.slug}
+              type="button"
+              onClick={(event) => handlePinClick(event, destination)}
+              className={`group absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5 transition ${
+                hasTours ? "cursor-pointer hover:scale-105" : "cursor-default"
+              }`}
+              style={{ top: `${destination.top}%`, left: `${destination.left}%` }}
+              aria-label={destination.title}
+            >
+              {showComingSoon ? (
+                <span className="pointer-events-none absolute bottom-full mb-2 whitespace-nowrap rounded-lg bg-slate-900/95 px-3 py-1.5 text-xs font-semibold text-white shadow-lg ring-1 ring-white/10 md:text-sm">
+                  {t("comingSoon")}
+                </span>
+              ) : null}
+              <span className="relative flex h-5 w-5 items-center justify-center">
+                <span
+                  className={`absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-60 ${
+                    hasTours ? "animate-ping" : ""
+                  }`}
+                />
+                <span
+                  className={`relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-white bg-orange-500 shadow-md ${
+                    hasTours ? "" : "opacity-80"
+                  }`}
+                />
+              </span>
+              <span className="whitespace-nowrap rounded bg-black/50 px-2 py-0.5 text-xs font-semibold text-white shadow-[0_1px_4px_rgba(0,0,0,0.45)] md:text-sm">
+                {destination.title}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </section>
   );
