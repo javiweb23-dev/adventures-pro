@@ -11,7 +11,7 @@ import { type AppLocale } from "@/i18n/routing";
 
 type TripType = "one_way" | "round_trip";
 
-type OriginCode = "PUJ" | "LRM" | "SDQ";
+type OriginCode = "PUJ" | "LRM";
 
 type TransferPricingRate = {
   _key?: string;
@@ -110,7 +110,6 @@ export default function HeroSearch() {
       [
         { code: "PUJ" as const, label: t("originPUJ") },
         { code: "LRM" as const, label: t("originLRM") },
-        { code: "SDQ" as const, label: t("originSDQ") },
       ] satisfies { code: OriginCode; label: string }[],
     [t],
   );

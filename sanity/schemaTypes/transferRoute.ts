@@ -13,7 +13,6 @@ export const transferRouteType = defineType({
         list: [
           { title: "PUJ", value: "PUJ" },
           { title: "LRM", value: "LRM" },
-          { title: "SDQ", value: "SDQ" },
         ],
         layout: "radio",
       },
