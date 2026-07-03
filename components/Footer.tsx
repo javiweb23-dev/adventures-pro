@@ -26,7 +26,7 @@ export default function Footer() {
             <Link href="/terms-and-conditions" className="transition hover:text-white">
               {t("terms")}
             </Link>
-            <Link href="#" className="transition hover:text-white">
+            <Link href="/cancellation-policy" className="transition hover:text-white">
               {t("cancellation")}
             </Link>
             <Link href="#" className="transition hover:text-white">
