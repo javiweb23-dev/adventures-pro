@@ -23,7 +23,7 @@ export default function Footer() {
             {t("helpfulLinks")}
           </h3>
           <div className="mt-4 flex flex-col gap-2 text-sm">
-            <Link href="#" className="transition hover:text-white">
+            <Link href="/terms-and-conditions" className="transition hover:text-white">
               {t("terms")}
             </Link>
             <Link href="#" className="transition hover:text-white">
