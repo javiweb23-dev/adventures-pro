@@ -31,32 +31,14 @@ export default async function TransfersPage({ params }: TransfersPageProps) {
               {t("section1Text")}
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="relative col-span-2 aspect-[16/10] overflow-hidden rounded-2xl shadow-lg">
-              <Image
-                src="/images/buses.jpg"
-                alt={t("busesImageAlt")}
-                fill
-                className="object-cover object-center"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-            </div>
-            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-lg">
-              <Image
-                src="/images/suv-chevy4.jpg"
-                alt={t("suvImageAlt")}
-                fill
-                className="object-cover object-center"
-                sizes="(max-width: 1024px) 50vw, 25vw"
-              />
-            </div>
-            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 shadow-lg">
-              <div className="flex h-full items-center justify-center p-6 text-center">
-                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#0a192f]">
-                  {t("fleetBadge")}
-                </p>
-              </div>
-            </div>
+          <div className="relative aspect-[16/10] overflow-hidden rounded-2xl shadow-lg">
+            <Image
+              src="/images/buses.jpg"
+              alt={t("busesImageAlt")}
+              fill
+              className="object-cover object-center"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
           </div>
         </div>
       </section>
