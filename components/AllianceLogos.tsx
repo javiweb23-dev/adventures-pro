@@ -19,7 +19,9 @@ export default function AllianceLogos() {
           />
         </a>
         <a
-          href="#"
+          href="https://wellnesstourismassociation.org/"
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex items-center justify-center"
         >
           <Image
