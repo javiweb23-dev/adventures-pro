@@ -6,6 +6,7 @@ import FeaturedAdventures, { type FeaturedTour } from "@/components/FeaturedAdve
 import InteractiveMap from "@/components/InteractiveMap";
 import { mapDestinationsQuery, type MapDestination } from "@/lib/sanityDestinations";
 import ReviewsSection from "@/components/ReviewsSection";
+import OurBrands from "@/components/OurBrands";
 import BoutiqueBanner from "@/components/BoutiqueBanner";
 import AllianceLogos from "@/components/AllianceLogos";
 import BlogSection from "@/components/BlogSection";
@@ -123,6 +124,8 @@ export default async function Home({ params }: HomePageProps) {
         </section>
 
         <ReviewsSection />
+
+        <OurBrands locale={locale} />
 
         <BlogSection locale={locale} />
 
