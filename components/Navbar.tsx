@@ -108,6 +108,9 @@ export default function Navbar({ categories = [] }: NavbarProps) {
               </div>
             ) : null}
           </div>
+          <Link href="/blog" className={`transition ${linkClass(pathname === "/blog" || pathname.startsWith("/blog/"))}`}>
+            {t("blog")}
+          </Link>
           <Link href="/contact" className={`transition ${linkClass(pathname === "/contact" || pathname.startsWith("/contact/"))}`}>
             {t("contact")}
           </Link>
@@ -189,6 +192,13 @@ export default function Navbar({ categories = [] }: NavbarProps) {
                 </div>
               ) : null}
             </div>
+            <Link
+              href="/blog"
+              className={`rounded-lg px-2 py-2 transition ${mobileLinkClass(pathname === "/blog" || pathname.startsWith("/blog/"))}`}
+              onClick={() => setOpen(false)}
+            >
+              {t("blog")}
+            </Link>
             <Link
               href="/contact"
               className={`rounded-lg px-2 py-2 transition ${mobileLinkClass(pathname === "/contact" || pathname.startsWith("/contact/"))}`}

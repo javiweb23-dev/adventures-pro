@@ -1,7 +1,9 @@
+import Image from "next/image";
 import { groq } from "next-sanity";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { client } from "@/sanity/lib/client";
+import { urlFor } from "@/sanity/lib/image";
 import type { AppLocale } from "@/i18n/routing";
 
 type PostRow = {
@@ -9,61 +11,110 @@ type PostRow = {
   title?: string;
   slug?: string;
   excerpt?: string;
+  mainImage?: { asset: unknown };
+  publishedAt?: string;
 };
 
-const ALL_POSTS_QUERY = groq`*[_type == "post"] | order(publishedAt desc) {
+const ALL_POSTS_QUERY = groq`*[_type == "post"] | order(coalesce(publishedAt, _createdAt) desc) {
   _id,
-  "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title.es, title.frCA),
+  "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
   "slug": slug.current,
-  "excerpt": coalesce(select($locale == "fr-ca" => excerpt.frCA, excerpt[$locale]), excerpt.en, excerpt.es, excerpt.frCA)
+  mainImage,
+  "excerpt": coalesce(select($locale == "fr-ca" => excerpt.frCA, excerpt[$locale]), excerpt.en, excerpt),
+  "publishedAt": coalesce(publishedAt, _createdAt)
 }`;
 
 type BlogIndexPageProps = {
   params: Promise<{ locale: AppLocale }>;
 };
 
+function formatPostDate(dateValue: string | undefined, locale: AppLocale): string | null {
+  if (!dateValue) return null;
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return null;
+  const localeTag = locale === "es" ? "es" : locale === "fr-ca" ? "fr-CA" : "en-US";
+  return date.toLocaleDateString(localeTag, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 export default async function BlogIndexPage({ params }: BlogIndexPageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const posts = await client.fetch<PostRow[]>(ALL_POSTS_QUERY, { locale });
+  const t = await getTranslations("Blog");
+  const posts = await client.fetch<PostRow[]>(ALL_POSTS_QUERY, { locale }).catch(() => []);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <main className="mx-auto max-w-3xl px-6 py-14 md:px-10 md:py-20">
-        <h1 className="text-3xl font-semibold tracking-tight text-blue-950 md:text-4xl">
-          Blog
-        </h1>
-        <p className="mt-3 text-slate-600">
-          Travel guides and updates from Adventures Finder.
-        </p>
-        <ul className="mt-10 divide-y divide-slate-200 border border-slate-200 bg-white">
-          {posts.length === 0 ? (
-            <li className="px-5 py-8 text-center text-slate-600">
-              No articles yet.
-            </li>
-          ) : (
-            posts.map((post) => {
+      <main className="mx-auto max-w-7xl px-6 py-14 md:px-10 md:py-20 lg:px-12">
+        <header className="mx-auto max-w-3xl text-center">
+          <h1 className="text-3xl font-semibold tracking-tight text-[#0a192f] md:text-4xl">
+            {t("title")}
+          </h1>
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
+            {t("subtitle")}
+          </p>
+        </header>
+
+        {posts.length === 0 ? (
+          <p className="mt-16 text-center text-lg text-slate-600">{t("empty")}</p>
+        ) : (
+          <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-6 lg:grid-cols-3 lg:gap-8">
+            {posts.map((post) => {
+              const slug = post.slug ?? "";
+              const href = slug ? `/blog/${slug}` : "/blog";
               const title = post.title?.trim() || "Untitled";
               const excerpt = post.excerpt?.trim();
-              const slug = post.slug ?? "";
+              const dateLabel = formatPostDate(post.publishedAt, locale);
+              const imageUrl = (() => {
+                try {
+                  return post.mainImage?.asset
+                    ? urlFor(post.mainImage).width(800).height(450).fit("crop").url()
+                    : null;
+                } catch {
+                  return null;
+                }
+              })();
+
               return (
-                <li key={post._id}>
-                  <Link
-                    href={slug ? `/blog/${slug}` : "/blog"}
-                    className="block px-5 py-5 transition hover:bg-slate-50"
-                  >
-                    <span className="font-semibold text-blue-950">{title}</span>
+                <Link
+                  key={post._id}
+                  href={href}
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm transition-shadow duration-300 hover:shadow-[0_12px_40px_rgba(15,23,42,0.12)]"
+                >
+                  <div className="relative aspect-video w-full overflow-hidden bg-slate-200">
+                    {imageUrl ? (
+                      <Image
+                        src={imageUrl}
+                        alt={title}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    ) : null}
+                  </div>
+                  <div className="flex flex-1 flex-col gap-2 p-5 md:p-6">
+                    {dateLabel ? (
+                      <time className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                        {dateLabel}
+                      </time>
+                    ) : null}
+                    <h2 className="text-lg font-semibold leading-snug tracking-tight text-[#0a192f] group-hover:underline md:text-xl">
+                      {title}
+                    </h2>
                     {excerpt ? (
-                      <p className="mt-1 line-clamp-2 text-sm text-slate-600">
+                      <p className="line-clamp-3 text-sm leading-relaxed text-slate-600 md:text-[15px]">
                         {excerpt}
                       </p>
                     ) : null}
-                  </Link>
-                </li>
+                  </div>
+                </Link>
               );
-            })
-          )}
-        </ul>
+            })}
+          </div>
+        )}
       </main>
     </div>
   );
