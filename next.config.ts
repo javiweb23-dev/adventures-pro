@@ -25,16 +25,6 @@ const wordpressRedirects: Array<{ source: string; destination: string; permanent
     permanent: true,
   },
   {
-    source: "/vista-cana-golf-club",
-    destination: "/en/excursions/vista-cana-golf-club",
-    permanent: true,
-  },
-  {
-    source: "/vista-cana-golf-club/",
-    destination: "/en/excursions/vista-cana-golf-club",
-    permanent: true,
-  },
-  {
     source: "/supermarkets-in-punta-cana",
     destination: "/en/blog/supermarkets-in-punta-cana",
     permanent: true,
@@ -42,16 +32,6 @@ const wordpressRedirects: Array<{ source: string; destination: string; permanent
   {
     source: "/supermarkets-in-punta-cana/",
     destination: "/en/blog/supermarkets-in-punta-cana",
-    permanent: true,
-  },
-  {
-    source: "/domitai-park-punta-cana-adventures",
-    destination: "/en/excursions/domitai-park-punta-cana-adventures",
-    permanent: true,
-  },
-  {
-    source: "/domitai-park-punta-cana-adventures/",
-    destination: "/en/excursions/domitai-park-punta-cana-adventures",
     permanent: true,
   },
   {
@@ -75,46 +55,6 @@ const wordpressRedirects: Array<{ source: string; destination: string; permanent
     permanent: true,
   },
   {
-    source: "/water-tours/deep-sea-half-day-shared-fishing-charter",
-    destination: "/en/excursions/deep-sea-half-day-shared-fishing-charter",
-    permanent: true,
-  },
-  {
-    source: "/water-tours/deep-sea-half-day-shared-fishing-charter/",
-    destination: "/en/excursions/deep-sea-half-day-shared-fishing-charter",
-    permanent: true,
-  },
-  {
-    source: "/swim-with-dolphins-explorer",
-    destination: "/en/excursions/swim-with-dolphins-explorer",
-    permanent: true,
-  },
-  {
-    source: "/swim-with-dolphins-explorer/",
-    destination: "/en/excursions/swim-with-dolphins-explorer",
-    permanent: true,
-  },
-  {
-    source: "/unique-evening-buggy-tour",
-    destination: "/en/excursions/unique-evening-buggy-tour",
-    permanent: true,
-  },
-  {
-    source: "/unique-evening-buggy-tour/",
-    destination: "/en/excursions/unique-evening-buggy-tour",
-    permanent: true,
-  },
-  {
-    source: "/punta-cana-sky-sea-adventure",
-    destination: "/en/excursions/punta-cana-sky-sea-adventure",
-    permanent: true,
-  },
-  {
-    source: "/punta-cana-sky-sea-adventure/",
-    destination: "/en/excursions/punta-cana-sky-sea-adventure",
-    permanent: true,
-  },
-  {
     source: "/the-history-of-punta-cana",
     destination: "/en/blog/the-history-of-punta-cana",
     permanent: true,
@@ -122,26 +62,6 @@ const wordpressRedirects: Array<{ source: string; destination: string; permanent
   {
     source: "/the-history-of-punta-cana/",
     destination: "/en/blog/the-history-of-punta-cana",
-    permanent: true,
-  },
-  {
-    source: "/golf-n-shots-punta-cana-interactive-golf-experience",
-    destination: "/en/excursions/golf-n-shots-punta-cana-interactive-golf-experience",
-    permanent: true,
-  },
-  {
-    source: "/golf-n-shots-punta-cana-interactive-golf-experience/",
-    destination: "/en/excursions/golf-n-shots-punta-cana-interactive-golf-experience",
-    permanent: true,
-  },
-  {
-    source: "/golfnshots",
-    destination: "/en/excursions/golf-n-shots-punta-cana-interactive-golf-experience",
-    permanent: true,
-  },
-  {
-    source: "/golfnshots/",
-    destination: "/en/excursions/golf-n-shots-punta-cana-interactive-golf-experience",
     permanent: true,
   },
   {
@@ -175,16 +95,6 @@ const wordpressRedirects: Array<{ source: string; destination: string; permanent
     permanent: true,
   },
   {
-    source: "/iberostar-golf-club-bavaro",
-    destination: "/en/excursions/iberostar-golf-club-bavaro",
-    permanent: true,
-  },
-  {
-    source: "/iberostar-golf-club-bavaro/",
-    destination: "/en/excursions/iberostar-golf-club-bavaro",
-    permanent: true,
-  },
-  {
     source: "/shopping-center-in-punta-cana",
     destination: "/en/blog/shopping-center-in-punta-cana",
     permanent: true,
@@ -205,16 +115,6 @@ const wordpressRedirects: Array<{ source: string; destination: string; permanent
     permanent: true,
   },
   {
-    source: "/saona-island-classic-tour",
-    destination: "/en/excursions/saona-island-classic-tour",
-    permanent: true,
-  },
-  {
-    source: "/saona-island-classic-tour/",
-    destination: "/en/excursions/saona-island-classic-tour",
-    permanent: true,
-  },
-  {
     source: "/water-tours",
     destination: "/en/excursions/categoria/water-tours",
     permanent: true,
@@ -222,16 +122,6 @@ const wordpressRedirects: Array<{ source: string; destination: string; permanent
   {
     source: "/water-tours/",
     destination: "/en/excursions/categoria/water-tours",
-    permanent: true,
-  },
-  {
-    source: "/punta-cana-helicopter-tour-scenic-flights-over-bavaro-cap-cana",
-    destination: "/en/excursions/punta-cana-helicopter-tour-scenic-flights-over-bavaro-cap-cana",
-    permanent: true,
-  },
-  {
-    source: "/punta-cana-helicopter-tour-scenic-flights-over-bavaro-cap-cana/",
-    destination: "/en/excursions/punta-cana-helicopter-tour-scenic-flights-over-bavaro-cap-cana",
     permanent: true,
   },
   {
