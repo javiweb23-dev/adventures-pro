@@ -6,6 +6,8 @@ import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import type { AppLocale } from "@/i18n/routing";
 
+export const revalidate = 0;
+
 type PostRow = {
   _id: string;
   title?: string;
