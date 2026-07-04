@@ -71,18 +71,18 @@ export default async function TransfersPage({ params }: TransfersPageProps) {
             </p>
             <div className="mt-6 flex flex-col gap-3 text-sm text-slate-600 md:text-base">
               <a
-                href="mailto:commercial@adventuresfinder.com"
+                href="mailto:reservations@adventuresfinder.com"
                 className="font-medium text-[#0a192f] transition hover:text-blue-700"
               >
-                commercial@adventuresfinder.com
+                reservations@adventuresfinder.com
               </a>
               <a
-                href="https://wa.me/18294216101"
+                href="https://wa.me/18495700202"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-medium text-[#0a192f] transition hover:text-blue-700"
               >
-                +1 (829) 421 6101
+                +1 849 570 0202
               </a>
             </div>
           </div>

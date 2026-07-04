@@ -41,14 +41,14 @@ export default function Footer() {
           </h3>
           <div className="mt-4 space-y-2 text-sm leading-relaxed">
             <p>Plaza Cueva Taina, Local #B2, Av. Estados Unidos - Bavaro, Dominican Republic</p>
-            <a href="tel:+18294216101" className="block transition hover:text-white">
-              +1 829 421 6101
+            <a href="tel:+18495700202" className="block transition hover:text-white">
+              +1 849 570 0202
             </a>
             <a
-              href="mailto:commercial@adventuresfinder.com"
+              href="mailto:reservations@adventuresfinder.com"
               className="block transition hover:text-white"
             >
-              commercial@adventuresfinder.com
+              reservations@adventuresfinder.com
             </a>
           </div>
         </div>

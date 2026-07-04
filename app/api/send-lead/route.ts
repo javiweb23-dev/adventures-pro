@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
-const LEAD_RECIPIENT = "javi.web23@gmail.com";
+const LEAD_RECIPIENTS = ["info@afdmctravel.com", "reservations@adventuresfinder.com"];
 
 
 type LeadPayload = {
@@ -66,7 +66,7 @@ async function sendWithResend(lead: LeadData, from: string, content: ReturnType<
     },
     body: JSON.stringify({
       from,
-      to: [LEAD_RECIPIENT],
+      to: LEAD_RECIPIENTS,
       reply_to: lead.email,
       subject: content.subject,
       html: content.html,
@@ -98,7 +98,7 @@ async function sendWithSmtp(lead: LeadData, from: string, content: ReturnType<ty
 
   await transporter.sendMail({
     from,
-    to: LEAD_RECIPIENT,
+    to: LEAD_RECIPIENTS,
     replyTo: lead.email,
     subject: content.subject,
     text: content.text,

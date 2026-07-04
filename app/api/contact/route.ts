@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const CONTACT_RECIPIENT = "director@afdmctravel.com";
+const CONTACT_RECIPIENTS = ["info@afdmctravel.com", "reservations@adventuresfinder.com"];
 
 type ContactPayload = {
   name?: string;
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         from,
-        to: [CONTACT_RECIPIENT],
+        to: CONTACT_RECIPIENTS,
         reply_to: contact.email,
         subject: content.subject,
         html: content.html,

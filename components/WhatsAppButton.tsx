@@ -1,7 +1,7 @@
 "use client";
 
 export default function WhatsAppButton() {
-  const phoneNumber = "18294216101";
+  const phoneNumber = "18495700202";
   const message = "Hello! I'm interested in booking a tour with Adventures Finder.";
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
