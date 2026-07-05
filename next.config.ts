@@ -125,6 +125,16 @@ const wordpressRedirects: Array<{ source: string; destination: string; permanent
     permanent: true,
   },
   {
+    source: "/power-cruise-catamaran-snorkeling",
+    destination: "/en/excursions/power-cruise-catamaran-snorkeling",
+    permanent: true,
+  },
+  {
+    source: "/power-cruise-catamaran-snorkeling/",
+    destination: "/en/excursions/power-cruise-catamaran-snorkeling",
+    permanent: true,
+  },
+  {
     source: "/faqs-tours",
     destination: "/en/faqs",
     permanent: true,
