@@ -15,6 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Adventures Finder",
   description: "Directory for tours and adventures",
+  icons: {
+    icon: [{ url: "/images/icon.png", type: "image/png", sizes: "512x512" }],
+    shortcut: "/images/icon.png",
+    apple: [{ url: "/images/icon.png", type: "image/png", sizes: "512x512" }],
+  },
 };
 
 export default function RootLayout({

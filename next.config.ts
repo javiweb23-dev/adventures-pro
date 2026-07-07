@@ -3,6 +3,19 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
+const faviconRedirects: Array<{ source: string; destination: string; permanent: true }> = [
+  {
+    source: "/favicon.ico",
+    destination: "/images/icon.png",
+    permanent: true,
+  },
+  {
+    source: "/icon.png",
+    destination: "/images/icon.png",
+    permanent: true,
+  },
+];
+
 const wordpressRedirects: Array<{ source: string; destination: string; permanent: true }> = [
   {
     source: "/when-not-to-visit-punta-cana-costly-mistakes-tourists-make-and-the-best-months-instead",
@@ -177,7 +190,7 @@ const nextConfig: NextConfig = {
     ],
   },
   async redirects() {
-    return wordpressRedirects;
+    return [...faviconRedirects, ...wordpressRedirects];
   },
 };
 
