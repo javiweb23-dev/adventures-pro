@@ -1,3 +1,4 @@
+import { trackGa4CompanionEvent } from "@/lib/analytics/ga4";
 import type { MetaStandardEvent } from "@/lib/meta/constants";
 import { getCookie } from "@/lib/meta/cookies";
 import { createEventId } from "@/lib/meta/eventId";
@@ -21,6 +22,8 @@ export function trackMetaEvent(
   if (typeof window.fbq === "function") {
     window.fbq("track", eventName, customData ?? {}, { eventID: eventId });
   }
+
+  trackGa4CompanionEvent(eventName, customData);
 
   void fetch("/api/meta/events", {
     method: "POST",
