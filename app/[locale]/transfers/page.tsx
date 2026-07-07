@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+import TrackedWhatsAppLink from "@/components/meta/TrackedWhatsAppLink";
 import { Link } from "@/i18n/navigation";
 
 type TransfersPageProps = {
@@ -76,14 +77,15 @@ export default async function TransfersPage({ params }: TransfersPageProps) {
               >
                 reservations@adventuresfinder.com
               </a>
-              <a
+              <TrackedWhatsAppLink
                 href="https://wa.me/18495700202"
                 target="_blank"
                 rel="noopener noreferrer"
+                source="transfers_page_whatsapp"
                 className="font-medium text-[#0a192f] transition hover:text-blue-700"
               >
                 +1 849 570 0202
-              </a>
+              </TrackedWhatsAppLink>
             </div>
           </div>
         </div>

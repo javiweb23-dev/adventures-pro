@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { trackMetaEvent } from "@/lib/meta/trackEvent";
 
 export default function ContactForm() {
   const t = useTranslations("Contact");
@@ -59,6 +60,9 @@ export default function ContactForm() {
       }
 
       setStatus("success");
+      trackMetaEvent("Contact", {
+        content_name: "contact_form",
+      });
       resetForm();
     } catch {
       setStatus("error");

@@ -6,6 +6,7 @@ import { Clock3 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import TourFilters from "@/components/TourFilters";
+import BookNowLink from "@/components/meta/BookNowLink";
 import { urlFor } from "@/sanity/lib/image";
 import {
   filterAndSortTours,
@@ -168,14 +169,18 @@ export default function ExcursionesCatalog({
                     </p>
                     <p className="text-lg font-semibold text-blue-950">From {computedPrice}</p>
                     <div className="flex flex-col gap-3 sm:flex-row">
-                      <a
+                      <BookNowLink
                         href={peekUrl}
                         target="_blank"
                         rel="noopener noreferrer"
+                        contentId={slug}
+                        contentName={title}
+                        value={Number.isFinite(firstPricingValue) ? firstPricingValue : undefined}
+                        currency={tour.currency}
                         className="inline-flex h-11 flex-1 items-center justify-center rounded-xl bg-orange-500 px-4 text-sm font-semibold text-white transition hover:bg-orange-600"
                       >
                         Book Now
-                      </a>
+                      </BookNowLink>
                       <Link
                         href={tourExcursionPath(slug)}
                         className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"

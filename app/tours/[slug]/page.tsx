@@ -13,6 +13,8 @@ import { notFound } from "next/navigation";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import BookNowLink from "@/components/meta/BookNowLink";
+import TourViewContent from "@/components/meta/TourViewContent";
 import { formatTourPrice, peekBookingUrl } from "@/lib/tourPrice";
 import { slugLookupVariants } from "@/lib/tourSlug";
 import { routing, type AppLocale } from "@/i18n/routing";
@@ -239,6 +241,12 @@ export default async function TourDetailPage({ params }: TourPageProps) {
 
   return (
     <div className="bg-slate-50 text-slate-900">
+      <TourViewContent
+        slug={tour.slug}
+        title={tour.title}
+        value={Number.isFinite(adultLeadPriceValue) ? adultLeadPriceValue : undefined}
+        currency={currency}
+      />
       <main className="mx-auto max-w-7xl px-4 py-8 pb-28 md:px-10 md:py-12 md:pb-12 lg:px-12">
         <Breadcrumbs
           items={[
@@ -625,14 +633,18 @@ export default async function TourDetailPage({ params }: TourPageProps) {
                 </div>
               </div>
 
-              <a
+              <BookNowLink
                 href={peekUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                contentId={tour.slug}
+                contentName={tour.title}
+                value={Number.isFinite(adultLeadPriceValue) ? adultLeadPriceValue : undefined}
+                currency={currency}
                 className="mt-10 flex h-14 w-full items-center justify-center rounded-2xl bg-orange-500 text-base font-semibold text-white shadow-md shadow-orange-500/30 transition hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/35"
               >
                 Book Now
-              </a>
+              </BookNowLink>
             </div>
           </aside>
         </div>
@@ -644,14 +656,18 @@ export default async function TourDetailPage({ params }: TourPageProps) {
               ? `From ${leadFromFormatted}`
               : "From -"}
           </p>
-          <a
+          <BookNowLink
             href={peekUrl}
             target="_blank"
             rel="noopener noreferrer"
+            contentId={tour.slug}
+            contentName={tour.title}
+            value={Number.isFinite(adultLeadPriceValue) ? adultLeadPriceValue : undefined}
+            currency={currency}
             className="inline-flex h-11 shrink-0 items-center justify-center rounded-xl bg-orange-500 px-5 text-sm font-semibold text-white shadow-md shadow-orange-500/30 transition hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/35"
           >
             Book Now
-          </a>
+          </BookNowLink>
         </div>
       </div>
     </div>

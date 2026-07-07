@@ -1,4 +1,5 @@
 import { Clock3 } from "lucide-react";
+import BookNowLink from "@/components/meta/BookNowLink";
 import { urlFor } from "@/sanity/lib/image";
 import { Link } from "@/i18n/navigation";
 import { formatTourPrice } from "@/lib/tourPrice";
@@ -83,14 +84,18 @@ export default function TourCard({ tour }: TourCardProps) {
           {computedPrice}
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
-          <a
+          <BookNowLink
             href={tour.peekUrl}
             target="_blank"
             rel="noopener noreferrer"
+            contentId={safeSlug}
+            contentName={tour.title}
+            value={Number.isFinite(firstPriceValue) ? firstPriceValue : undefined}
+            currency={tour.currency || "USD"}
             className="inline-flex h-11 flex-1 items-center justify-center rounded-xl bg-orange-500 px-4 text-sm font-semibold text-white transition hover:bg-orange-600"
           >
             Book Now
-          </a>
+          </BookNowLink>
           <Link
             href={detailsHref}
             className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
