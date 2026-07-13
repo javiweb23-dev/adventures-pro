@@ -31,7 +31,7 @@ const titles: Record<AppLocale, string> = {
 };
 
 const logoClassName =
-  "h-16 w-auto object-contain grayscale opacity-75 transition-all duration-500 ease-in-out hover:scale-105 hover:grayscale-0 hover:opacity-100";
+  "h-[4.8rem] w-auto object-contain transition-all duration-500 ease-in-out hover:scale-105";
 
 type OurBrandsProps = {
   locale: AppLocale;
@@ -52,8 +52,8 @@ export default function OurBrands({ locale }: OurBrandsProps) {
               <Image
                 src={brand.src}
                 alt={brand.alt}
-                width={200}
-                height={64}
+                width={240}
+                height={77}
                 className={logoClassName}
               />
             );
