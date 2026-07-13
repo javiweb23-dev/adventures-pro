@@ -6,6 +6,12 @@ export const aboutPageType = defineType({
   type: "document",
   fields: [
     defineField({
+      name: "heroImage",
+      title: "Imagen del Cuadro Azul",
+      type: "image",
+      options: { hotspot: true },
+    }),
+    defineField({
       name: "whoWeAreTitle",
       title: "Who We Are — Heading",
       type: "localizedString",

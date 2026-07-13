@@ -1,5 +1,7 @@
+import Image from "next/image";
 import TeamGrid from "@/components/TeamGrid";
 import { client } from "@/sanity/lib/client";
+import { urlFor } from "@/sanity/lib/image";
 import { groq } from "next-sanity";
 
 type AboutPageProps = {
@@ -7,12 +9,14 @@ type AboutPageProps = {
 };
 
 type AboutPageData = {
+  heroImage?: unknown;
   whoWeAreTitle?: string | null;
   whoWeAreSubtitle?: string | null;
   whoWeAreBody?: string | null;
 };
 
 const ABOUT_PAGE_QUERY = groq`*[_type == "aboutPage"][0]{
+  heroImage,
   "whoWeAreTitle": coalesce(select($locale == "fr-ca" => whoWeAreTitle.frCA, whoWeAreTitle[$locale]), whoWeAreTitle.en, whoWeAreTitle),
   "whoWeAreSubtitle": coalesce(select($locale == "fr-ca" => whoWeAreSubtitle.frCA, whoWeAreSubtitle[$locale]), whoWeAreSubtitle.en, whoWeAreSubtitle),
   "whoWeAreBody": coalesce(select($locale == "fr-ca" => whoWeAreBody.frCA, whoWeAreBody[$locale]), whoWeAreBody.en, whoWeAreBody)
@@ -39,10 +43,36 @@ export default async function AboutPage({ params }: AboutPageProps) {
     .map((p) => p.trim())
     .filter(Boolean);
 
+  const heroImageUrl = (() => {
+    try {
+      return about?.heroImage
+        ? urlFor(about.heroImage).width(1920).height(800).fit("crop").url()
+        : null;
+    } catch {
+      return null;
+    }
+  })();
+
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <section className="relative overflow-hidden bg-[#0a192f] px-6 py-20 md:px-10 md:py-28 lg:px-12">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a192f] via-[#0f2744] to-[#0a192f]" />
+        {heroImageUrl ? (
+          <Image
+            src={heroImageUrl}
+            alt={title}
+            fill
+            priority
+            className="object-cover object-center"
+            sizes="100vw"
+          />
+        ) : null}
+        <div
+          className={
+            heroImageUrl
+              ? "absolute inset-0 bg-gradient-to-br from-[#0a192f]/85 via-[#0f2744]/75 to-[#0a192f]/85"
+              : "absolute inset-0 bg-gradient-to-br from-[#0a192f] via-[#0f2744] to-[#0a192f]"
+          }
+        />
         <div className="relative mx-auto max-w-4xl text-center">
           <h1 className="text-3xl font-bold tracking-tight text-white md:text-5xl md:leading-tight">
             {title}
