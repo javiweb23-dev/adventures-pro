@@ -9,6 +9,7 @@ import ReviewsSection from "@/components/ReviewsSection";
 import OurBrands from "@/components/OurBrands";
 import BoutiqueBanner from "@/components/BoutiqueBanner";
 import AllianceLogos from "@/components/AllianceLogos";
+import LiveItBanner from "@/components/LiveItBanner";
 import BlogSection from "@/components/BlogSection";
 import CategoryBanners, { type CategoryBanner } from "@/components/CategoryBanners";
 import LeadForm from "@/components/LeadForm";
@@ -132,6 +133,8 @@ export default async function Home({ params }: HomePageProps) {
         <BoutiqueBanner />
 
         <AllianceLogos />
+
+        <LiveItBanner />
       </main>
     </div>
   );

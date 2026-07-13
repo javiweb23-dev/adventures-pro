@@ -8,6 +8,7 @@ import FeaturedAdventures from "@/components/FeaturedAdventures";
 import ReviewsSection from "@/components/ReviewsSection";
 import BoutiqueBanner from "@/components/BoutiqueBanner";
 import AllianceLogos from "@/components/AllianceLogos";
+import LiveItBanner from "@/components/LiveItBanner";
 import BlogSection from "@/components/BlogSection";
 import { client } from "@/sanity/lib/client";
 import { groq } from "next-sanity";
@@ -65,6 +66,8 @@ export default async function Home() {
           <BoutiqueBanner />
 
           <AllianceLogos />
+
+          <LiveItBanner />
         </main>
       </div>
     </NextIntlClientProvider>
