@@ -128,13 +128,13 @@ export default async function Home({ params }: HomePageProps) {
 
         <OurBrands locale={locale} />
 
+        <LiveItBanner />
+
         <BlogSection locale={locale} />
 
         <BoutiqueBanner />
 
         <AllianceLogos />
-
-        <LiveItBanner />
       </main>
     </div>
   );
