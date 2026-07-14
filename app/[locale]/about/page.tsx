@@ -104,7 +104,11 @@ export default async function AboutPage({ params }: AboutPageProps) {
 
       <section className="border-t border-slate-200 bg-slate-50 px-6 py-16 md:px-10 md:py-24 lg:px-12">
         <div className="mx-auto max-w-7xl pb-4">
-          <TeamGrid locale={locale} teamTagline={about?.teamTagline} />
+          <TeamGrid
+            locale={locale}
+            teamTagline={about?.teamTagline}
+            sectionSubtitle={about?.sectionSubtitle}
+          />
         </div>
       </section>
     </div>
