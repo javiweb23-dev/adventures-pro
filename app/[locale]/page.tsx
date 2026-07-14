@@ -10,6 +10,7 @@ import OurBrands from "@/components/OurBrands";
 import BoutiqueBanner from "@/components/BoutiqueBanner";
 import AllianceLogos from "@/components/AllianceLogos";
 import LiveItBanner from "@/components/LiveItBanner";
+import LiveItBannerSticky from "@/components/LiveItBannerSticky";
 import BlogSection from "@/components/BlogSection";
 import CategoryBanners, { type CategoryBanner } from "@/components/CategoryBanners";
 import LeadForm from "@/components/LeadForm";
@@ -129,6 +130,7 @@ export default async function Home({ params }: HomePageProps) {
         <OurBrands locale={locale} />
 
         <LiveItBanner />
+        <LiveItBannerSticky />
 
         <BlogSection locale={locale} />
 

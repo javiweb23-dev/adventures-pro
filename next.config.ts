@@ -221,7 +221,9 @@ const reservedRootSlugs = [
 
 // Exact-match negative lookahead: (?!(?:a|b)$) excludes only the full segment "a" or "b",
 // not prefixes (e.g. "about-our-team-tour" is NOT excluded by "about").
-const legacyTourSlugPattern = `((?!(?:${reservedRootSlugs})$)[^/]+)`;
+// Trailing pattern only allows kebab-case (letters/digits/hyphens) so root static
+// assets like /logo-v3.png or /file.svg are never captured by this redirect.
+const legacyTourSlugPattern = `((?!(?:${reservedRootSlugs})$)[a-z0-9]+(?:-[a-z0-9]+)*)`;
 
 const legacyTourRedirects: Array<{
   source: string;
