@@ -138,6 +138,16 @@ const wordpressRedirects: Array<{ source: string; destination: string; permanent
     permanent: true,
   },
   {
+    source: "/multidays-tours",
+    destination: "/en/excursions/categoria/multidays-tours",
+    permanent: true,
+  },
+  {
+    source: "/multidays-tours/",
+    destination: "/en/excursions/categoria/multidays-tours",
+    permanent: true,
+  },
+  {
     source: "/power-cruise-catamaran-snorkeling",
     destination: "/en/excursions/power-cruise-catamaran-snorkeling",
     permanent: true,
@@ -214,6 +224,7 @@ const reservedRootSlugs = [
   "shopping-center-in-punta-cana",
   "private-tours",
   "water-tours",
+  "multidays-tours",
   "power-cruise-catamaran-snorkeling",
   "faqs-tours",
   "about-our-vlog",
