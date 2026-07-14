@@ -16,6 +16,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import BookNowLink from "@/components/meta/BookNowLink";
 import TourViewContent from "@/components/meta/TourViewContent";
 import { formatTourPrice, peekBookingUrl } from "@/lib/tourPrice";
+import { categoryExcursionPath } from "@/lib/categoryPath";
 import { slugLookupVariants } from "@/lib/tourSlug";
 import { routing, type AppLocale } from "@/i18n/routing";
 
@@ -251,7 +252,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
         <Breadcrumbs
           items={[
             { label: "Home", href: "/" },
-            { label: categoryTitle, href: `/excursions/${categorySlug}` },
+            { label: categoryTitle, href: categoryExcursionPath(categorySlug) },
             { label: tour.title },
           ]}
         />
