@@ -12,10 +12,7 @@ export const structure: StructureResolver = (S) =>
             .title("Tours")
             .filter('_type == "tour" && slug.current != "water-tours"'),
         ),
-      S.listItem()
-        .title("Categories")
-        .schemaType("category")
-        .child(S.documentTypeList("category").title("Categories")),
+      S.documentTypeListItem("category").title("Categories"),
       ...S.documentTypeListItems().filter(
         (item) => !["tour", "category"].includes(item.getId() ?? ""),
       ),

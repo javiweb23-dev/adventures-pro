@@ -16,11 +16,15 @@ export const categoryType = defineType({
       title: "Slug",
       type: "slug",
       options: {
-        source: (doc) => {
-          const d = doc as { title?: { en?: string; es?: string; frCA?: string } };
-          return d.title?.en || d.title?.es || "";
-        },
+        source: "title.en",
         maxLength: 96,
+        slugify: (input) =>
+          input
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+            .slice(0, 96),
       },
       validation: (rule) => rule.required(),
     }),
