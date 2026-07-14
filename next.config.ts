@@ -174,6 +174,72 @@ const wordpressRedirects: Array<{ source: string; destination: string; permanent
   },
 ];
 
+const reservedRootSlugs = [
+  // locales — evita loops con next-intl
+  "en",
+  "es",
+  "fr-ca",
+  // sitio
+  "about",
+  "contact",
+  "transfers",
+  "excursions",
+  "blog",
+  "faqs",
+  "terms-and-conditions",
+  "cancellation-policy",
+  "studio",
+  "tours",
+  "api",
+  "_next",
+  "_vercel",
+  // favicon / system / crawlers
+  "favicon\\.ico",
+  "icon\\.png",
+  "robots\\.txt",
+  "sitemap\\.xml",
+  "manifest\\.json",
+  "apple-touch-icon\\.png",
+  "ads\\.txt",
+  "\\.well-known",
+  // sources ya cubiertos por wordpressRedirects (sin slash)
+  "when-not-to-visit-punta-cana-costly-mistakes-tourists-make-and-the-best-months-instead",
+  "sea-turtles-in-the-dominican-republic-when-where-and-how-to-see-them-responsibly",
+  "supermarkets-in-punta-cana",
+  "who-we-are",
+  "the-history-of-punta-cana",
+  "land-tours",
+  "punta-cana-neighborhoods-explained-where-to-stay-rent-or-relocate",
+  "top-best-beaches-in-dominican-republic",
+  "shopping-center-in-punta-cana",
+  "private-tours",
+  "water-tours",
+  "power-cruise-catamaran-snorkeling",
+  "faqs-tours",
+  "about-our-vlog",
+].join("|");
+
+// Exact-match negative lookahead: (?!(?:a|b)$) excludes only the full segment "a" or "b",
+// not prefixes (e.g. "about-our-team-tour" is NOT excluded by "about").
+const legacyTourSlugPattern = `((?!(?:${reservedRootSlugs})$)[^/]+)`;
+
+const legacyTourRedirects: Array<{
+  source: string;
+  destination: string;
+  permanent: true;
+}> = [
+  {
+    source: `/:slug${legacyTourSlugPattern}`,
+    destination: "/en/excursions/:slug",
+    permanent: true,
+  },
+  {
+    source: `/:slug${legacyTourSlugPattern}/`,
+    destination: "/en/excursions/:slug",
+    permanent: true,
+  },
+];
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -190,7 +256,11 @@ const nextConfig: NextConfig = {
     ],
   },
   async redirects() {
-    return [...faviconRedirects, ...wordpressRedirects];
+    return [
+      ...faviconRedirects,
+      ...wordpressRedirects,
+      ...legacyTourRedirects,
+    ];
   },
 };
 
