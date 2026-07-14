@@ -9,6 +9,7 @@ import { teamMemberType } from "./teamMember";
 import { tourType } from "./tour";
 import { landingPageType } from "./landingPage";
 import { aboutPageType } from "./aboutPage";
+import { transferPageType } from "./transferPage";
 import { transferZoneType } from "./transferZone";
 import { transferVehicleType } from "./transferVehicle";
 import { transferRouteType } from "./transferRoute";
@@ -26,6 +27,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     teamMemberType,
     landingPageType,
     aboutPageType,
+    transferPageType,
     transferZoneType,
     transferVehicleType,
     transferRouteType,

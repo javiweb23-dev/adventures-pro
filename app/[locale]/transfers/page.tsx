@@ -1,26 +1,73 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+import { groq } from "next-sanity";
 import TrackedWhatsAppLink from "@/components/meta/TrackedWhatsAppLink";
 import { Link } from "@/i18n/navigation";
+import { client } from "@/sanity/lib/client";
+import { urlFor } from "@/sanity/lib/image";
 
 type TransfersPageProps = {
   params: Promise<{ locale: "en" | "es" | "fr-ca" }>;
 };
 
+type TransferPageData = {
+  heroImage?: unknown;
+  heroTitle?: string | null;
+  heroSubtitle?: string | null;
+};
+
+const TRANSFER_PAGE_QUERY = groq`*[_type == "transferPage"][0]{
+  heroImage,
+  "heroTitle": coalesce(select($locale == "fr-ca" => heroTitle.frCA, heroTitle[$locale]), heroTitle.en, heroTitle),
+  "heroSubtitle": coalesce(select($locale == "fr-ca" => heroSubtitle.frCA, heroSubtitle[$locale]), heroSubtitle.en, heroSubtitle)
+}`;
+
 export default async function TransfersPage({ params }: TransfersPageProps) {
-  await params;
+  const { locale } = await params;
   const t = await getTranslations("Transfers");
+
+  const transferPage = await client
+    .fetch<TransferPageData | null>(TRANSFER_PAGE_QUERY, { locale })
+    .catch(() => null);
+
+  const heroTitle = transferPage?.heroTitle?.trim() || t("heroTitle");
+  const heroSubtitle = transferPage?.heroSubtitle?.trim() || t("heroSubtitle");
+  const heroImageUrl = (() => {
+    try {
+      return transferPage?.heroImage
+        ? urlFor(transferPage.heroImage).width(1920).height(800).fit("crop").url()
+        : null;
+    } catch {
+      return null;
+    }
+  })();
 
   return (
     <div className="min-h-screen bg-white text-slate-800">
       <section className="relative overflow-hidden bg-[#0a192f] px-6 py-20 md:px-10 md:py-28 lg:px-12">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a192f] via-[#0f2744] to-[#0a192f]" />
+        {heroImageUrl ? (
+          <Image
+            src={heroImageUrl}
+            alt={heroTitle}
+            fill
+            priority
+            className="object-cover object-center"
+            sizes="100vw"
+          />
+        ) : null}
+        <div
+          className={
+            heroImageUrl
+              ? "absolute inset-0 bg-gradient-to-br from-[#0a192f]/85 via-[#0f2744]/75 to-[#0a192f]/85"
+              : "absolute inset-0 bg-gradient-to-br from-[#0a192f] via-[#0f2744] to-[#0a192f]"
+          }
+        />
         <div className="relative mx-auto max-w-4xl text-center">
           <h1 className="text-3xl font-bold tracking-tight text-white md:text-5xl md:leading-tight">
-            {t("heroTitle")}
+            {heroTitle}
           </h1>
           <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-slate-200 md:text-lg">
-            {t("heroSubtitle")}
+            {heroSubtitle}
           </p>
         </div>
       </section>
