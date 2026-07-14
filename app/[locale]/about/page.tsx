@@ -13,13 +13,15 @@ type AboutPageData = {
   whoWeAreTitle?: string | null;
   whoWeAreSubtitle?: string | null;
   whoWeAreBody?: string | null;
+  sectionSubtitle?: string | null;
 };
 
 const ABOUT_PAGE_QUERY = groq`*[_type == "aboutPage"][0]{
   heroImage,
   "whoWeAreTitle": coalesce(select($locale == "fr-ca" => whoWeAreTitle.frCA, whoWeAreTitle[$locale]), whoWeAreTitle.en, whoWeAreTitle),
   "whoWeAreSubtitle": coalesce(select($locale == "fr-ca" => whoWeAreSubtitle.frCA, whoWeAreSubtitle[$locale]), whoWeAreSubtitle.en, whoWeAreSubtitle),
-  "whoWeAreBody": coalesce(select($locale == "fr-ca" => whoWeAreBody.frCA, whoWeAreBody[$locale]), whoWeAreBody.en, whoWeAreBody)
+  "whoWeAreBody": coalesce(select($locale == "fr-ca" => whoWeAreBody.frCA, whoWeAreBody[$locale]), whoWeAreBody.en, whoWeAreBody),
+  "sectionSubtitle": coalesce(select($locale == "fr-ca" => sectionSubtitle.frCA, sectionSubtitle[$locale]), sectionSubtitle.en, sectionSubtitle)
 }`;
 
 const FALLBACK_TITLE = "Who We Are";
@@ -100,7 +102,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
 
       <section className="border-t border-slate-200 bg-slate-50 px-6 py-16 md:px-10 md:py-24 lg:px-12">
         <div className="mx-auto max-w-7xl pb-4">
-          <TeamGrid locale={locale} />
+          <TeamGrid locale={locale} sectionSubtitle={about?.sectionSubtitle} />
         </div>
       </section>
     </div>

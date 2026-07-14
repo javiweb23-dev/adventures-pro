@@ -26,5 +26,11 @@ export const aboutPageType = defineType({
       title: "Who We Are — Main content",
       type: "localizedText",
     }),
+    defineField({
+      name: "sectionSubtitle",
+      title: "Subtítulo de la Sección",
+      type: "localizedString",
+      description: "Heading de la sección del equipo (ej. Our Team)",
+    }),
   ],
 });

@@ -25,16 +25,21 @@ const teamMembersQuery = groq`*[_type == "teamMember"] | order(_createdAt asc){
 
 type TeamGridProps = {
   locale?: AppLocale;
+  sectionSubtitle?: string | null;
 };
 
-export default async function TeamGrid({ locale = "en" }: TeamGridProps) {
+export default async function TeamGrid({
+  locale = "en",
+  sectionSubtitle,
+}: TeamGridProps) {
   const team = await client.fetch<Member[]>(teamMembersQuery, { locale });
+  const heading = sectionSubtitle?.trim() || "Our Team";
 
   if (!team.length) {
     return (
       <section className="mt-16 md:mt-20">
         <h2 className="text-center text-3xl font-semibold tracking-tight text-[#0a192f] md:text-4xl">
-          Our Team
+          {heading}
         </h2>
         <p className="mt-4 text-center text-sm font-medium uppercase tracking-[0.16em] text-cyan-700">
           Cargando
@@ -65,7 +70,7 @@ export default async function TeamGrid({ locale = "en" }: TeamGridProps) {
   return (
     <section className="mt-16 md:mt-20">
       <h2 className="text-center text-3xl font-semibold tracking-tight text-[#0a192f] md:text-4xl">
-        Our Team
+        {heading}
       </h2>
       <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
         {team.map((member) => (
