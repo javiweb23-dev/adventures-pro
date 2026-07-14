@@ -25,15 +25,15 @@ const teamMembersQuery = groq`*[_type == "teamMember"] | order(_createdAt asc){
 
 type TeamGridProps = {
   locale?: AppLocale;
-  sectionSubtitle?: string | null;
+  teamTagline?: string | null;
 };
 
 export default async function TeamGrid({
   locale = "en",
-  sectionSubtitle,
+  teamTagline,
 }: TeamGridProps) {
   const team = await client.fetch<Member[]>(teamMembersQuery, { locale });
-  const heading = sectionSubtitle?.trim() || "Our Team";
+  const heading = teamTagline?.trim() || "Our Team";
 
   if (!team.length) {
     return (

@@ -30,7 +30,11 @@ export const aboutPageType = defineType({
       name: "sectionSubtitle",
       title: "Subtítulo de la Sección",
       type: "localizedString",
-      description: "Heading de la sección del equipo (ej. Our Team)",
+    }),
+    defineField({
+      name: "teamTagline",
+      title: "Etiqueta de Sección Equipo (Our Team)",
+      type: "localizedString",
     }),
   ],
 });
