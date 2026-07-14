@@ -44,7 +44,7 @@ export default async function TeamGrid({
         <p className="mt-4 text-center text-sm font-medium uppercase tracking-[0.16em] text-cyan-700">
           Cargando
         </p>
-        <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, index) => (
             <article
               key={index}
@@ -72,7 +72,7 @@ export default async function TeamGrid({
       <h2 className="text-center text-3xl font-semibold tracking-tight text-[#0a192f] md:text-4xl">
         {heading}
       </h2>
-      <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-3">
         {team.map((member) => (
           <article
             key={member._id}
