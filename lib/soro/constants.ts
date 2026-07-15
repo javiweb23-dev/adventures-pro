@@ -6,7 +6,12 @@ export const MYMEMORY_TRANSLATE_URL =
   "https://api.mymemory.translated.net/get";
 
 /**
- * MyMemory `q` max is 500 UTF-8 bytes. Stay under that with a small margin
- * for multi-byte characters / edge cases.
+ * Contact email (`de` param) raises the free daily quota from ~5k to ~50k
+ * characters without requiring registration or an API key.
  */
-export const MYMEMORY_MAX_Q_BYTES = 450;
+export const MYMEMORY_CONTACT_EMAIL = "info@afdigitalsolutions.com";
+
+/**
+ * MyMemory `q` max is 500 UTF-8 bytes. Stay just under with a tiny margin.
+ */
+export const MYMEMORY_MAX_Q_BYTES = 490;

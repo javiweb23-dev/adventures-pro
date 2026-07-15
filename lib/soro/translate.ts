@@ -1,4 +1,5 @@
 import {
+  MYMEMORY_CONTACT_EMAIL,
   MYMEMORY_MAX_Q_BYTES,
   MYMEMORY_TRANSLATE_URL,
 } from "@/lib/soro/constants";
@@ -9,97 +10,81 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /** Per-request timeout for MyMemory translation. */
 export const TRANSLATE_TIMEOUT_MS = 15_000;
 
+/** First attempt + up to 3 retries on HTTP/body 429. */
+const RATE_LIMIT_MAX_ATTEMPTS = 4;
+
 const textEncoder = new TextEncoder();
 
 function utf8ByteLength(text: string): number {
   return textEncoder.encode(text).length;
 }
 
+/** Largest prefix of `text` whose UTF-8 length is ≤ maxBytes. */
+function maxPrefixByBytes(text: string, maxBytes: number): number {
+  if (utf8ByteLength(text) <= maxBytes) return text.length;
+
+  let lo = 0;
+  let hi = text.length;
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2);
+    if (utf8ByteLength(text.slice(0, mid)) <= maxBytes) {
+      lo = mid;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  return Math.max(1, lo);
+}
+
 /**
- * Split text into chunks of at most `maxBytes` UTF-8 bytes, preferring
- * paragraph → sentence → word → hard byte boundaries so order is preserved.
+ * Split text into as few chunks as possible under the MyMemory `q` byte limit,
+ * breaking preferably at paragraph → sentence → whitespace boundaries.
  */
 function splitForMyMemory(text: string, maxBytes = MYMEMORY_MAX_Q_BYTES): string[] {
   const trimmed = text.trim();
   if (!trimmed) return [];
   if (utf8ByteLength(trimmed) <= maxBytes) return [trimmed];
 
-  const paragraphs = trimmed.split(/\n\n+/);
   const chunks: string[] = [];
+  let remaining = trimmed;
 
-  for (const paragraph of paragraphs) {
-    if (!paragraph.trim()) continue;
-    if (utf8ByteLength(paragraph) <= maxBytes) {
-      chunks.push(paragraph);
-      continue;
+  while (remaining.length > 0) {
+    if (utf8ByteLength(remaining) <= maxBytes) {
+      chunks.push(remaining);
+      break;
     }
 
-    const sentences = paragraph.split(/(?<=[.!?])\s+/);
-    let buffer = "";
+    const hardEnd = maxPrefixByBytes(remaining, maxBytes);
+    const window = remaining.slice(0, hardEnd);
 
-    const flushBuffer = () => {
-      if (buffer) {
-        chunks.push(buffer);
-        buffer = "";
-      }
-    };
+    const paraBreak = window.lastIndexOf("\n\n");
+    const sentenceBreak = Math.max(
+      window.lastIndexOf(". "),
+      window.lastIndexOf("! "),
+      window.lastIndexOf("? "),
+      window.lastIndexOf(".\n"),
+      window.lastIndexOf("!\n"),
+      window.lastIndexOf("?\n"),
+    );
+    const spaceBreak = window.lastIndexOf(" ");
 
-    for (const sentence of sentences) {
-      const candidate = buffer ? `${buffer} ${sentence}` : sentence;
-      if (utf8ByteLength(candidate) <= maxBytes) {
-        buffer = candidate;
-        continue;
-      }
-
-      flushBuffer();
-
-      if (utf8ByteLength(sentence) <= maxBytes) {
-        buffer = sentence;
-        continue;
-      }
-
-      // Hard-split oversized sentence by words, then by bytes if needed.
-      const words = sentence.split(/\s+/);
-      for (const word of words) {
-        const next = buffer ? `${buffer} ${word}` : word;
-        if (utf8ByteLength(next) <= maxBytes) {
-          buffer = next;
-          continue;
-        }
-        flushBuffer();
-        if (utf8ByteLength(word) <= maxBytes) {
-          buffer = word;
-        } else {
-          chunks.push(...splitByUtf8Bytes(word, maxBytes));
-        }
-      }
+    let cut = hardEnd;
+    if (paraBreak > hardEnd * 0.4) {
+      cut = paraBreak;
+    } else if (sentenceBreak > hardEnd * 0.4) {
+      cut = sentenceBreak + 1; // keep the punctuation with this chunk
+    } else if (spaceBreak > hardEnd * 0.4) {
+      cut = spaceBreak;
     }
 
-    flushBuffer();
+    cut = Math.max(1, Math.min(cut, hardEnd));
+    const chunk = remaining.slice(0, cut).trimEnd();
+    chunks.push(chunk.length > 0 ? chunk : remaining.slice(0, hardEnd));
+
+    remaining = remaining.slice(chunk.length > 0 ? cut : hardEnd).replace(/^\s+/, "");
   }
 
-  return chunks;
-}
-
-function splitByUtf8Bytes(text: string, maxBytes: number): string[] {
-  const bytes = textEncoder.encode(text);
-  const decoder = new TextDecoder();
-  const parts: string[] = [];
-
-  for (let offset = 0; offset < bytes.length; ) {
-    let end = Math.min(offset + maxBytes, bytes.length);
-    // Avoid cutting mid-codepoint: walk back from a non-continuation byte.
-    while (end > offset && (bytes[end] & 0xc0) === 0x80) {
-      end -= 1;
-    }
-    if (end === offset) {
-      end = Math.min(offset + maxBytes, bytes.length);
-    }
-    parts.push(decoder.decode(bytes.subarray(offset, end)));
-    offset = end;
-  }
-
-  return parts;
+  return chunks.filter((c) => c.length > 0);
 }
 
 type MyMemoryResponse = {
@@ -109,6 +94,12 @@ type MyMemoryResponse = {
     translatedText?: string;
   };
 };
+
+function isRateLimited(status: number, details?: string): boolean {
+  if (status === 429) return true;
+  if (details && /rate.?limit|too many|quota/i.test(details)) return true;
+  return false;
+}
 
 async function translateChunk(
   text: string,
@@ -125,13 +116,20 @@ async function translateChunk(
     url.searchParams.set("q", text);
     // Site locale is fr-ca; MyMemory expects ISO "fr".
     url.searchParams.set("langpair", `en|${target}`);
+    url.searchParams.set("de", MYMEMORY_CONTACT_EMAIL);
 
     const response = await fetch(url.toString(), {
       method: "GET",
       signal: controller.signal,
     });
 
-    if (response.status === 429 || response.status >= 500) {
+    if (response.status === 429) {
+      throw Object.assign(new Error(`MyMemory returned 429`), {
+        isRateLimit: true,
+      });
+    }
+
+    if (response.status >= 500) {
       throw new Error(`MyMemory returned ${response.status}`);
     }
 
@@ -143,11 +141,21 @@ async function translateChunk(
 
     const data = (await response.json()) as MyMemoryResponse;
     const status = Number(data.responseStatus);
+    const details = data.responseDetails || "";
     const translated = data.responseData?.translatedText;
+
+    if (isRateLimited(status, details)) {
+      throw Object.assign(
+        new Error(
+          `MyMemory responseStatus=${status}: ${details || "rate limit"}`,
+        ),
+        { isRateLimit: true },
+      );
+    }
 
     if (status && status !== 200) {
       throw new Error(
-        `MyMemory responseStatus=${status}: ${data.responseDetails || "unknown"}`,
+        `MyMemory responseStatus=${status}: ${details || "unknown"}`,
       );
     }
 
@@ -158,11 +166,27 @@ async function translateChunk(
     return translated;
   } catch (error) {
     const labeled = formatStepError("translation failed", error);
+    const rateLimited =
+      typeof error === "object" &&
+      error !== null &&
+      "isRateLimit" in error &&
+      Boolean((error as { isRateLimit?: boolean }).isRateLimit);
+
     console.warn(
-      `[soro-sync] translate attempt failed (mymemory, target=${target}, try=${attempt}): ${labeled.message}`,
+      `[soro-sync] translate attempt failed (mymemory, target=${target}, try=${attempt}${rateLimited ? ", rateLimit=true" : ""}): ${labeled.message}`,
     );
 
-    if (attempt < 4) {
+    if (rateLimited && attempt < RATE_LIMIT_MAX_ATTEMPTS) {
+      // Exponential backoff aimed at 429: ~2s, 4s, 8s
+      const backoffMs = 2000 * 2 ** (attempt - 1);
+      console.warn(
+        `[soro-sync] MyMemory 429 — waiting ${backoffMs}ms before retry ${attempt + 1}/${RATE_LIMIT_MAX_ATTEMPTS}`,
+      );
+      await sleep(backoffMs);
+      return translateChunk(text, target, attempt + 1);
+    }
+
+    if (!rateLimited && attempt < 3) {
       const backoffMs = 750 * 2 ** (attempt - 1);
       await sleep(backoffMs);
       return translateChunk(text, target, attempt + 1);
@@ -174,7 +198,7 @@ async function translateChunk(
   }
 }
 
-/** Translate text via MyMemory, chunking to stay within the 500-byte `q` limit. */
+/** Translate text via MyMemory, packing chunks near the 500-byte `q` limit. */
 export async function translateText(
   text: string,
   target: "es" | "fr",
@@ -183,21 +207,15 @@ export async function translateText(
   if (chunks.length === 0) return text;
   if (chunks.length === 1) return translateChunk(chunks[0], target);
 
+  console.log(
+    `[soro-sync] mymemory packing target=${target} chunks=${chunks.length} chars=${text.length}`,
+  );
+
   const translated: string[] = [];
   for (const chunk of chunks) {
     translated.push(await translateChunk(chunk, target));
   }
 
-  // Rejoin with double newlines when original had paragraph breaks;
-  // for mid-paragraph splits we join with a space.
-  // Prefer reconstructing from how we split: paragraphs were separate chunks
-  // when under limit; sentence/word splits within a paragraph should be spaces.
-  // Simplest correct-enough join: use " " for adjacent mid-body pieces, but
-  // preserve blank lines by detecting original paragraph separators via
-  // reconstructing from splitForMyMemory which keeps \n\n as separate units.
-  // Since splitForMyMemory emits paragraph-level chunks when possible,
-  // join consecutive chunks with space if they don't look like full paragraphs
-  // ending — actually original approach of join("\n\n") broke sentence splits.
   return rejoinChunks(text, chunks, translated);
 }
 
@@ -210,8 +228,6 @@ function rejoinChunks(
     return translatedChunks.join(" ");
   }
 
-  // Walk the original string and replace each source chunk occurrence in order
-  // with its translation, preserving separators between chunks.
   let cursor = 0;
   let output = "";
 
