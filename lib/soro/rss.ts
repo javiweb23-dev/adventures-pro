@@ -89,8 +89,55 @@ function mediaUrl(item: RawItem & Record<string, unknown>): string | undefined {
   return undefined;
 }
 
+const RSS_FETCH_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  Accept: "application/rss+xml, application/xml, text/xml, */*",
+  "Accept-Language": "en-US,en;q=0.9",
+} as const;
+
+async function fetchSoroRssXml(): Promise<string> {
+  console.log(`[soro-sync] requesting RSS feed URL exactly: ${SORO_RSS_URL}`);
+  console.log(`[soro-sync] RSS request headers: ${JSON.stringify(RSS_FETCH_HEADERS)}`);
+
+  const response = await fetch(SORO_RSS_URL, {
+    method: "GET",
+    headers: RSS_FETCH_HEADERS,
+    redirect: "follow",
+    cache: "no-store",
+  });
+
+  const bodyText = await response.text();
+  const headersObject: Record<string, string> = {};
+  response.headers.forEach((value, key) => {
+    headersObject[key] = value;
+  });
+
+  console.log(`[soro-sync] RSS response status: ${response.status} ${response.statusText}`);
+  console.log(`[soro-sync] RSS response ok: ${response.ok}`);
+  console.log(`[soro-sync] RSS response url (final): ${response.url}`);
+  console.log(`[soro-sync] RSS response headers: ${JSON.stringify(headersObject)}`);
+  console.log(
+    `[soro-sync] RSS response body (first 2000 chars): ${bodyText.slice(0, 2000)}`,
+  );
+  if (bodyText.length > 2000) {
+    console.log(
+      `[soro-sync] RSS response body truncated; full length=${bodyText.length}`,
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `Soro RSS fetch failed with status ${response.status} ${response.statusText}. Body: ${bodyText.slice(0, 500)}`,
+    );
+  }
+
+  return bodyText;
+}
+
 export async function fetchSoroRssItems(): Promise<SoroRssItem[]> {
-  const feed = await parser.parseURL(SORO_RSS_URL);
+  const xml = await fetchSoroRssXml();
+  const feed = await parser.parseString(xml);
   const items: SoroRssItem[] = [];
 
   for (const raw of feed.items as unknown as Array<RawItem & Record<string, unknown>>) {
@@ -121,5 +168,6 @@ export async function fetchSoroRssItems(): Promise<SoroRssItem[]> {
     });
   }
 
+  console.log(`[soro-sync] parsed RSS items count=${items.length}`);
   return items;
 }
