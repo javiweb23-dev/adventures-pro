@@ -1,6 +1,10 @@
 import { LIBRETRANSLATE_ENDPOINTS } from "@/lib/soro/constants";
+import { formatStepError } from "@/lib/soro/errors";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Per-request timeout for LibreTranslate public endpoints. */
+export const TRANSLATE_TIMEOUT_MS = 15_000;
 
 async function translateChunk(
   text: string,
@@ -12,6 +16,9 @@ async function translateChunk(
   let lastError: unknown;
 
   for (const endpoint of LIBRETRANSLATE_ENDPOINTS) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), TRANSLATE_TIMEOUT_MS);
+
     try {
       const response = await fetch(endpoint, {
         method: "POST",
@@ -22,6 +29,7 @@ async function translateChunk(
           target,
           format: "text",
         }),
+        signal: controller.signal,
       });
 
       if (response.status === 429 || response.status >= 500) {
@@ -42,10 +50,12 @@ async function translateChunk(
       return data.translatedText;
     } catch (error) {
       lastError = error;
+      const labeled = formatStepError("translation failed", error);
       console.warn(
-        `[soro-sync] translate attempt failed (${endpoint}, target=${target}, try=${attempt}):`,
-        error,
+        `[soro-sync] translate attempt failed (${endpoint}, target=${target}, try=${attempt}): ${labeled.message}`,
       );
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
@@ -55,9 +65,7 @@ async function translateChunk(
     return translateChunk(text, target, attempt + 1);
   }
 
-  throw lastError instanceof Error
-    ? lastError
-    : new Error("LibreTranslate translation failed after retries");
+  throw formatStepError("translation failed", lastError);
 }
 
 /** Translate long text by paragraph chunks to avoid provider size limits. */
@@ -95,19 +103,23 @@ export async function translatePostFields(input: {
   excerpt: string;
   content: string;
 }) {
-  const [titleEs, titleFr, excerptEs, excerptFr, bodyEs, bodyFr] =
-    await Promise.all([
-      translateText(input.title, "es"),
-      translateText(input.title, "fr"),
-      translateText(input.excerpt, "es"),
-      translateText(input.excerpt, "fr"),
-      translateText(input.content, "es"),
-      translateText(input.content, "fr"),
-    ]);
+  try {
+    const [titleEs, titleFr, excerptEs, excerptFr, bodyEs, bodyFr] =
+      await Promise.all([
+        translateText(input.title, "es"),
+        translateText(input.title, "fr"),
+        translateText(input.excerpt, "es"),
+        translateText(input.excerpt, "fr"),
+        translateText(input.content, "es"),
+        translateText(input.content, "fr"),
+      ]);
 
-  return {
-    title: { en: input.title, es: titleEs, frCA: titleFr },
-    excerpt: { en: input.excerpt, es: excerptEs, frCA: excerptFr },
-    body: { en: input.content, es: bodyEs, frCA: bodyFr },
-  };
+    return {
+      title: { en: input.title, es: titleEs, frCA: titleFr },
+      excerpt: { en: input.excerpt, es: excerptEs, frCA: excerptFr },
+      body: { en: input.content, es: bodyEs, frCA: bodyFr },
+    };
+  } catch (error) {
+    throw formatStepError("translation failed", error);
+  }
 }

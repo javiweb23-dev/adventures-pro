@@ -1,8 +1,10 @@
+import { formatStepError } from "@/lib/soro/errors";
 import { uploadRemoteImageToSanity } from "@/lib/soro/image";
 import { fetchSoroRssItems, type SoroRssItem } from "@/lib/soro/rss";
 import { getSanityWriteClient } from "@/lib/soro/sanityWriteClient";
 import { slugifyPostTitle, uniqueSlugCandidate } from "@/lib/soro/slug";
 import { translatePostFields } from "@/lib/soro/translate";
+import { dataset, projectId } from "@/sanity/env";
 
 /** Max new articles to create per cron invocation (Hobby timeout safety). */
 export const MAX_ARTICLES_PER_RUN = 3;
@@ -17,6 +19,7 @@ export type SoroSyncResult = {
   failed: number;
   errors: Array<{ guid: string; title?: string; message: string }>;
   createdSlugs: string[];
+  createdIds: string[];
 };
 
 async function postExistsByGuid(
@@ -51,24 +54,44 @@ async function resolveUniqueSlug(
 async function createPostFromItem(
   client: ReturnType<typeof getSanityWriteClient>,
   item: SoroRssItem,
-): Promise<string> {
-  // Title/excerpt/body for es + fr are translated in parallel via Promise.all.
-  const localized = await translatePostFields({
-    title: item.title,
-    excerpt: item.excerpt,
-    content: item.content,
-  });
+): Promise<{ slug: string; id: string }> {
+  let localized: Awaited<ReturnType<typeof translatePostFields>>;
+  try {
+    console.log(`[soro-sync] step=translation start guid=${item.guid}`);
+    localized = await translatePostFields({
+      title: item.title,
+      excerpt: item.excerpt,
+      content: item.content,
+    });
+    console.log(`[soro-sync] step=translation ok guid=${item.guid}`);
+  } catch (error) {
+    throw formatStepError("translation failed", error);
+  }
 
-  const slug = await resolveUniqueSlug(client, item.title);
+  let slug: string;
+  try {
+    console.log(`[soro-sync] step=slug start guid=${item.guid}`);
+    slug = await resolveUniqueSlug(client, item.title);
+    console.log(`[soro-sync] step=slug ok guid=${item.guid} slug=${slug}`);
+  } catch (error) {
+    throw formatStepError("slug resolution failed", error);
+  }
 
   let mainImage: Awaited<ReturnType<typeof uploadRemoteImageToSanity>> | undefined;
   if (item.imageUrl) {
     try {
+      console.log(
+        `[soro-sync] step=image start guid=${item.guid} url=${item.imageUrl}`,
+      );
       mainImage = await uploadRemoteImageToSanity(client, item.imageUrl, slug);
+      console.log(
+        `[soro-sync] step=image ok guid=${item.guid} asset=${mainImage.asset._ref}`,
+      );
     } catch (error) {
+      const labeled = formatStepError("image processing failed", error);
+      // Non-fatal for image: continue without mainImage, but log the specific step.
       console.warn(
-        `[soro-sync] image upload failed for guid=${item.guid}; continuing without image:`,
-        error,
+        `[soro-sync] ${labeled.message}; continuing without image guid=${item.guid}`,
       );
     }
   }
@@ -87,11 +110,18 @@ async function createPostFromItem(
     ...(mainImage ? { mainImage } : {}),
   };
 
-  const created = await client.create(doc);
-  console.log(
-    `[soro-sync] created post _id=${created._id} slug=${slug} guid=${item.guid}`,
-  );
-  return slug;
+  try {
+    console.log(
+      `[soro-sync] step=sanity.create start guid=${item.guid} projectId=${projectId} dataset=${dataset}`,
+    );
+    const created = await client.create(doc);
+    console.log(
+      `[soro-sync] step=sanity.create ok _id=${created._id} slug=${slug} guid=${item.guid} (published, not draft)`,
+    );
+    return { slug, id: created._id };
+  } catch (error) {
+    throw formatStepError("sanity create failed", error);
+  }
 }
 
 function sortOldestFirst(items: SoroRssItem[]): SoroRssItem[] {
@@ -112,10 +142,11 @@ export async function syncSoroFeedToSanity(): Promise<SoroSyncResult> {
     failed: 0,
     errors: [],
     createdSlugs: [],
+    createdIds: [],
   };
 
   console.log(
-    `[soro-sync] starting sync (MAX_ARTICLES_PER_RUN=${MAX_ARTICLES_PER_RUN})`,
+    `[soro-sync] starting sync (MAX_ARTICLES_PER_RUN=${MAX_ARTICLES_PER_RUN}) projectId=${projectId} dataset=${dataset}`,
   );
   const client = getSanityWriteClient();
   const items = sortOldestFirst(await fetchSoroRssItems());
@@ -134,16 +165,15 @@ export async function syncSoroFeedToSanity(): Promise<SoroSyncResult> {
       }
       pendingItems.push(item);
     } catch (error) {
+      const labeled = formatStepError("existence check failed", error);
       result.failed += 1;
-      const message = error instanceof Error ? error.message : String(error);
       result.errors.push({
         guid: item.guid,
         title: item.title,
-        message,
+        message: labeled.message,
       });
       console.error(
-        `[soro-sync] existence check failed guid=${item.guid}:`,
-        message,
+        `[soro-sync] ${labeled.message} guid=${item.guid}`,
       );
     }
   }
@@ -159,10 +189,12 @@ export async function syncSoroFeedToSanity(): Promise<SoroSyncResult> {
   for (const item of batch) {
     result.processedThisRun += 1;
     try {
-      const slug = await createPostFromItem(client, item);
+      const { slug, id } = await createPostFromItem(client, item);
       result.created += 1;
       result.createdSlugs.push(slug);
+      result.createdIds.push(id);
     } catch (error) {
+      // Errors thrown from individual steps already include the step label.
       result.failed += 1;
       const message = error instanceof Error ? error.message : String(error);
       result.errors.push({
@@ -171,14 +203,13 @@ export async function syncSoroFeedToSanity(): Promise<SoroSyncResult> {
         message,
       });
       console.error(
-        `[soro-sync] failed guid=${item.guid} title="${item.title}":`,
-        message,
+        `[soro-sync] article failed guid=${item.guid} title="${item.title}": ${message}`,
       );
     }
   }
 
   console.log(
-    `[soro-sync] done fetched=${result.fetched} created=${result.created} skipped=${result.skippedExisting} failed=${result.failed} remainingPending=${result.remainingPending}`,
+    `[soro-sync] done fetched=${result.fetched} created=${result.created} skipped=${result.skippedExisting} failed=${result.failed} remainingPending=${result.remainingPending} createdIds=${JSON.stringify(result.createdIds)}`,
   );
 
   return result;
