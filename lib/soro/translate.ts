@@ -236,13 +236,15 @@ export async function translatePostFields(input: {
   content: string;
 }) {
   try {
-    // Sequential to stay kinder to MyMemory free-tier rate limits.
-    const titleEs = await translateText(input.title, "es");
-    const titleFr = await translateText(input.title, "fr");
-    const excerptEs = await translateText(input.excerpt, "es");
-    const excerptFr = await translateText(input.excerpt, "fr");
-    const bodyEs = await translateText(input.content, "es");
-    const bodyFr = await translateText(input.content, "fr");
+    const [titleEs, titleFr, excerptEs, excerptFr, bodyEs, bodyFr] =
+      await Promise.all([
+        translateText(input.title, "es"),
+        translateText(input.title, "fr"),
+        translateText(input.excerpt, "es"),
+        translateText(input.excerpt, "fr"),
+        translateText(input.content, "es"),
+        translateText(input.content, "fr"),
+      ]);
 
     return {
       title: { en: input.title, es: titleEs, frCA: titleFr },

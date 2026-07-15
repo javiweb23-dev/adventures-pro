@@ -6,8 +6,8 @@ import { slugifyPostTitle, uniqueSlugCandidate } from "@/lib/soro/slug";
 import { translatePostFields } from "@/lib/soro/translate";
 import { dataset, projectId } from "@/sanity/env";
 
-/** Max new articles to create per cron invocation (Hobby timeout safety). */
-export const MAX_ARTICLES_PER_RUN = 3;
+/** Max new articles to create per cron invocation (permanent: 1 per run). */
+export const MAX_ARTICLES_PER_RUN = 1;
 
 export type SoroSyncResult = {
   fetched: number;
@@ -57,22 +57,28 @@ async function createPostFromItem(
 ): Promise<{ slug: string; id: string }> {
   let localized: Awaited<ReturnType<typeof translatePostFields>>;
   try {
+    const t0 = Date.now();
     console.log(`[soro-sync] step=translation start guid=${item.guid}`);
     localized = await translatePostFields({
       title: item.title,
       excerpt: item.excerpt,
       content: item.content,
     });
-    console.log(`[soro-sync] step=translation ok guid=${item.guid}`);
+    console.log(
+      `[soro-sync] step=translation ok guid=${item.guid} durationMs=${Date.now() - t0}`,
+    );
   } catch (error) {
     throw formatStepError("translation failed", error);
   }
 
   let slug: string;
   try {
+    const t0 = Date.now();
     console.log(`[soro-sync] step=slug start guid=${item.guid}`);
     slug = await resolveUniqueSlug(client, item.title);
-    console.log(`[soro-sync] step=slug ok guid=${item.guid} slug=${slug}`);
+    console.log(
+      `[soro-sync] step=slug ok guid=${item.guid} slug=${slug} durationMs=${Date.now() - t0}`,
+    );
   } catch (error) {
     throw formatStepError("slug resolution failed", error);
   }
@@ -80,12 +86,13 @@ async function createPostFromItem(
   let mainImage: Awaited<ReturnType<typeof uploadRemoteImageToSanity>> | undefined;
   if (item.imageUrl) {
     try {
+      const t0 = Date.now();
       console.log(
         `[soro-sync] step=image start guid=${item.guid} url=${item.imageUrl}`,
       );
       mainImage = await uploadRemoteImageToSanity(client, item.imageUrl, slug);
       console.log(
-        `[soro-sync] step=image ok guid=${item.guid} asset=${mainImage.asset._ref}`,
+        `[soro-sync] step=image ok guid=${item.guid} asset=${mainImage.asset._ref} durationMs=${Date.now() - t0}`,
       );
     } catch (error) {
       const labeled = formatStepError("image processing failed", error);
@@ -111,12 +118,13 @@ async function createPostFromItem(
   };
 
   try {
+    const t0 = Date.now();
     console.log(
       `[soro-sync] step=sanity.create start guid=${item.guid} projectId=${projectId} dataset=${dataset}`,
     );
     const created = await client.create(doc);
     console.log(
-      `[soro-sync] step=sanity.create ok _id=${created._id} slug=${slug} guid=${item.guid} (published, not draft)`,
+      `[soro-sync] step=sanity.create ok _id=${created._id} slug=${slug} guid=${item.guid} durationMs=${Date.now() - t0} (published, not draft)`,
     );
     return { slug, id: created._id };
   } catch (error) {
