@@ -51,4 +51,21 @@ export const postType = defineType({
       readOnly: true,
     }),
   ],
+  preview: {
+    select: {
+      titleEn: "title.en",
+      titleEs: "title.es",
+      titleFr: "title.frCA",
+      slug: "slug.current",
+      media: "mainImage",
+    },
+    prepare({ titleEn, titleEs, titleFr, slug, media }) {
+      const title = titleEn || titleEs || titleFr || "Untitled";
+      return {
+        title,
+        subtitle: slug ? `/${slug}` : "No slug",
+        media,
+      };
+    },
+  },
 });
