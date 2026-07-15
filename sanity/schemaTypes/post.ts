@@ -43,5 +43,12 @@ export const postType = defineType({
       title: "Body",
       type: "localizedText",
     }),
+    defineField({
+      name: "sourceGuid",
+      title: "Source GUID (RSS)",
+      type: "string",
+      description: "Identificador estable del artículo externo (ej. GUID del feed RSS de Soro). Usado para evitar duplicados en la sincronización automática.",
+      readOnly: true,
+    }),
   ],
 });
