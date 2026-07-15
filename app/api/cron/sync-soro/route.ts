@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { syncSoroFeedToSanity } from "@/lib/soro/sync";
 
 export const runtime = "nodejs";
-export const maxDuration = 300;
+/** Hobby max without Fluid is 60s; with Fluid compute Hobby allows up to 300s. */
+export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
 function isAuthorized(request: NextRequest): boolean {

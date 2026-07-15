@@ -4,9 +4,15 @@ import { getSanityWriteClient } from "@/lib/soro/sanityWriteClient";
 import { slugifyPostTitle, uniqueSlugCandidate } from "@/lib/soro/slug";
 import { translatePostFields } from "@/lib/soro/translate";
 
+/** Max new articles to create per cron invocation (Hobby timeout safety). */
+export const MAX_ARTICLES_PER_RUN = 3;
+
 export type SoroSyncResult = {
   fetched: number;
   skippedExisting: number;
+  pendingNew: number;
+  processedThisRun: number;
+  remainingPending: number;
   created: number;
   failed: number;
   errors: Array<{ guid: string; title?: string; message: string }>;
@@ -46,6 +52,7 @@ async function createPostFromItem(
   client: ReturnType<typeof getSanityWriteClient>,
   item: SoroRssItem,
 ): Promise<string> {
+  // Title/excerpt/body for es + fr are translated in parallel via Promise.all.
   const localized = await translatePostFields({
     title: item.title,
     excerpt: item.excerpt,
@@ -87,21 +94,35 @@ async function createPostFromItem(
   return slug;
 }
 
+function sortOldestFirst(items: SoroRssItem[]): SoroRssItem[] {
+  return [...items].sort(
+    (a, b) =>
+      new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime(),
+  );
+}
+
 export async function syncSoroFeedToSanity(): Promise<SoroSyncResult> {
   const result: SoroSyncResult = {
     fetched: 0,
     skippedExisting: 0,
+    pendingNew: 0,
+    processedThisRun: 0,
+    remainingPending: 0,
     created: 0,
     failed: 0,
     errors: [],
     createdSlugs: [],
   };
 
-  console.log("[soro-sync] starting sync");
+  console.log(
+    `[soro-sync] starting sync (MAX_ARTICLES_PER_RUN=${MAX_ARTICLES_PER_RUN})`,
+  );
   const client = getSanityWriteClient();
-  const items = await fetchSoroRssItems();
+  const items = sortOldestFirst(await fetchSoroRssItems());
   result.fetched = items.length;
-  console.log(`[soro-sync] fetched ${items.length} RSS items`);
+  console.log(`[soro-sync] fetched ${items.length} RSS items (oldest-first)`);
+
+  const pendingItems: SoroRssItem[] = [];
 
   for (const item of items) {
     try {
@@ -111,7 +132,33 @@ export async function syncSoroFeedToSanity(): Promise<SoroSyncResult> {
         console.log(`[soro-sync] skip existing guid=${item.guid}`);
         continue;
       }
+      pendingItems.push(item);
+    } catch (error) {
+      result.failed += 1;
+      const message = error instanceof Error ? error.message : String(error);
+      result.errors.push({
+        guid: item.guid,
+        title: item.title,
+        message,
+      });
+      console.error(
+        `[soro-sync] existence check failed guid=${item.guid}:`,
+        message,
+      );
+    }
+  }
 
+  result.pendingNew = pendingItems.length;
+  const batch = pendingItems.slice(0, MAX_ARTICLES_PER_RUN);
+  result.remainingPending = Math.max(0, pendingItems.length - batch.length);
+
+  console.log(
+    `[soro-sync] pending new=${result.pendingNew}; processing this run=${batch.length}; leaving for future runs=${result.remainingPending}`,
+  );
+
+  for (const item of batch) {
+    result.processedThisRun += 1;
+    try {
       const slug = await createPostFromItem(client, item);
       result.created += 1;
       result.createdSlugs.push(slug);
@@ -131,7 +178,7 @@ export async function syncSoroFeedToSanity(): Promise<SoroSyncResult> {
   }
 
   console.log(
-    `[soro-sync] done fetched=${result.fetched} created=${result.created} skipped=${result.skippedExisting} failed=${result.failed}`,
+    `[soro-sync] done fetched=${result.fetched} created=${result.created} skipped=${result.skippedExisting} failed=${result.failed} remainingPending=${result.remainingPending}`,
   );
 
   return result;
