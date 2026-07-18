@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
-const LIVE_IT_URL =
-  "https://play.google.com/store/apps/details?id=com.gallusgolf.c1881.android.liveit";
+const LIVE_IT_URL = "https://liveitpuntacana.com/";
 
 export default function LiveItBannerSticky() {
   const [hidden, setHidden] = useState(false);
