@@ -4,9 +4,13 @@ import {
   transfersPublicPath,
   tourPublicPath,
 } from "@/lib/sanity/queries/chatKnowledge";
+import {
+  ADVENTURES_WHATSAPP_PHONE,
+  getUniversalWhatsAppUrl,
+} from "@/lib/utils/whatsapp";
 
 export const COMPANY_PHONE_DISPLAY = "+1 829 421 6101";
-export const COMPANY_WHATSAPP_E164 = "18495700202";
+export const COMPANY_WHATSAPP_E164 = ADVENTURES_WHATSAPP_PHONE;
 export const COMPANY_WHATSAPP_DISPLAY = "+1 849 570 0202";
 export const COMPANY_ADDRESS = "Punta Cana, República Dominicana";
 export const COMPANY_EMAIL = "reservations@adventuresfinder.com";
@@ -163,5 +167,5 @@ export function buildWhatsAppPrefill(
 
 export function whatsAppUrl(locale: AppLocale, hint?: string | null): string {
   const text = buildWhatsAppPrefill(locale, hint);
-  return `https://wa.me/${COMPANY_WHATSAPP_E164}?text=${encodeURIComponent(text)}`;
+  return getUniversalWhatsAppUrl(COMPANY_WHATSAPP_E164, text);
 }

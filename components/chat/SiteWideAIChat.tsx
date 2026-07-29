@@ -127,7 +127,9 @@ function renderAssistantContent(content: string) {
     }
     const [, label, href] = link;
     const safeHref =
-      href.startsWith("/") || href.startsWith("https://wa.me/")
+      href.startsWith("/") ||
+      href.startsWith("https://api.whatsapp.com/") ||
+      href.startsWith("https://wa.me/")
         ? href
         : href.startsWith("http://") || href.startsWith("https://")
           ? href

@@ -1,11 +1,16 @@
 "use client";
 
 import TrackedWhatsAppLink from "@/components/meta/TrackedWhatsAppLink";
+import {
+  ADVENTURES_WHATSAPP_PHONE,
+  getUniversalWhatsAppUrl,
+} from "@/lib/utils/whatsapp";
 
 export default function WhatsAppButton() {
-  const phoneNumber = "18495700202";
-  const message = "Hello! I'm interested in booking a tour with Adventures Finder.";
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  const whatsappUrl = getUniversalWhatsAppUrl(
+    ADVENTURES_WHATSAPP_PHONE,
+    "Hello! I'm interested in booking a tour with Adventures Finder.",
+  );
 
   return (
     <TrackedWhatsAppLink

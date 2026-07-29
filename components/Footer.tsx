@@ -2,10 +2,15 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import TrackedWhatsAppLink from "@/components/meta/TrackedWhatsAppLink";
+import {
+  ADVENTURES_WHATSAPP_PHONE,
+  getUniversalWhatsAppUrl,
+} from "@/lib/utils/whatsapp";
 
-const FOOTER_WHATSAPP_URL = `https://wa.me/18495700202?text=${encodeURIComponent(
+const FOOTER_WHATSAPP_URL = getUniversalWhatsAppUrl(
+  ADVENTURES_WHATSAPP_PHONE,
   "Hola, deseo información sobre una excursión o traslado",
-)}`;
+);
 
 export default function Footer() {
   const t = useTranslations("Footer");

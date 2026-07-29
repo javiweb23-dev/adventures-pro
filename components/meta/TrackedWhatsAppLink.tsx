@@ -11,9 +11,15 @@ type TrackedWhatsAppLinkProps = Omit<
   children: ReactNode;
 };
 
+/**
+ * WhatsApp anchor with Meta Contact tracking.
+ * Defaults to target=_blank + rel=noopener noreferrer for mobile browser safety.
+ */
 export default function TrackedWhatsAppLink({
   source = "whatsapp_button",
   children,
+  target = "_blank",
+  rel = "noopener noreferrer",
   ...anchorProps
 }: TrackedWhatsAppLinkProps) {
   const handleClick = () => {
@@ -23,7 +29,7 @@ export default function TrackedWhatsAppLink({
   };
 
   return (
-    <a onClick={handleClick} {...anchorProps}>
+    <a {...anchorProps} onClick={handleClick} target={target} rel={rel}>
       {children}
     </a>
   );

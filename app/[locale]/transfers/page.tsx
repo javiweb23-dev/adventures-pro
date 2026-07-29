@@ -5,6 +5,15 @@ import TrackedWhatsAppLink from "@/components/meta/TrackedWhatsAppLink";
 import { Link } from "@/i18n/navigation";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
+import {
+  ADVENTURES_WHATSAPP_PHONE,
+  getUniversalWhatsAppUrl,
+} from "@/lib/utils/whatsapp";
+
+const TRANSFERS_WHATSAPP_URL = getUniversalWhatsAppUrl(
+  ADVENTURES_WHATSAPP_PHONE,
+  "Hola, deseo información sobre una excursión o traslado",
+);
 
 type TransfersPageProps = {
   params: Promise<{ locale: "en" | "es" | "fr-ca" }>;
@@ -125,7 +134,7 @@ export default async function TransfersPage({ params }: TransfersPageProps) {
                 reservations@adventuresfinder.com
               </a>
               <TrackedWhatsAppLink
-                href="https://wa.me/18495700202"
+                href={TRANSFERS_WHATSAPP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 source="transfers_page_whatsapp"
