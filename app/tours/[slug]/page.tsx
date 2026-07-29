@@ -78,7 +78,10 @@ const TOUR_QUERY = `*[_type == "tour" && slug.current in $slugCandidates][0]{
     "multidays-tours"
   ),
   "currency": coalesce(currency, mainTour->currency, "USD"),
-  pricing[]{_key, label, price},
+  "pricing": select(
+    count(pricing) > 0 => pricing[]{_key, label, price},
+    mainTour->pricing[]{_key, label, price}
+  ),
   isCombo,
   peekProId,
   "mainImage": coalesce(listingImage, mainTour->listingImage),
@@ -171,7 +174,8 @@ const pickAdultLeadPricing = (
   });
   if (exact) return exact;
   const partial = rows.find((r) => r.label.toLowerCase().includes("adult"));
-  return partial ?? null;
+  // Fallback: first pricing row (same pattern as catalog cards).
+  return partial ?? rows[0] ?? null;
 };
 
 const splitLines = (value?: string | null) =>
@@ -230,12 +234,20 @@ export default async function TourDetailPage({ params }: TourPageProps) {
   const galleryLightbox = fullGallery.slice(0, 5);
   const pricing = tour.pricing ?? [];
   const adultLeadPricing = pickAdultLeadPricing(pricing);
-  const adultLeadPriceValue = parsePriceValue(adultLeadPricing?.price);
-  const leadFromFormatted = adultLeadPricing
-    ? Number.isFinite(adultLeadPriceValue)
-      ? formatTourPrice(currency, adultLeadPriceValue)
-      : "Consultar precio"
-    : null;
+  const adultLeadPriceValue = (() => {
+    const preferred = parsePriceValue(adultLeadPricing?.price);
+    if (Number.isFinite(preferred)) return preferred;
+    for (const row of pricing) {
+      const value = parsePriceValue(row.price);
+      if (Number.isFinite(value)) return value;
+    }
+    return Number.NaN;
+  })();
+  const leadFromFormatted = Number.isFinite(adultLeadPriceValue)
+    ? formatTourPrice(currency, adultLeadPriceValue)
+    : pricing.length > 0
+      ? "Consultar precio"
+      : null;
   const peekUrl = peekBookingUrl(tour.peekProId);
   const categorySlug = tour.category || "multidays-tours";
   const categoryTitle = formatCategoryTitle(categorySlug);
