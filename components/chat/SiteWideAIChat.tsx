@@ -136,7 +136,7 @@ function renderAssistantContent(content: string) {
       <a
         key={`a-${index}`}
         href={safeHref}
-        className="font-semibold text-blue-800 underline underline-offset-2"
+        className="font-semibold text-orange-600 underline underline-offset-2"
         target={safeHref.startsWith("http") ? "_blank" : undefined}
         rel={safeHref.startsWith("http") ? "noopener noreferrer" : undefined}
       >
@@ -252,13 +252,13 @@ export default function SiteWideAIChat({ locale }: SiteWideAIChatProps) {
   }
 
   return (
-    <div className="pointer-events-none fixed bottom-24 left-4 z-[9990] md:bottom-6 md:left-6">
+    <div className="pointer-events-none fixed bottom-6 right-6 z-50">
       {!open ? (
-        <div className="pointer-events-auto relative flex flex-col items-start gap-2">
+        <div className="pointer-events-auto relative flex flex-col items-end gap-2">
           {showTeaser ? (
             <div
               role="status"
-              className="max-w-[16rem] rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm leading-snug text-slate-800 shadow-lg shadow-slate-900/10"
+              className="max-w-[16rem] rounded-2xl border border-orange-200 bg-white px-3 py-2 text-sm leading-snug text-slate-800 shadow-lg shadow-orange-500/20"
             >
               <div className="flex items-start gap-2">
                 <p className="flex-1">
@@ -267,7 +267,7 @@ export default function SiteWideAIChat({ locale }: SiteWideAIChatProps) {
                 <button
                   type="button"
                   onClick={dismissTeaser}
-                  className="rounded-md p-0.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                  className="rounded-md p-0.5 text-slate-400 transition hover:bg-orange-50 hover:text-slate-700"
                   aria-label={copy.dismissTeaser}
                 >
                   <X className="h-3.5 w-3.5" strokeWidth={2} />
@@ -278,27 +278,31 @@ export default function SiteWideAIChat({ locale }: SiteWideAIChatProps) {
           <button
             type="button"
             onClick={openChat}
-            className="inline-flex items-center gap-2 rounded-2xl bg-blue-950 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-950/25 transition hover:bg-blue-900"
+            className="relative inline-flex items-center gap-2 rounded-2xl bg-orange-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-500/40 transition hover:bg-orange-600"
             aria-label={copy.launcher}
           >
-            <MessageCircle className="h-5 w-5 shrink-0" strokeWidth={1.75} />
-            <span className="max-w-[11rem] truncate sm:max-w-none">{copy.launcher}</span>
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 animate-ping rounded-2xl bg-orange-400/40"
+            />
+            <MessageCircle className="relative h-5 w-5 shrink-0 animate-pulse" strokeWidth={1.75} />
+            <span className="relative max-w-[11rem] truncate sm:max-w-none">{copy.launcher}</span>
           </button>
         </div>
       ) : (
         <section
-          className="pointer-events-auto flex h-[min(28rem,70vh)] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xl shadow-slate-900/15"
+          className="pointer-events-auto flex h-[min(28rem,70vh)] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-orange-200/80 bg-white shadow-2xl shadow-orange-500/20"
           aria-label={copy.title}
         >
-          <header className="flex items-start justify-between gap-3 border-b border-slate-200 bg-blue-950 px-4 py-3 text-white">
+          <header className="flex items-start justify-between gap-3 border-b border-orange-200/80 bg-orange-500 px-4 py-3 text-white">
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold tracking-tight">{copy.title}</p>
-              <p className="truncate text-xs text-blue-100/90">{copy.subtitle}</p>
+              <p className="truncate text-xs text-orange-50/95">{copy.subtitle}</p>
             </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="rounded-lg p-1.5 text-blue-100 transition hover:bg-white/10 hover:text-white"
+              className="rounded-lg p-1.5 text-orange-50 transition hover:bg-white/15 hover:text-white"
               aria-label={copy.close}
             >
               <X className="h-4 w-4" strokeWidth={2} />
@@ -315,7 +319,7 @@ export default function SiteWideAIChat({ locale }: SiteWideAIChatProps) {
                 key={`${message.role}-${index}-${message.content.slice(0, 24)}`}
                 className={
                   message.role === "user"
-                    ? "ml-6 rounded-2xl rounded-tr-md bg-blue-950 px-3 py-2 text-sm leading-relaxed text-white"
+                    ? "ml-6 rounded-2xl rounded-tr-md bg-orange-500 px-3 py-2 text-sm leading-relaxed text-white"
                     : "mr-6 rounded-2xl rounded-tl-md bg-white px-3 py-2 text-sm leading-relaxed text-slate-700 shadow-sm whitespace-pre-wrap"
                 }
               >
@@ -362,7 +366,7 @@ export default function SiteWideAIChat({ locale }: SiteWideAIChatProps) {
               value={input}
               onChange={(event) => setInput(event.target.value)}
               placeholder={copy.placeholder}
-              className="max-h-24 min-h-[2.75rem] flex-1 resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-900/20 placeholder:text-slate-400 focus:ring-2"
+              className="max-h-24 min-h-[2.75rem] flex-1 resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none ring-orange-500/25 placeholder:text-slate-400 focus:ring-2"
               disabled={isPending}
               onKeyDown={(event) => {
                 if (event.key === "Enter" && !event.shiftKey) {

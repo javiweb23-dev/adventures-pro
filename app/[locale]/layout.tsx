@@ -6,7 +6,6 @@ import { notFound } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SiteWideAIChatLazy from "@/components/chat/SiteWideAIChatLazy";
-import WhatsAppButton from "@/components/WhatsAppButton";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { buildPageMetadata } from "@/lib/seo";
 import { client } from "@/sanity/lib/client";
@@ -62,7 +61,6 @@ export default async function LocaleLayout({
       <Navbar categories={categories} />
       {children}
       <Footer />
-      <WhatsAppButton />
       <SiteWideAIChatLazy locale={locale as AppLocale} />
     </NextIntlClientProvider>
   );
