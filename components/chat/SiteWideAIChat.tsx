@@ -4,12 +4,13 @@ import { MessageCircle, Send, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { usePathname } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
-import { whatsAppUrl } from "@/lib/tour-chat/systemPrompt";
-import type { TourChatMessage, TourChatResponse } from "@/lib/tour-chat/types";
 import {
   looksTruncatedMarkdown,
   renderAssistantMarkdown,
 } from "@/components/chat/renderAssistantMarkdown";
+import { getAnalyticsDevice, trackGAEvent } from "@/lib/utils/analytics";
+import { whatsAppUrl } from "@/lib/tour-chat/systemPrompt";
+import type { TourChatMessage, TourChatResponse } from "@/lib/tour-chat/types";
 
 const CLIENT_TIMEOUT_MS = 10_000;
 const TEASER_DELAY_MS = 6_000;
@@ -39,13 +40,13 @@ function copyForLocale(locale: AppLocale): UiCopy {
     case "es":
       return {
         launcher: "Pregúntame",
-        title: "Concierge Adventures Finder",
+        title: "Asistente de Reservas",
         subtitle: "Catálogo, precios y reservas",
         placeholder: "Escribe tu pregunta…",
         send: "Enviar",
         thinking: "Pensando…",
         welcome:
-          "¡Hola! Soy el concierge de Adventures Finder. ¿Buscas un tour, un traslado o ayuda para reservar?",
+          "¡Hola! Soy el Asistente de Reservas de Adventures Finder. ¿Buscas un tour, un traslado o ayuda para reservar?",
         whatsappCta: "Continuar por WhatsApp",
         whatsappHint:
           "Nuestro equipo te responde por WhatsApp al +1 849 570 0202.",
@@ -57,13 +58,13 @@ function copyForLocale(locale: AppLocale): UiCopy {
     case "fr-ca":
       return {
         launcher: "Posez-moi une question",
-        title: "Concierge Adventures Finder",
+        title: "Assistant de Réservation",
         subtitle: "Catalogue, prix et réservations",
         placeholder: "Écrivez votre question…",
         send: "Envoyer",
         thinking: "Réflexion…",
         welcome:
-          "Bonjour! Je suis le concierge Adventures Finder. Excursion, transfert ou réservation — comment puis-je vous aider?",
+          "Bonjour! Je suis l'Assistant de Réservation d'Adventures Finder. Excursion, transfert ou réservation — comment puis-je vous aider?",
         whatsappCta: "Continuer sur WhatsApp",
         whatsappHint:
           "Notre équipe vous répond sur WhatsApp au +1 849 570 0202.",
@@ -76,13 +77,13 @@ function copyForLocale(locale: AppLocale): UiCopy {
     default:
       return {
         launcher: "Ask me",
-        title: "Adventures Finder Concierge",
+        title: "Booking Assistant",
         subtitle: "Catalog, prices & bookings",
         placeholder: "Type your question…",
         send: "Send",
         thinking: "Thinking…",
         welcome:
-          "Hi! I'm the Adventures Finder concierge. Looking for a tour, a transfer, or help booking?",
+          "Hi! I'm the Adventures Finder Booking Assistant. Looking for a tour, a transfer, or help booking?",
         whatsappCta: "Continue on WhatsApp",
         whatsappHint: "Our team will reply on WhatsApp at +1 849 570 0202.",
         close: "Close chat",
@@ -170,6 +171,11 @@ export default function SiteWideAIChat({ locale }: SiteWideAIChatProps) {
   function openChat() {
     setOpen(true);
     setShowTeaser(false);
+    trackGAEvent("open_booking_assistant", {
+      locale,
+      device: getAnalyticsDevice(),
+      page_path: currentPath,
+    });
   }
 
   function dismissTeaser() {
@@ -179,6 +185,19 @@ export default function SiteWideAIChat({ locale }: SiteWideAIChatProps) {
 
   function activateWhatsAppFallback() {
     setShowWhatsAppFallback(true);
+  }
+
+  function handleRecommendationClick(destinationUrl: string) {
+    trackGAEvent("click_assistant_recommendation", {
+      destination_url: destinationUrl,
+    });
+  }
+
+  function handleWhatsAppFallbackClick() {
+    trackGAEvent("click_whatsapp_fallback", {
+      locale,
+      page_path: currentPath,
+    });
   }
 
   function handleSend() {
@@ -233,7 +252,7 @@ export default function SiteWideAIChat({ locale }: SiteWideAIChatProps) {
   }
 
   return (
-    <div className="pointer-events-none fixed bottom-6 right-6 z-50">
+    <div className="pointer-events-none fixed bottom-24 right-4 z-50 transition-[bottom,right] duration-300 ease-out md:bottom-6 md:right-6">
       {!open ? (
         <div className="pointer-events-auto relative flex flex-col items-end gap-2">
           {showTeaser ? (
@@ -305,7 +324,9 @@ export default function SiteWideAIChat({ locale }: SiteWideAIChatProps) {
                 }
               >
                 {message.role === "assistant"
-                  ? renderAssistantMarkdown(message.content)
+                  ? renderAssistantMarkdown(message.content, {
+                      onLinkClick: handleRecommendationClick,
+                    })
                   : message.content}
               </div>
             ))}
@@ -323,6 +344,7 @@ export default function SiteWideAIChat({ locale }: SiteWideAIChatProps) {
                   href={waHref}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={handleWhatsAppFallbackClick}
                   className="mt-3 inline-flex w-full items-center justify-center rounded-xl bg-[#25D366] px-3 py-2.5 text-sm font-semibold text-white transition hover:brightness-95"
                 >
                   {copy.whatsappCta}

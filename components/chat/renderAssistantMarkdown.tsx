@@ -10,7 +10,13 @@ function isSafeHref(href: string): boolean {
   );
 }
 
-function TourLink({ href, label }: { href: string; label: string }) {
+type TourLinkProps = {
+  href: string;
+  label: string;
+  onLinkClick?: (destinationUrl: string) => void;
+};
+
+function TourLink({ href, label, onLinkClick }: TourLinkProps) {
   const safeHref = isSafeHref(href) ? href : "#";
   const external = safeHref.startsWith("http");
   return (
@@ -19,28 +25,41 @@ function TourLink({ href, label }: { href: string; label: string }) {
       className="font-bold text-orange-600 underline underline-offset-2 hover:text-orange-700"
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
+      onClick={() => {
+        if (safeHref !== "#") onLinkClick?.(safeHref);
+      }}
     >
       {label}
     </a>
   );
 }
 
+type RenderOptions = {
+  onLinkClick?: (destinationUrl: string) => void;
+};
+
 /**
  * Renders assistant chat markdown with bold tour links.
  * Supports: **[Title](/path)**, [Title](/path), **bold**
  */
-export function renderAssistantMarkdown(content: string): ReactNode {
+export function renderAssistantMarkdown(
+  content: string,
+  options?: RenderOptions,
+): ReactNode {
   const lines = content.split("\n");
   return lines.map((line, lineIndex) => (
     <span key={`line-${lineIndex}`}>
       {lineIndex > 0 ? "\n" : null}
-      {renderInline(line, lineIndex)}
+      {renderInline(line, lineIndex, options?.onLinkClick)}
     </span>
   ));
 }
 
-function renderInline(text: string, lineIndex: number): ReactNode[] {
-  // Bold markdown link, plain markdown link, then bold text.
+function renderInline(
+  text: string,
+  lineIndex: number,
+  onLinkClick?: (destinationUrl: string) => void,
+): ReactNode[] {
   const token =
     /(\*\*\[([^\]]+)\]\(([^)]+)\)\*\*|\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*)/g;
   const nodes: ReactNode[] = [];
@@ -58,21 +77,21 @@ function renderInline(text: string, lineIndex: number): ReactNode[] {
     }
 
     if (match[2] && match[3]) {
-      // **[label](url)**
       nodes.push(
         <TourLink
           key={`l-${lineIndex}-${tokenIndex++}`}
           label={match[2]}
           href={match[3]}
+          onLinkClick={onLinkClick}
         />,
       );
     } else if (match[4] && match[5]) {
-      // [label](url) — still bold for tour clicks
       nodes.push(
         <TourLink
           key={`l-${lineIndex}-${tokenIndex++}`}
           label={match[4]}
           href={match[5]}
+          onLinkClick={onLinkClick}
         />,
       );
     } else if (match[6]) {
