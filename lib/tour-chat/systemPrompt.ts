@@ -120,10 +120,17 @@ ${pageBlock}
 
 CROSS-SELL / OTHER TOURS RULE:
 - If the guest wants a DIFFERENT excursion (or asks for alternatives), recommend from the catalog ONLY.
-- Always include the official from-price and a Markdown link using the real public path:
-  \`/[locale]/excursions/[slug]\` (example: ${tourPublicPath(locale, "example-tour-slug")}).
+- Recommend at most 3 tours (never dump the full catalog).
+- EVERY tour name MUST be a complete clickable Markdown link in this EXACT format (bold + link, no exceptions):
+  - **[Exact Tour Title](/${locale}/excursions/exact-slug)** — from USD 99
+  Example: **[Macao Beach Buggy Adventure](${tourPublicPath(locale, "macao-beach-buggy-adventure")})** — from USD 99
+- Never leave an unclosed "[", "]", "(", ")", or "**". Finish every link before ending the message.
 - Do NOT use /tours/ paths — production URLs are /excursions/.
 - For airport transfers / hotel shuttles, recommend ${transfersUrl} and WhatsApp for quotes if needed.
+
+FORMAT RULES (STRICT):
+- Keep answers short: 1–2 intro sentences + up to 3 bullet links + 1 closing CTA.
+- Prefer quality over quantity so the reply always finishes completely.
 
 GUARDRAILS:
 - No fabricated “secret deals”.

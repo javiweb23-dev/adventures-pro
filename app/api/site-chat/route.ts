@@ -16,7 +16,8 @@ export const maxDuration = 15;
 const MAX_MESSAGES = 20;
 const MAX_CONTENT_CHARS = 2000;
 const MAX_PATH_CHARS = 300;
-const GEMINI_TIMEOUT_MS = 8_000;
+const GEMINI_TIMEOUT_MS = 12_000;
+const MAX_OUTPUT_TOKENS = 2048;
 
 function isAppLocale(value: unknown): value is AppLocale {
   return typeof value === "string" && routing.locales.includes(value as AppLocale);
@@ -80,7 +81,7 @@ async function generateWithTimeout(
       contents: toGeminiContents(messages),
       config: {
         systemInstruction,
-        maxOutputTokens: 700,
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
         abortSignal: controller.signal,
         ...(withThinkingOff ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
       },
@@ -90,6 +91,26 @@ async function generateWithTimeout(
     if (!text) {
       throw new Error("empty_model_response");
     }
+
+    const finishReason = String(
+      response.candidates?.[0]?.finishReason ?? "",
+    ).toUpperCase();
+    if (finishReason === "MAX_TOKENS" || finishReason === "LENGTH") {
+      throw new Error("truncated_max_tokens");
+    }
+
+    // Incomplete markdown links = truncated mid-tour list.
+    const openBrackets = (text.match(/\[/g) ?? []).length;
+    const closeBrackets = (text.match(/\]/g) ?? []).length;
+    if (
+      openBrackets !== closeBrackets ||
+      /\*\*\[[^\]]*$/.test(text) ||
+      /\[[^\]]*$/.test(text) ||
+      /\]\([^)]*$/.test(text)
+    ) {
+      throw new Error("truncated_markdown");
+    }
+
     return text;
   };
 

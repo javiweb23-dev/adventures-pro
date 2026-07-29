@@ -6,8 +6,12 @@ import { usePathname } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import { whatsAppUrl } from "@/lib/tour-chat/systemPrompt";
 import type { TourChatMessage, TourChatResponse } from "@/lib/tour-chat/types";
+import {
+  looksTruncatedMarkdown,
+  renderAssistantMarkdown,
+} from "@/components/chat/renderAssistantMarkdown";
 
-const CLIENT_TIMEOUT_MS = 5_000;
+const CLIENT_TIMEOUT_MS = 10_000;
 const TEASER_DELAY_MS = 6_000;
 
 type SiteWideAIChatProps = {
@@ -118,36 +122,6 @@ async function fetchSiteChat(
   }
 }
 
-function renderAssistantContent(content: string) {
-  const parts = content.split(/(\[[^\]]+\]\([^)]+\))/g);
-  return parts.map((part, index) => {
-    const link = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-    if (!link) {
-      return <span key={`t-${index}`}>{part}</span>;
-    }
-    const [, label, href] = link;
-    const safeHref =
-      href.startsWith("/") ||
-      href.startsWith("https://api.whatsapp.com/") ||
-      href.startsWith("https://wa.me/")
-        ? href
-        : href.startsWith("http://") || href.startsWith("https://")
-          ? href
-          : "#";
-    return (
-      <a
-        key={`a-${index}`}
-        href={safeHref}
-        className="font-semibold text-orange-600 underline underline-offset-2"
-        target={safeHref.startsWith("http") ? "_blank" : undefined}
-        rel={safeHref.startsWith("http") ? "noopener noreferrer" : undefined}
-      >
-        {label}
-      </a>
-    );
-  });
-}
-
 export default function SiteWideAIChat({ locale }: SiteWideAIChatProps) {
   const copy = copyForLocale(locale);
   const pathname = usePathname();
@@ -241,6 +215,11 @@ export default function SiteWideAIChat({ locale }: SiteWideAIChatProps) {
           return;
         }
 
+        if (looksTruncatedMarkdown(result.reply)) {
+          activateWhatsAppFallback();
+          return;
+        }
+
         setMessages((prev) => [
           ...prev,
           { role: "assistant", content: result.reply },
@@ -326,7 +305,7 @@ export default function SiteWideAIChat({ locale }: SiteWideAIChatProps) {
                 }
               >
                 {message.role === "assistant"
-                  ? renderAssistantContent(message.content)
+                  ? renderAssistantMarkdown(message.content)
                   : message.content}
               </div>
             ))}
