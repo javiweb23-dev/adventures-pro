@@ -13,6 +13,8 @@ export type FeaturedTour = {
   peekProId?: string;
   currency?: string;
   pricing?: Array<{ price?: number | string | null }>;
+  rating?: number | null;
+  reviewsCount?: number | null;
 };
 
 type FeaturedAdventuresProps = {
@@ -43,6 +45,8 @@ export default function FeaturedAdventures({ tours }: FeaturedAdventuresProps) {
                   pricing: tour.pricing,
                   currency: tour.currency,
                   peekUrl,
+                  rating: tour.rating,
+                  reviewsCount: tour.reviewsCount,
                 }}
               />
             );

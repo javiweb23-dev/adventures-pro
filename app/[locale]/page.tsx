@@ -16,6 +16,7 @@ import CategoryBanners, { type CategoryBanner } from "@/components/CategoryBanne
 import LeadForm from "@/components/LeadForm";
 import { client } from "@/sanity/lib/client";
 import { groq } from "next-sanity";
+import { tourRatingProjection } from "@/lib/tourRating";
 
 export const revalidate = 0;
 
@@ -47,7 +48,8 @@ const featuredToursQuery = groq`*[_type == "tour" && isFeatured == true] {
     coalesce(select($locale == "fr-ca" => duration.frCA, duration[$locale]), duration.en, duration.es, duration.frCA)
   ),
   pricing[]{price},
-  "price": coalesce(pricing[0].price, mainTour->pricing[0].price, 0)
+  "price": coalesce(pricing[0].price, mainTour->pricing[0].price, 0),
+  ${tourRatingProjection}
 } | order(price asc)`;
 
 const categoriesQuery = groq`*[_type == "category"] {

@@ -15,6 +15,7 @@ import { client } from "@/sanity/lib/client";
 import { groq } from "next-sanity";
 import { routing } from "@/i18n/routing";
 import enMessages from "../messages/en.json";
+import { tourRatingProjection } from "@/lib/tourRating";
 
 const featuredToursQuery = groq`*[_type == "tour" && isFeatured == true] {
   _id,
@@ -26,7 +27,8 @@ const featuredToursQuery = groq`*[_type == "tour" && isFeatured == true] {
   "currency": coalesce(currency, "USD"),
   "duration": coalesce(duration.en, duration.es, duration.frCA),
   pricing[]{price},
-  "price": coalesce(pricing[0].price, mainTour->pricing[0].price, 0)
+  "price": coalesce(pricing[0].price, mainTour->pricing[0].price, 0),
+  ${tourRatingProjection}
 } | order(price asc)`;
 
 export default async function Home() {

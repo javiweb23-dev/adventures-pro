@@ -1,8 +1,9 @@
-import { Clock3 } from "lucide-react";
+import { Clock3, Star } from "lucide-react";
 import BookNowLink from "@/components/meta/BookNowLink";
 import { urlFor } from "@/sanity/lib/image";
 import { Link } from "@/i18n/navigation";
 import { formatTourPrice } from "@/lib/tourPrice";
+import { formatTourRating, hasTourRating } from "@/lib/tourRating";
 import { tourExcursionPath } from "@/lib/tourSlug";
 
 type TourCardProps = {
@@ -16,6 +17,8 @@ type TourCardProps = {
     currency?: string;
     fromPriceLabel?: string;
     peekUrl: string;
+    rating?: number | null;
+    reviewsCount?: number | null;
   };
 };
 
@@ -44,6 +47,7 @@ export default function TourCard({ tour }: TourCardProps) {
     : tour.fromPriceLabel || "Consultar precio";
   const safeSlug = tour.slug || "";
   const detailsHref = tourExcursionPath(safeSlug);
+  const showRating = hasTourRating(tour.rating, tour.reviewsCount);
   const imageUrl = (() => {
     try {
       return tour.listingImage?.asset
@@ -73,9 +77,20 @@ export default function TourCard({ tour }: TourCardProps) {
         ) : null}
       </div>
       <div className="space-y-4 p-5">
-        <div className="inline-flex items-center gap-2 text-sm text-slate-600">
-          <Clock3 className="h-4 w-4" />
-          <span>{tour.duration || "Duration on request"}</span>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-slate-600">
+          <div className="inline-flex items-center gap-2">
+            <Clock3 className="h-4 w-4" />
+            <span>{tour.duration || "Duration on request"}</span>
+          </div>
+          {showRating ? (
+            <div className="inline-flex items-center gap-1.5 font-medium text-slate-800">
+              <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden />
+              <span>{formatTourRating(tour.rating ?? 0)}</span>
+              <span className="font-normal text-slate-500">
+                ({tour.reviewsCount})
+              </span>
+            </div>
+          ) : null}
         </div>
         <h3 className="text-xl font-semibold leading-tight text-slate-900">
           {tour.title}

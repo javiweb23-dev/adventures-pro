@@ -4,6 +4,7 @@ import CategoryPageHero from "@/components/CategoryPageHero";
 import CategorySearch, { type CategoryTour } from "@/components/CategorySearch";
 import { client } from "@/sanity/lib/client";
 import { routing, type AppLocale } from "@/i18n/routing";
+import { tourRatingProjection } from "@/lib/tourRating";
 
 export const revalidate = 0;
 export const dynamicParams = true;
@@ -49,7 +50,8 @@ const categoryToursQuery = groq`*[_type == "tour" && (
     coalesce(select($locale == "fr-ca" => duration.frCA, duration[$locale]), duration.en, duration.es, duration.frCA)
   ),
   pricing[]{price},
-  "price": coalesce(pricing[0].price, mainTour->pricing[0].price, 0)
+  "price": coalesce(pricing[0].price, mainTour->pricing[0].price, 0),
+  ${tourRatingProjection}
 } | order(price asc)`;
 
 export async function generateStaticParams() {

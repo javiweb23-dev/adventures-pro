@@ -1,4 +1,4 @@
-import { defineField, defineType } from "sanity";
+import { defineArrayMember, defineField, defineType } from "sanity";
 
 type TourSlugSourceDoc = { title?: { en?: string; es?: string; frCA?: string } };
 type TourDoc = { isCombo?: boolean };
@@ -334,6 +334,55 @@ export const tourType = defineType({
       title: "FAQ",
       type: "localizedText",
       hidden: hideWhenCombo,
+    }),
+    defineField({
+      name: "reviews",
+      title: "Customer Reviews",
+      type: "array",
+      hidden: hideWhenCombo,
+      of: [
+        defineArrayMember({
+          type: "object",
+          fields: [
+            defineField({
+              name: "author",
+              title: "Author",
+              type: "string",
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: "rating",
+              title: "Rating",
+              type: "number",
+              validation: (rule) => rule.required().min(1).max(5),
+            }),
+            defineField({
+              name: "date",
+              title: "Date",
+              type: "string",
+            }),
+            defineField({
+              name: "text",
+              title: "Review",
+              type: "text",
+              rows: 4,
+              validation: (rule) => rule.required(),
+            }),
+          ],
+          preview: {
+            select: {
+              title: "author",
+              subtitle: "rating",
+            },
+            prepare({ title, subtitle }) {
+              return {
+                title: title || "Review",
+                subtitle: subtitle ? `${subtitle}/5` : undefined,
+              };
+            },
+          },
+        }),
+      ],
     }),
   ],
   preview: {

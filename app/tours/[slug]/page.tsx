@@ -5,6 +5,7 @@ import {
   Check,
   Clock,
   ShieldCheck,
+  Star,
   Ticket,
   Timer,
   Users,
@@ -16,6 +17,11 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import BookNowLink from "@/components/meta/BookNowLink";
 import TourViewContent from "@/components/meta/TourViewContent";
 import { formatTourPrice, peekBookingUrl } from "@/lib/tourPrice";
+import {
+  formatTourRating,
+  tourReviewsDetailProjection,
+  type TourReview,
+} from "@/lib/tourRating";
 import { categoryExcursionPath } from "@/lib/categoryPath";
 import { slugLookupVariants } from "@/lib/tourSlug";
 import { routing, type AppLocale } from "@/i18n/routing";
@@ -64,6 +70,9 @@ type TourData = {
   excludes?: string | null;
   goodToKnow?: string | null;
   faq?: string | null;
+  rating?: number | null;
+  reviewsCount?: number | null;
+  reviews?: TourReview[] | null;
 };
 
 const TOUR_QUERY = `*[_type == "tour" && slug.current in $slugCandidates][0]{
@@ -145,7 +154,8 @@ const TOUR_QUERY = `*[_type == "tour" && slug.current in $slugCandidates][0]{
   "includes": coalesce(select($locale == "fr-ca" => includes.frCA, includes[$locale]), includes.en, includes.es, includes.frCA),
   "excludes": coalesce(select($locale == "fr-ca" => excludes.frCA, excludes[$locale]), excludes.en, excludes.es, excludes.frCA),
   "goodToKnow": coalesce(select($locale == "fr-ca" => goodToKnow.frCA, goodToKnow[$locale]), goodToKnow.en, goodToKnow.es, goodToKnow.frCA),
-  "faq": coalesce(select($locale == "fr-ca" => faq.frCA, faq[$locale]), faq.en, faq.es, faq.frCA)
+  "faq": coalesce(select($locale == "fr-ca" => faq.frCA, faq[$locale]), faq.en, faq.es, faq.frCA),
+  ${tourReviewsDetailProjection}
 }`;
 
 const formatCategoryTitle = (value: string) =>
@@ -205,6 +215,25 @@ const buildGallery = (
   return [];
 };
 
+function RatingStars({ rating, size = "md" }: { rating: number; size?: "sm" | "md" }) {
+  const rounded = Math.max(0, Math.min(5, Math.round(rating)));
+  const iconClass = size === "sm" ? "h-4 w-4" : "h-5 w-5";
+  return (
+    <div className="flex items-center gap-0.5" aria-hidden>
+      {Array.from({ length: 5 }).map((_, index) => (
+        <Star
+          key={index}
+          className={`${iconClass} ${
+            index < rounded
+              ? "fill-amber-400 text-amber-400"
+              : "fill-slate-200 text-slate-200"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default async function TourDetailPage({ params }: TourPageProps) {
   const { slug, locale } = await params;
   const activeLocale = locale ?? routing.defaultLocale;
@@ -251,6 +280,10 @@ export default async function TourDetailPage({ params }: TourPageProps) {
   const peekUrl = peekBookingUrl(tour.peekProId);
   const categorySlug = tour.category || "multidays-tours";
   const categoryTitle = formatCategoryTitle(categorySlug);
+  const reviews = tour.reviews ?? [];
+  const reviewsCount = tour.reviewsCount ?? reviews.length;
+  const showHeroRating = reviewsCount > 0;
+  const showReviewsSection = reviews.length > 0;
 
   return (
     <div className="bg-slate-50 text-slate-900">
@@ -275,6 +308,17 @@ export default async function TourDetailPage({ params }: TourPageProps) {
           <h1 className="text-2xl font-semibold tracking-tight md:text-5xl">
             {tour.title}
           </h1>
+          {showHeroRating ? (
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-slate-700">
+              <RatingStars rating={tour.rating ?? 0} />
+              <span className="font-semibold text-slate-900">
+                {formatTourRating(tour.rating ?? 0)}
+              </span>
+              <span className="text-slate-500">
+                ({reviewsCount} {reviewsCount === 1 ? "review" : "reviews"})
+              </span>
+            </div>
+          ) : null}
           {(tour.duration || tour.availability || tour.ages || tour.starts) ? (
             <div className="mt-5 flex flex-wrap items-center gap-4 text-sm text-slate-600">
               {tour.duration ? (
@@ -593,6 +637,50 @@ export default async function TourDetailPage({ params }: TourPageProps) {
                   </div>
                 </section>
               </>
+            ) : null}
+
+            {showReviewsSection ? (
+              <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
+                <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+                  Opiniones de clientes
+                </h2>
+                {showHeroRating ? (
+                  <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-slate-700">
+                    <RatingStars rating={tour.rating ?? 0} />
+                    <span className="font-semibold text-slate-900">
+                      {formatTourRating(tour.rating ?? 0)}
+                    </span>
+                    <span className="text-slate-500">
+                      · {reviewsCount} {reviewsCount === 1 ? "reseña" : "reseñas"}
+                    </span>
+                  </div>
+                ) : null}
+                <div className="mt-8 space-y-6">
+                  {reviews.map((review) => (
+                    <article
+                      key={review._key}
+                      className="border-t border-slate-100 pt-6 first:border-t-0 first:pt-0"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <p className="font-semibold text-slate-900">
+                          {review.author?.trim() || "Guest"}
+                        </p>
+                        {review.date ? (
+                          <p className="text-xs text-slate-500">{review.date}</p>
+                        ) : null}
+                      </div>
+                      <div className="mt-2">
+                        <RatingStars rating={review.rating ?? 5} size="sm" />
+                      </div>
+                      {review.text ? (
+                        <p className="mt-3 text-[15px] leading-relaxed text-slate-700">
+                          {review.text}
+                        </p>
+                      ) : null}
+                    </article>
+                  ))}
+                </div>
+              </section>
             ) : null}
           </div>
 
