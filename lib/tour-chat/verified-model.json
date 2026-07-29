@@ -1,0 +1,6 @@
+{
+  "model": "gemini-3.6-flash",
+  "verifiedAt": null,
+  "note": "Provisional default from Google AI docs (stable Flash GA). Run `npm run verify:gemini` with GEMINI_API_KEY to confirm and overwrite this file.",
+  "source": "https://ai.google.dev/gemini-api/docs/models"
+}

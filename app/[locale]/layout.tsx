@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SiteWideAIChatLazy from "@/components/chat/SiteWideAIChatLazy";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { buildPageMetadata } from "@/lib/seo";
@@ -62,6 +63,7 @@ export default async function LocaleLayout({
       {children}
       <Footer />
       <WhatsAppButton />
+      <SiteWideAIChatLazy locale={locale as AppLocale} />
     </NextIntlClientProvider>
   );
 }

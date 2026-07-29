@@ -6,9 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "verify:gemini": "node scripts/verify-gemini-model.mjs"
   },
   "dependencies": {
+    "@google/genai": "^2.13.0",
     "@sanity/image-url": "^2.1.1",
     "@sanity/vision": "^5.22.0",
     "lucide-react": "^1.11.0",
