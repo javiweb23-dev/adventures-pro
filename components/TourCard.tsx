@@ -1,9 +1,10 @@
-import { Clock3, Star } from "lucide-react";
+import { Clock3 } from "lucide-react";
 import BookNowLink from "@/components/meta/BookNowLink";
+import StarRating from "@/components/StarRating";
 import { urlFor } from "@/sanity/lib/image";
 import { Link } from "@/i18n/navigation";
 import { formatTourPrice } from "@/lib/tourPrice";
-import { formatTourRating, hasTourRating } from "@/lib/tourRating";
+import { hasTourRating } from "@/lib/tourRating";
 import { tourExcursionPath } from "@/lib/tourSlug";
 
 type TourCardProps = {
@@ -83,12 +84,9 @@ export default function TourCard({ tour }: TourCardProps) {
             <span>{tour.duration || "Duration on request"}</span>
           </div>
           {showRating ? (
-            <div className="inline-flex items-center gap-1.5 font-medium text-slate-800">
-              <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden />
-              <span>{formatTourRating(tour.rating ?? 0)}</span>
-              <span className="font-normal text-slate-500">
-                ({tour.reviewsCount})
-              </span>
+            <div className="inline-flex items-center gap-1.5">
+              <StarRating rating={tour.rating ?? 0} size="sm" />
+              <span className="text-slate-500">({tour.reviewsCount})</span>
             </div>
           ) : null}
         </div>
