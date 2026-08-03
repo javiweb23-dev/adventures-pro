@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { groq } from "next-sanity";
 import { Link } from "@/i18n/navigation";
 import { client } from "@/sanity/lib/client";
@@ -30,6 +31,7 @@ const POST_QUERY = groq`*[_type == "post" && slug.current == $slug][0]{
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { locale, slug } = await params;
+  const t = await getTranslations("Blog");
 
   const post = await client.fetch<PostDoc | null>(POST_QUERY, { slug, locale }).catch(() => null);
 
@@ -103,6 +105,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             ))}
           </div>
         ) : null}
+
+        <div className="mt-12 flex justify-center border-t border-slate-100 pt-12">
+          <Link
+            href="/excursions"
+            className="inline-flex min-h-14 w-full max-w-xl items-center justify-center rounded-2xl bg-orange-500 px-8 py-4 text-center text-base font-semibold text-white shadow-md shadow-orange-500/30 transition hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/35 md:text-lg"
+          >
+            {t("excursionsCta")}
+          </Link>
+        </div>
       </div>
     </article>
   );

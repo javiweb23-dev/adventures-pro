@@ -21,8 +21,8 @@
   },
   "Home": {
     "brandEyebrow": "Adventures Finder",
-    "defaultTitle": "Encuentra tu próxima aventura perfecta",
-    "defaultSubtitle": "Explora tours seleccionados por destino, presupuesto y tipo de experiencia en un solo lugar."
+    "defaultTitle": "Las Mejores Excursiones y Tours en Punta Cana",
+    "defaultSubtitle": "Encuentra tu aventura perfecta y reserva directamente con expertos locales en República Dominicana."
   },
   "HeroSearch": {
     "tabActivities": "Actividades",
@@ -92,7 +92,8 @@
     "title": "Guía del viajero",
     "subtitle": "Historias, consejos e inspiración para tu próxima aventura en República Dominicana.",
     "viewAll": "Ver todos los artículos",
-    "empty": "Pronto publicaremos nuevos artículos."
+    "empty": "Pronto publicaremos nuevos artículos.",
+    "excursionsCta": "Explorar las Mejores Excursiones de Punta Cana ➔"
   },
   "PromoBanner": {
     "headline": "¡RESERVA 2 O MÁS ACTIVIDADES Y OBTÉN UN 10 % DE DESCUENTO!",
@@ -100,6 +101,7 @@
     "copied": "¡Copiado!"
   },
   "CategoryBanners": {
+    "sectionTitle": "Elige tu tipo de aventura en Punta Cana",
     "exploreTours": "Explorar tours"
   },
   "CategoryPage": {
