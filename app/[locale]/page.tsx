@@ -25,8 +25,6 @@ type HomePageProps = {
 };
 
 type LandingPageData = {
-  title?: string;
-  subtitle?: string;
   sliderImages?: Array<{ url?: string }>;
 };
 
@@ -64,8 +62,6 @@ export default async function Home({ params }: HomePageProps) {
   const landingPage = await client
     .fetch<LandingPageData | null>(
       groq`*[_type == "landingPage"][0]{
-        "title": coalesce(select($locale == "fr-ca" => title.frCA, title[$locale]), title.en, title),
-        "subtitle": coalesce(select($locale == "fr-ca" => subtitle.frCA, subtitle[$locale]), subtitle.en, subtitle),
         "sliderImages": sliderImages[]{
           "url": asset->url
         }
@@ -80,8 +76,6 @@ export default async function Home({ params }: HomePageProps) {
     client.fetch<MapDestination[]>(mapDestinationsQuery, { locale }).catch(() => []),
   ]);
 
-  const cmsTitle = landingPage?.title?.trim() || null;
-  const cmsSubtitle = landingPage?.subtitle?.trim() || null;
   const heroSlides =
     landingPage?.sliderImages
       ?.map((image) => image?.url?.trim())
@@ -100,7 +94,7 @@ export default async function Home({ params }: HomePageProps) {
             />
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-8 px-4 text-white md:gap-10 md:px-10 lg:px-12">
               <div className="w-full max-w-4xl text-center">
-                <HomeHeroText cmsTitle={cmsTitle} cmsSubtitle={cmsSubtitle} />
+                <HomeHeroText />
                 <div className="mx-auto mt-8 w-full max-w-4xl md:mt-10">
                   <HeroSearch />
                 </div>

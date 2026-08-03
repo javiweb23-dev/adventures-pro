@@ -43,7 +43,7 @@ export default async function Home() {
               <HomeHeroSlider />
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-8 px-4 text-white md:gap-10 md:px-10 lg:px-12">
                 <div className="w-full max-w-4xl text-center">
-                  <HomeHeroText cmsTitle={null} cmsSubtitle={null} />
+                  <HomeHeroText />
                   <div className="mx-auto mt-8 w-full max-w-4xl md:mt-10">
                     <HeroSearch />
                   </div>
